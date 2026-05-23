@@ -1,6 +1,6 @@
 import * as path from "node:path";
 import { getChecker } from "./checkers/registry.ts";
-import type { ModuleIndex } from "../types.ts";
+import type { ModuleIndex, Signature } from "../types.ts";
 
 export type ExportViolation = { name: string; imposedBy: string };
 
@@ -26,17 +26,37 @@ export function checkExports(
   const constraining = ancestors.filter((c) => c.visible !== null);
   if (constraining.length === 0) return { blocked: false };
 
-  const allowedSet = buildAllowedSet(constraining);
+  const allowedMap = buildAllowedMap(constraining);
   const newExports = checker.getNewExports(beforeContent, afterContent);
   const violations: ExportViolation[] = [];
 
-  for (const name of newExports) {
-    if (!allowedSet.has(name)) {
-      const imposer = constraining.find((c) => c.visible !== null && !c.visible.includes(name));
+  for (const sig of newExports) {
+    if (!allowedMap.has(sig.name)) {
+      const imposer = constraining.find(
+        (c) => c.visible !== null && !c.visible.some((s) => s.name === sig.name),
+      );
       const imposedBy = imposer
         ? path.relative(cwd, path.join(imposer.modulePath, "module.md"))
         : path.relative(cwd, path.join(constraining[0].modulePath, "module.md"));
-      violations.push({ name, imposedBy });
+      violations.push({ name: sig.name, imposedBy });
+      continue;
+    }
+
+    const requiredMod = allowedMap.get(sig.name);
+    if (requiredMod !== undefined && sig.modifier !== requiredMod) {
+      const imposer = constraining.find(
+        (c) =>
+          c.visible !== null &&
+          c.visible.some((s) => s.name === sig.name && s.modifier === requiredMod),
+      );
+      const imposedBy = imposer
+        ? path.relative(cwd, path.join(imposer.modulePath, "module.md"))
+        : path.relative(cwd, path.join(constraining[0].modulePath, "module.md"));
+      violations.push({
+        name: `${sig.modifier ?? ""} ${sig.name}`.trim(),
+        imposedBy,
+      });
+      continue;
     }
   }
 
@@ -52,20 +72,37 @@ export function checkExports(
   };
 }
 
-function buildAllowedSet(
-  constraining: { visible: string[] | null }[],
-): Set<string> {
-  let allowed: Set<string> | undefined;
+function buildAllowedMap(
+  constraining: { visible: Signature[] | null }[],
+): Map<string, string | undefined> {
+  const maps: Map<string, string | undefined>[] = [];
   for (const c of constraining) {
     if (c.visible === null) continue;
-    const set = new Set(c.visible);
-    if (allowed === undefined) {
-      allowed = set;
-    } else {
-      for (const item of allowed) {
-        if (!set.has(item)) allowed.delete(item);
+    const m = new Map<string, string | undefined>();
+    for (const sig of c.visible) {
+      m.set(sig.name, sig.modifier);
+    }
+    maps.push(m);
+  }
+
+  if (maps.length === 0) return new Map();
+
+  const result = new Map(maps[0]);
+  for (let i = 1; i < maps.length; i++) {
+    const cur = maps[i];
+    for (const [name, mod] of result) {
+      if (!cur.has(name)) {
+        result.delete(name);
+        continue;
+      }
+      const curMod = cur.get(name);
+      if (mod !== undefined && curMod !== undefined && mod !== curMod) {
+        result.delete(name);
+      } else if (curMod !== undefined) {
+        result.set(name, curMod);
       }
     }
   }
-  return allowed ?? new Set();
+
+  return result;
 }

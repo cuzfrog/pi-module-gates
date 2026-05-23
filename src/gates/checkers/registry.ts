@@ -1,8 +1,9 @@
 import * as path from "node:path";
+import type { Signature } from "../../types.ts";
 
 export interface ExportChecker {
   extensions: string[];
-  getNewExports(before: string, after: string): string[];
+  getNewExports(before: string, after: string): Signature[];
 }
 
 const checkerRegistry = new Map<string, ExportChecker>();

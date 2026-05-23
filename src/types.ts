@@ -1,6 +1,11 @@
+export type Signature = {
+  modifier?: string;
+  name: string;
+};
+
 export type ModuleContract = {
   modulePath: string;
-  visible: string[] | null;
+  visible: Signature[] | null;
   readonly: string[];
   prose: string;
 };

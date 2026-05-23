@@ -21,11 +21,11 @@ export async function validateVisibleEntries(
 
     const exportedSymbols = await collectExports(contract.modulePath, childModules);
 
-    for (const entry of contract.visible) {
-      if (!exportedSymbols.has(entry)) {
+    for (const sig of contract.visible) {
+      if (!exportedSymbols.has(sig.name)) {
         const relModule = path.relative(cwd, path.join(contract.modulePath, "module.md"));
         notify(
-          `[Module Gate] Dangling visible entry "${entry}" in ${relModule}`,
+          `[Module Gate] Dangling visible entry "${sig.name}" in ${relModule}`,
           "warning",
         );
       }
@@ -44,8 +44,8 @@ async function collectExports(
     if (!checker) continue;
     const content = readFileSafe(filePath);
     const exports = checker.getNewExports("", content);
-    for (const name of exports) {
-      symbols.add(name);
+    for (const sig of exports) {
+      symbols.add(sig.name);
     }
   }
   return symbols;

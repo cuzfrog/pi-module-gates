@@ -14,7 +14,7 @@ describe("checkExports", () => {
     const index = makeIndex([
       {
         modulePath: "/project/src",
-        visible: ["allowedFn"],
+        visible: [{ name: "allowedFn" }],
         readonly: ["module.md"],
         prose: "",
       },
@@ -38,7 +38,7 @@ describe("checkExports", () => {
     const index = makeIndex([
       {
         modulePath: "/project/src",
-        visible: ["allowedFn"],
+        visible: [{ name: "allowedFn" }],
         readonly: ["module.md"],
         prose: "",
       },
@@ -76,13 +76,13 @@ describe("checkExports", () => {
     const index = makeIndex([
       {
         modulePath: "/project",
-        visible: ["sharedFn", "rootOnly"],
+        visible: [{ name: "sharedFn" }, { name: "rootOnly" }],
         readonly: ["module.md"],
         prose: "",
       },
       {
         modulePath: "/project/src",
-        visible: ["sharedFn", "srcOnly"],
+        visible: [{ name: "sharedFn" }, { name: "srcOnly" }],
         readonly: ["module.md"],
         prose: "",
       },
@@ -155,7 +155,7 @@ describe("checkExports", () => {
     const index = makeIndex([
       {
         modulePath: "/project/src",
-        visible: ["allowedFn"],
+        visible: [{ name: "allowedFn" }],
         readonly: ["module.md"],
         prose: "",
       },
@@ -189,13 +189,13 @@ describe("checkExports", () => {
     const index = makeIndex([
       {
         modulePath: "/project",
-        visible: ["sharedFn", "rootOnly"],
+        visible: [{ name: "sharedFn" }, { name: "rootOnly" }],
         readonly: ["module.md"],
         prose: "",
       },
       {
         modulePath: "/project/src",
-        visible: ["sharedFn", "srcOnly"],
+        visible: [{ name: "sharedFn" }, { name: "srcOnly" }],
         readonly: ["module.md"],
         prose: "",
       },
@@ -218,7 +218,7 @@ describe("checkExports", () => {
       },
       {
         modulePath: "/project/src",
-        visible: ["childFn"],
+        visible: [{ name: "childFn" }],
         readonly: ["module.md"],
         prose: "",
       },
@@ -235,19 +235,19 @@ describe("checkExports", () => {
     const index = makeIndex([
       {
         modulePath: "/project",
-        visible: ["rootOnly"],
+        visible: [{ name: "rootOnly" }],
         readonly: ["module.md"],
         prose: "",
       },
       {
         modulePath: "/project/src",
-        visible: ["sharedFn", "rootOnly"],
+        visible: [{ name: "sharedFn" }, { name: "rootOnly" }],
         readonly: ["module.md"],
         prose: "",
       },
       {
         modulePath: "/project/src/payments",
-        visible: ["sharedFn", "leafOnly"],
+        visible: [{ name: "sharedFn" }, { name: "leafOnly" }],
         readonly: ["module.md"],
         prose: "",
       },

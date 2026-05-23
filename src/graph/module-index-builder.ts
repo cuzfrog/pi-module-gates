@@ -2,7 +2,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { readdir } from "node:fs/promises";
 import { parseFrontmatter } from "@earendil-works/pi-coding-agent";
-import type { ModuleContract, ModuleIndex } from "../types.ts";
+import type { ModuleContract, ModuleIndex, Signature } from "../types.ts";
 import type { Dirent } from "node:fs";
 import { validateVisibleEntries } from "./validation.ts";
 
@@ -57,7 +57,10 @@ function buildContracts(
 
     contracts.push({
       modulePath,
-      visible: frontmatter.visible !== undefined ? frontmatter.visible : null,
+      visible:
+        frontmatter.visible !== undefined
+          ? frontmatter.visible.map(parseVisibleEntry)
+          : null,
       readonly: readonlyEntries,
       prose: body.trim(),
     });
@@ -136,6 +139,12 @@ async function walkDirs(root: string): Promise<string[]> {
   }
 
   return results;
+}
+
+function parseVisibleEntry(raw: string): Signature {
+  const match = raw.match(/^(pub(?:\s*\([^)]*\))?)\s+(.+)$/);
+  if (!match) return { name: raw };
+  return { modifier: match[1], name: match[2] };
 }
 
 export function findOwningModule(

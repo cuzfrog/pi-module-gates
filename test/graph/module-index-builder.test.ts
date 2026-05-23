@@ -79,7 +79,7 @@ describe("buildModuleIndex", () => {
 
     expect(index.contracts).toHaveLength(1);
     expect(index.contracts[0].modulePath).toBe("/project/src");
-    expect(index.contracts[0].visible).toEqual(["greet"]);
+    expect(index.contracts[0].visible).toEqual([{ name: "greet" }]);
     expect(index.contracts[0].readonly).toContain("secret.ts");
     expect(index.contracts[0].prose).toBe("Greeting module.");
   });
@@ -120,7 +120,7 @@ describe("buildModuleIndex", () => {
 
     const index = await buildModuleIndex(makeCtx("/project"));
 
-    expect(index.contracts[0].visible).toEqual(["exportA", "exportB"]);
+    expect(index.contracts[0].visible).toEqual([{ name: "exportA" }, { name: "exportB" }]);
     expect(index.contracts[0].readonly).toContain("locked/");
     expect(index.contracts[0].prose).toBe("Some prose.");
   });
@@ -203,7 +203,7 @@ describe("buildModuleIndex", () => {
     // Only the valid module is in contracts
     expect(index.contracts).toHaveLength(1);
     expect(index.contracts[0].modulePath).toBe("/project/good");
-    expect(index.contracts[0].visible).toEqual(["ok"]);
+    expect(index.contracts[0].visible).toEqual([{ name: "ok" }]);
   });
 
   it("matches module.md case-insensitively", async () => {
