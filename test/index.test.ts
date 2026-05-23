@@ -212,6 +212,14 @@ describe("Module Gate e2e", () => {
       expect((result as ToolCallEventResult).block).toBe(true);
     });
 
+    it("allows write to editable.ts (not listed as readonly anywhere)", async () => {
+      const cwd = path.join(FIXTURES, "readonly-test");
+      await startSession(cwd);
+
+      const result = await doWrite("editable.ts", "// modified", cwd);
+      expect(result?.block).toBeFalsy();
+    });
+
     it("reason cites at least one matching module.md (future: should cite both)", async () => {
       const cwd = path.join(FIXTURES, "readonly-test");
       await startSession(cwd);

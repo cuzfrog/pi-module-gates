@@ -3,6 +3,7 @@ dist/
 
 # dev
 .lissom/
+.pi/
 
 # env
 .env
