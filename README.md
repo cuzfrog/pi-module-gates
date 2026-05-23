@@ -3,6 +3,18 @@
 pi cli extension that controls the entropy of the codebase by enforcing code module boundaries.
 It helps combat slop generation and code architecture degradation.
 
+## Installation
+
+```bash
+pi install npm:@cuzfrog/pi-module-gates
+```
+
+Or load directly for a single session:
+
+```bash
+pi -e npm:@cuzfrog/pi-module-gates
+```
+
 ## Problem
 
 AI coding agents produce edits with limited context knowledge (myopia) — their changes may leak implementation details, and break architectural contracts (slop).

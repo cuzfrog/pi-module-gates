@@ -1,8 +1,8 @@
 {
-  "name": "pi-module-gates",
-  "version": "0.5.0",
+  "name": "@cuzfrog/pi-module-gates",
+  "version": "0.6.0",
   "description": "pi extension that controls the entropy of the codebase by enforcing code module boundaries.",
-  "private": true,
+  "keywords": ["pi-package"],
   "type": "module",
   "scripts": {
     "check": "tsc --noEmit",
@@ -13,10 +13,31 @@
       "./src/index.ts"
     ]
   },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*"
+  },
   "devDependencies": {
     "@earendil-works/pi-coding-agent": "0.75.4",
     "@types/node": "22.19.19",
     "typescript": "5.9.3",
     "vitest": "4.1.7"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cuzfrog/pi-module-gate.git"
+  },
+  "bugs": {
+    "url": "https://github.com/cuzfrog/pi-module-gate/issues"
+  },
+  "homepage": "https://github.com/cuzfrog/pi-module-gate#readme",
+  "license": "MIT",
+  "author": "Cause Chung (cuzfrog@gmail.com)",
+  "files": ["src/", "README.md", "LICENSE"],
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   }
 }
