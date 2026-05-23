@@ -16,11 +16,8 @@ import { buildSystemPromptHint } from "./context/system-prompt.ts";
 import "./gates/checkers/index.ts";
 
 export default function (pi: ExtensionAPI): void {
-  let index: ModuleIndex = { contracts: [], dirToModule: new Map() };
-  let config: ModuleGateConfig = {
-    moduleDescriptorFileName: "module.md",
-    sourceRoot: "src/",
-  };
+  let index: ModuleIndex;
+  let config: ModuleGateConfig;
 
   pi.on("session_start", async (_event, ctx) => {
     config = loadConfig(ctx.cwd);
