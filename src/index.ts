@@ -12,8 +12,7 @@ import { validateVisibleEntries } from "./graph/validation.ts";
 import { checkReadonly } from "./gates/readonly-gate.ts";
 import { checkExports } from "./gates/export-gate.ts";
 import { buildSystemPromptHint } from "./context/system-prompt.ts";
-import "./gates/checkers/typescript.ts";
-import "./gates/checkers/rust.ts";
+import "./gates/checkers/index.ts";
 
 export default function (pi: ExtensionAPI): void {
   let index: ModuleIndex = { contracts: [], dirToModule: new Map() };
