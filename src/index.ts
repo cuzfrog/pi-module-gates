@@ -8,7 +8,6 @@ import type {
 import { isToolCallEventType } from "@earendil-works/pi-coding-agent";
 import type { ModuleIndex } from "./types.ts";
 import { buildModuleIndex, findOwningModule } from "./graph/module-index-builder.ts";
-import { validateVisibleEntries } from "./graph/validation.ts";
 import { checkReadonly } from "./gates/readonly-gate.ts";
 import { checkExports } from "./gates/export-gate.ts";
 import { buildSystemPromptHint } from "./context/system-prompt.ts";
@@ -18,8 +17,7 @@ export default function (pi: ExtensionAPI): void {
   let index: ModuleIndex = { contracts: [], dirToModule: new Map() };
 
   pi.on("session_start", async (_event, ctx) => {
-    index = await buildModuleIndex(ctx.cwd);
-    await validateVisibleEntries(index, ctx.cwd, ctx.ui.notify.bind(ctx.ui));
+    index = await buildModuleIndex(ctx);
   });
 
   pi.on("before_agent_start", async (event): Promise<BeforeAgentStartEventResult | void> => {

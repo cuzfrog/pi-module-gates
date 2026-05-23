@@ -2,4 +2,4 @@
 visible: [
 readonly: [broken
 ---
-This YAML is intentionally malformed for e2e scenario #34.
+This YAML is intentionally malformed for testing graceful handling.

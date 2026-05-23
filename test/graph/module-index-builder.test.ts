@@ -13,14 +13,20 @@ vi.mock("@earendil-works/pi-coding-agent", () => ({
   parseFrontmatter: vi.fn(),
 }));
 
+vi.mock("../../src/graph/validation.ts", () => ({
+  validateVisibleEntries: vi.fn(),
+}));
+
 import { readdir } from "node:fs/promises";
 import * as fs from "node:fs";
 import { parseFrontmatter } from "@earendil-works/pi-coding-agent";
+import { validateVisibleEntries } from "../../src/graph/validation.ts";
 import { buildModuleIndex, findOwningModule } from "../../src/graph/module-index-builder.ts";
 
 const mockedReaddir = readdir as unknown as ReturnType<typeof vi.fn>;
 const mockedReadFileSync = vi.mocked(fs.readFileSync);
 const mockedParseFrontmatter = vi.mocked(parseFrontmatter);
+const mockedValidateVisibleEntries = vi.mocked(validateVisibleEntries);
 
 function makeDirent(name: string, isDir: boolean): Dirent {
   return {
@@ -35,6 +41,17 @@ function makeDirent(name: string, isDir: boolean): Dirent {
     parentPath: "",
     path: "",
   } as Dirent;
+}
+
+function makeCtx(cwd: string, onNotify?: (msg: string, type?: string) => void) {
+  return {
+    cwd,
+    ui: {
+      notify(msg: string, type?: string) {
+        onNotify?.(msg, type);
+      },
+    },
+  };
 }
 
 describe("buildModuleIndex", () => {
@@ -58,7 +75,7 @@ describe("buildModuleIndex", () => {
       body: "Greeting module.",
     });
 
-    const index = await buildModuleIndex("/project");
+    const index = await buildModuleIndex(makeCtx("/project"));
 
     expect(index.contracts).toHaveLength(1);
     expect(index.contracts[0].modulePath).toBe("/project/src");
@@ -81,7 +98,7 @@ describe("buildModuleIndex", () => {
       body: "Root.",
     });
 
-    const index = await buildModuleIndex("/project");
+    const index = await buildModuleIndex(makeCtx("/project"));
 
     expect(index.contracts[0].readonly).toContain("module.md");
     expect(index.contracts[0].readonly).toContain("config.json");
@@ -101,7 +118,7 @@ describe("buildModuleIndex", () => {
       body: "Some prose.",
     });
 
-    const index = await buildModuleIndex("/project");
+    const index = await buildModuleIndex(makeCtx("/project"));
 
     expect(index.contracts[0].visible).toEqual(["exportA", "exportB"]);
     expect(index.contracts[0].readonly).toContain("locked/");
@@ -122,7 +139,7 @@ describe("buildModuleIndex", () => {
       body: "No visible constraint.",
     });
 
-    const index = await buildModuleIndex("/project");
+    const index = await buildModuleIndex(makeCtx("/project"));
     expect(index.contracts[0].visible).toBeNull();
   });
 
@@ -143,11 +160,50 @@ describe("buildModuleIndex", () => {
       body: "",
     });
 
-    const index = await buildModuleIndex("/project");
+    const index = await buildModuleIndex(makeCtx("/project"));
 
     expect(index.contracts).toHaveLength(2);
     expect(index.dirToModule.get("/project/src")).toBe("/project/src");
     expect(index.dirToModule.get("/project")).toBe("/project");
+  });
+
+  it("skips malformed module.md and warns via notify", async () => {
+    mockedReaddir.mockImplementation(async (dir: unknown) => {
+      const d = dir as string;
+      if (d === "/project")
+        return [makeDirent("module.md", false), makeDirent("good", true)] as Dirent[];
+      if (d === "/project/good")
+        return [makeDirent("module.md", false)] as Dirent[];
+      return [] as Dirent[];
+    });
+
+    mockedReadFileSync.mockImplementation((p: unknown): string => {
+      const filePath = p as string;
+      if (filePath === "/project/module.md") return "---\nbroken: [\n---\nbad";
+      return "---\nvisible: [ok]\n---\ngood";
+    });
+
+    mockedParseFrontmatter.mockImplementation((content: string) => {
+      if (content.includes("broken")) {
+        throw new Error("YAML parse error");
+      }
+      return { frontmatter: { visible: ["ok"] }, body: "good" };
+    });
+
+    const warnings: string[] = [];
+    const ctx = makeCtx("/project", (msg) => warnings.push(msg));
+
+    const index = await buildModuleIndex(ctx);
+
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0]).toContain("Failed to parse");
+    expect(warnings[0]).toContain("/project/module.md");
+    expect(warnings[0]).toContain("unguarded");
+
+    // Only the valid module is in contracts
+    expect(index.contracts).toHaveLength(1);
+    expect(index.contracts[0].modulePath).toBe("/project/good");
+    expect(index.contracts[0].visible).toEqual(["ok"]);
   });
 
   it("matches module.md case-insensitively", async () => {
@@ -164,7 +220,7 @@ describe("buildModuleIndex", () => {
       body: "Root.",
     });
 
-    const index = await buildModuleIndex("/project");
+    const index = await buildModuleIndex(makeCtx("/project"));
     expect(index.contracts).toHaveLength(1);
     expect(index.contracts[0].modulePath).toBe("/project");
   });

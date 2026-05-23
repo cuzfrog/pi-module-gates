@@ -4,26 +4,53 @@ import { readdir } from "node:fs/promises";
 import { parseFrontmatter } from "@earendil-works/pi-coding-agent";
 import type { ModuleContract, ModuleIndex } from "../types.ts";
 import type { Dirent } from "node:fs";
+import { validateVisibleEntries } from "./validation.ts";
 
 type ModuleFrontmatter = {
   visible?: string[];
   readonly?: string[];
 };
 
-export async function buildModuleIndex(cwd: string): Promise<ModuleIndex> {
-  const moduleFiles = await findModuleFiles(cwd);
-  const contracts = buildContracts(moduleFiles);
+type IndexContext = {
+  cwd: string;
+  ui: { notify(message: string, type?: string): void };
+};
+
+export async function buildModuleIndex(ctx: IndexContext): Promise<ModuleIndex> {
+  const notify = (msg: string) => ctx.ui.notify(msg, "warning");
+
+  const moduleFiles = await findModuleFiles(ctx.cwd);
+  const contracts = buildContracts(moduleFiles, notify);
   const dirToModule = await buildDirToModuleMap(contracts);
-  return { contracts, dirToModule };
+  const index: ModuleIndex = { contracts, dirToModule };
+
+  await validateVisibleEntries(index, ctx.cwd, ctx.ui.notify);
+
+  return index;
 }
 
-function buildContracts(moduleFiles: string[]): ModuleContract[] {
+function buildContracts(
+  moduleFiles: string[],
+  onWarn: (message: string) => void,
+): ModuleContract[] {
   const contracts: ModuleContract[] = [];
 
   for (const absModuleFile of moduleFiles) {
     const modulePath = path.dirname(absModuleFile);
     const content = fs.readFileSync(absModuleFile, "utf-8");
-    const { frontmatter, body } = parseFrontmatter<ModuleFrontmatter>(content);
+
+    let frontmatter: ModuleFrontmatter;
+    let body: string;
+    try {
+      const parsed = parseFrontmatter<ModuleFrontmatter>(content);
+      frontmatter = parsed.frontmatter;
+      body = parsed.body;
+    } catch {
+      onWarn(
+        `[Module Gate] Failed to parse ${absModuleFile} — module will be unguarded`,
+      );
+      continue;
+    }
 
     const readonlyEntries = frontmatter.readonly ?? [];
     readonlyEntries.push("module.md");

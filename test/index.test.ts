@@ -269,33 +269,23 @@ describe("Module Gate e2e", () => {
   describe("Scenario #34 — malformed frontmatter", () => {
     it("warns on malformed module.md instead of crashing", async () => {
       const cwd = MALFORMED;
-      try {
-        await startSession(cwd);
-        // If the code handles the error gracefully, we should see warnings:
-        const warnings = mock.notifications.filter(
-          (n) => n.type === "warning",
-        );
-        expect(warnings.length).toBeGreaterThan(0);
-      } catch (err: any) {
-        // Currently parseFrontmatter throws on malformed YAML.
-        // TODO: The code should catch this and warn instead of crashing.
-        // This catch block documents the current gap.
-        expect(err).toBeDefined();
-      }
+      await startSession(cwd);
+
+      const warnings = mock.notifications.filter(
+        (n) => n.type === "warning",
+      );
+      expect(warnings.length).toBeGreaterThan(0);
+      expect(warnings[0].message).toContain("Failed to parse");
+      expect(warnings[0].message).toContain("module.md");
+      expect(warnings[0].message).toContain("unguarded");
     });
 
     it("treats malformed module as unguarded (writes allowed)", async () => {
       const cwd = MALFORMED;
-      try {
-        await startSession(cwd);
-        // If the malformed module is treated as unguarded, writes should pass
-        const result = await doWrite("any.ts", "// anything", cwd);
-        // Block should be false or undefined (writes allowed)
-        expect(result?.block).toBeFalsy();
-      } catch {
-        // TODO: Currently index building crashes. Once graceful handling is
-        // implemented, the assertions above will pass.
-      }
+      await startSession(cwd);
+
+      const result = await doWrite("any.ts", "// anything", cwd);
+      expect(result?.block).toBeFalsy();
     });
   });
 
