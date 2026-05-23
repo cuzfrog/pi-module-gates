@@ -14,7 +14,7 @@ describe("loadConfig", () => {
     vi.clearAllMocks();
   });
 
-  it("returns defaults when config file does not exist", () => {
+  it("returns defaults when settings.json does not exist", () => {
     mockedReadFileSync.mockImplementation(() => {
       throw new Error("ENOENT");
     });
@@ -24,7 +24,17 @@ describe("loadConfig", () => {
     expect(config.sourceRoot).toBe("src/");
   });
 
-  it("returns defaults when config file has invalid JSON", () => {
+  it("returns defaults when settings.json has no module-gate key", () => {
+    mockedReadFileSync.mockReturnValue(
+      JSON.stringify({ theme: "dark" }),
+    );
+
+    const config = loadConfig("/project");
+    expect(config.moduleDescriptorFileName).toBe("module.md");
+    expect(config.sourceRoot).toBe("src/");
+  });
+
+  it("returns defaults when settings.json has invalid JSON", () => {
     mockedReadFileSync.mockReturnValue("{ broken");
 
     const config = loadConfig("/project");
@@ -32,11 +42,13 @@ describe("loadConfig", () => {
     expect(config.sourceRoot).toBe("src/");
   });
 
-  it("overrides defaults with user values", () => {
+  it("overrides defaults with module-gate values", () => {
     mockedReadFileSync.mockReturnValue(
       JSON.stringify({
-        moduleDescriptorFileName: "CONTEXT.md",
-        sourceRoot: "lib/",
+        "module-gate": {
+          moduleDescriptorFileName: "CONTEXT.md",
+          sourceRoot: "lib/",
+        },
       }),
     );
 
@@ -45,10 +57,12 @@ describe("loadConfig", () => {
     expect(config.sourceRoot).toBe("lib/");
   });
 
-  it("overrides only provided keys", () => {
+  it("overrides only provided keys in module-gate", () => {
     mockedReadFileSync.mockReturnValue(
       JSON.stringify({
-        moduleDescriptorFileName: "CONTEXT.md",
+        "module-gate": {
+          moduleDescriptorFileName: "CONTEXT.md",
+        },
       }),
     );
 
@@ -57,12 +71,12 @@ describe("loadConfig", () => {
     expect(config.sourceRoot).toBe("src/");
   });
 
-  it("reads from .pi/module-gate-config.json relative to cwd", () => {
+  it("reads from .pi/settings.json relative to cwd", () => {
     mockedReadFileSync.mockReturnValue("{}");
 
     loadConfig("/my/project");
     expect(mockedReadFileSync).toHaveBeenCalledWith(
-      "/my/project/.pi/module-gate-config.json",
+      "/my/project/.pi/settings.json",
       "utf-8",
     );
   });

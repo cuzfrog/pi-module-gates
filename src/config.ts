@@ -12,11 +12,14 @@ const DEFAULTS: ModuleGateConfig = {
 };
 
 export function loadConfig(cwd: string): ModuleGateConfig {
-  const configPath = path.join(cwd, ".pi", "module-gate-config.json");
+  const settingsPath = path.join(cwd, ".pi", "settings.json");
   let userConfig: Partial<ModuleGateConfig> = {};
   try {
-    const raw = fs.readFileSync(configPath, "utf-8");
-    userConfig = JSON.parse(raw);
+    const raw = fs.readFileSync(settingsPath, "utf-8");
+    const settings = JSON.parse(raw);
+    if (settings["module-gate"] && typeof settings["module-gate"] === "object") {
+      userConfig = settings["module-gate"];
+    }
   } catch {
     // file doesn't exist or invalid — use defaults
   }

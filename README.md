@@ -8,12 +8,14 @@ AI coding agents produce ad-hoc edits with no awareness of module boundaries —
 
 ## Configuration
 
-Create `.pi/module-gate-config.json` at the project root:
+Add a `module-gate` entry to `.pi/settings.json`:
 
 ```json
 {
-  "moduleDescriptorFileName": "CONTEXT.md",
-  "sourceRoot": "lib/"
+  "module-gate": {
+    "moduleDescriptorFileName": "CONTEXT.md",
+    "sourceRoot": "lib/"
+  }
 }
 ```
 
@@ -22,7 +24,7 @@ Create `.pi/module-gate-config.json` at the project root:
 | `moduleDescriptorFileName` | `"module.md"` | File name used for module descriptors (case-insensitive) |
 | `sourceRoot` | `"src/"` | Directory to scan for descriptor files and enforce gates. Set to `""` to scan from project root. |
 
-When no config file exists, defaults apply.
+When no settings file exists or no `module-gate` key is present, defaults apply.
 
 ### Approach
 
