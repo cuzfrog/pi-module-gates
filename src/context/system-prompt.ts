@@ -9,12 +9,11 @@ export function buildSystemPromptHint(
 
   return systemPrompt + `
 
-## Module descriptors
-This project uses \`${descriptorFileName}\` files to declare visibility and readonly rules.
+## Module gates (boundary enforcement)
+This project uses \`${descriptorFileName}\` files to declare visibility and readonly rules that you should follow.
+If you cannot comply the constraints, consider your design, if impossible, raise to user with pros and cons.
 Each \`${descriptorFileName}\` gates its immediate directory.
-The \`visible\` list supports path-based entries like \`sub/Type\` to expose types from subdirectories,
-and object form \`{ path: "sub/Type", modifier: "pub" }\` for modifier constraints.
-If a \`${descriptorFileName}\` is present with a \`visible\` list, only exports in the list are allowed.
+A \`${descriptorFileName}\` with a \`visible\` list means only entries in the list are allowed to be visible outside the module.
 A \`${descriptorFileName}\` and its mentioned \`readonly\` files are readonly.
 Violations will be blocked.`;
 }
