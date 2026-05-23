@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "tsc --noEmit"
+    "check": "tsc --noEmit",
+    "test": "vitest run"
   },
   "pi": {
     "extensions": [
@@ -12,7 +13,9 @@
     ]
   },
   "devDependencies": {
-    "@earendil-works/pi-coding-agent": "^0.75.4",
-    "typescript": "^5.8.0"
+    "@earendil-works/pi-coding-agent": "0.75.4",
+    "@types/node": "22.19.19",
+    "typescript": "5.9.3",
+    "vitest": "4.1.7"
   }
 }
