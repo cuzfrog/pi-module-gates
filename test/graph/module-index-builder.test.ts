@@ -125,6 +125,32 @@ describe("buildModuleIndex", () => {
     expect(index.contracts[0].prose).toBe("Some prose.");
   });
 
+  it("parses visible entries with modifiers", async () => {
+    mockedReaddir.mockImplementation(async (dir: unknown) => {
+      const d = dir as string;
+      if (d === "/project") return [makeDirent("module.md", false)] as Dirent[];
+      return [] as Dirent[];
+    });
+
+    mockedReadFileSync.mockReturnValue("content");
+
+    mockedParseFrontmatter.mockReturnValue({
+      frontmatter: {
+        visible: ["pub(super) Foo", "pub(crate) Bar", "Baz"],
+        readonly: [],
+      },
+      body: "",
+    });
+
+    const index = await buildModuleIndex(makeCtx("/project"));
+
+    expect(index.contracts[0].visible).toEqual([
+      { modifier: "pub(super)", name: "Foo" },
+      { modifier: "pub(crate)", name: "Bar" },
+      { name: "Baz" },
+    ]);
+  });
+
   it("sets visible to null when not specified in frontmatter", async () => {
     mockedReaddir.mockImplementation(async (dir: unknown) => {
       const d = dir as string;

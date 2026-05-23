@@ -142,9 +142,11 @@ async function walkDirs(root: string): Promise<string[]> {
 }
 
 function parseVisibleEntry(raw: string): Signature {
-  const match = raw.match(/^(pub(?:\s*\([^)]*\))?)\s+(.+)$/);
-  if (!match) return { name: raw };
-  return { modifier: match[1], name: match[2] };
+  const parts = raw.trim().split(/\s+/);
+  if (parts.length >= 2) {
+    return { modifier: parts[0], name: parts.slice(1).join(" ") };
+  }
+  return { name: raw };
 }
 
 export function findOwningModule(
