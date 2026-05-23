@@ -1,4 +1,7 @@
-## Git 
+## Git
+
+- Use `./scripts/gh-bot.mjs` as `gh` for GitHub App identity.
+
 ### branching
 - Main branch: `main`
 - Feature branches: `<task_id>_<short-description>`, e.g., `IMPL-2_config-loader`

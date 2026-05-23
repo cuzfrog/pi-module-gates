@@ -9,6 +9,7 @@
 - Keep answers short and concise
 - No emojis in commits, issues, PR comments, or code
 - When the user asks a question, answer it first before making edits or running implementation commands.
+- When writing text, think from the reader's perspective, write only what they need to know.
 
 ## Code Conventions
 
