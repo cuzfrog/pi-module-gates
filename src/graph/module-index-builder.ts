@@ -21,7 +21,7 @@ export async function buildModuleIndex(
   const scanRoot = path.resolve(ctx.cwd, config.sourceRoot);
 
   const moduleFiles = await findModuleFiles(scanRoot, config.moduleDescriptorFileName);
-  const contracts = buildContracts(moduleFiles, notify, config.moduleDescriptorFileName);
+  const contracts = buildContracts(moduleFiles, notify, config.moduleDescriptorFileName, config.moduleDescriptorReadonly);
   applyComplementPass(contracts);
   const dirToModule = await buildDirToModuleMap(contracts);
   const index: ModuleIndex = { contracts, dirToModule };
@@ -35,6 +35,7 @@ function buildContracts(
   moduleFiles: string[],
   onInfo: (message: string) => void,
   descriptorFileName: string,
+  moduleDescriptorReadonly: boolean,
 ): ModuleContract[] {
   const contracts: ModuleContract[] = [];
 
@@ -56,7 +57,9 @@ function buildContracts(
     }
 
     const readonlyEntries = frontmatter.readonly ?? [];
-    readonlyEntries.push(descriptorFileName);
+    if (moduleDescriptorReadonly) {
+      readonlyEntries.push(descriptorFileName);
+    }
 
     contracts.push({
       modulePath,

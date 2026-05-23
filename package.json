@@ -1,6 +1,6 @@
 {
   "name": "pi-module-gates",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "pi extension that controls the entropy of the codebase by enforcing code module boundaries.",
   "private": true,
   "type": "module",

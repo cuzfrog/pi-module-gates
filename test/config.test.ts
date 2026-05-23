@@ -21,6 +21,7 @@ describe("loadConfig", () => {
 
     const config = loadConfig("/project");
     expect(config.moduleDescriptorFileName).toBe("module.md");
+    expect(config.moduleDescriptorReadonly).toBe(true);
     expect(config.sourceRoot).toBe("src/");
   });
 
@@ -31,6 +32,7 @@ describe("loadConfig", () => {
 
     const config = loadConfig("/project");
     expect(config.moduleDescriptorFileName).toBe("module.md");
+    expect(config.moduleDescriptorReadonly).toBe(true);
     expect(config.sourceRoot).toBe("src/");
   });
 
@@ -39,6 +41,7 @@ describe("loadConfig", () => {
 
     const config = loadConfig("/project");
     expect(config.moduleDescriptorFileName).toBe("module.md");
+    expect(config.moduleDescriptorReadonly).toBe(true);
     expect(config.sourceRoot).toBe("src/");
   });
 
@@ -47,6 +50,7 @@ describe("loadConfig", () => {
       JSON.stringify({
         "module-gate": {
           moduleDescriptorFileName: "CONTEXT.md",
+          moduleDescriptorReadonly: false,
           sourceRoot: "lib/",
         },
       }),
@@ -54,6 +58,7 @@ describe("loadConfig", () => {
 
     const config = loadConfig("/project");
     expect(config.moduleDescriptorFileName).toBe("CONTEXT.md");
+    expect(config.moduleDescriptorReadonly).toBe(false);
     expect(config.sourceRoot).toBe("lib/");
   });
 
@@ -68,6 +73,7 @@ describe("loadConfig", () => {
 
     const config = loadConfig("/project");
     expect(config.moduleDescriptorFileName).toBe("CONTEXT.md");
+    expect(config.moduleDescriptorReadonly).toBe(true);
     expect(config.sourceRoot).toBe("src/");
   });
 

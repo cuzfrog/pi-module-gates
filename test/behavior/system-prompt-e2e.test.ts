@@ -8,7 +8,7 @@ import {
 } from "./helpers.ts";
 
 vi.mock("../../src/config.ts", () => ({
-  loadConfig: () => ({ moduleDescriptorFileName: "module.md", sourceRoot: "" }),
+  loadConfig: () => ({ moduleDescriptorFileName: "module.md", moduleDescriptorReadonly: true, sourceRoot: "" }),
 }));
 
 import mod from "../../src/index.ts";
