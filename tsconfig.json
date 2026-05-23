@@ -17,6 +17,9 @@
     "resolveJsonModule": true,
     "allowImportingTsExtensions": true,
     "rewriteRelativeImportExtensions": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "useDefineForClassFields": false,
     "noEmit": true,
     "types": ["node"]
   },

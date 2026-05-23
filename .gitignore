@@ -1,3 +1,14 @@
 node_modules/
 dist/
+
+# dev
 .lissom/
+
+# env
+.env
+.env.local
+.env.*.local
+
+# secrets
+*.pem
+*.private-key*
