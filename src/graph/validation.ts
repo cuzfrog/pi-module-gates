@@ -26,27 +26,17 @@ export async function validateVisibleEntries(
 
     for (const sig of contract.visible) {
       const targetDir = resolveValidationTarget(contract.modulePath, sig.path);
-      if (targetDir !== contract.modulePath) {
-        let symbols = pathExportsCache.get(targetDir);
-        if (!symbols) {
-          symbols = await collectExports(targetDir, childModules);
-          pathExportsCache.set(targetDir, symbols);
-        }
-        if (!symbols.has(sig.name)) {
-          const relModule = path.relative(cwd, path.join(contract.modulePath, descriptorFileName));
-          notify(
-            `[Module Gate] Dangling visible entry "${sig.name}" in ${relModule}`,
-            "info",
-          );
-        }
-      } else {
-        if (!exportedSymbols.has(sig.name)) {
-          const relModule = path.relative(cwd, path.join(contract.modulePath, descriptorFileName));
-          notify(
-            `[Module Gate] Dangling visible entry "${sig.name}" in ${relModule}`,
-            "info",
-          );
-        }
+      const symbols =
+        targetDir !== contract.modulePath
+          ? await resolvePathExports(targetDir, pathExportsCache, childModules)
+          : exportedSymbols;
+
+      if (!symbols.has(sig.name)) {
+        const relModule = path.relative(cwd, path.join(contract.modulePath, descriptorFileName));
+        notify(
+          `[Module Gate] Dangling visible entry "${sig.name}" in ${relModule}`,
+          "info",
+        );
       }
     }
   }
@@ -75,6 +65,19 @@ async function collectExports(
     for (const sig of exports) {
       symbols.add(sig.name);
     }
+  }
+  return symbols;
+}
+
+async function resolvePathExports(
+  targetDir: string,
+  cache: Map<string, Set<string>>,
+  childModules: Set<string>,
+): Promise<Set<string>> {
+  let symbols = cache.get(targetDir);
+  if (!symbols) {
+    symbols = await collectExports(targetDir, childModules);
+    cache.set(targetDir, symbols);
   }
   return symbols;
 }

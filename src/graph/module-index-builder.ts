@@ -6,13 +6,7 @@ import type { ModuleContract, ModuleIndex } from "../types.ts";
 import type { ModuleGateConfig } from "../config.ts";
 import type { Dirent } from "node:fs";
 import { validateVisibleEntries } from "./validation.ts";
-import { parseVisibleEntry } from "../utils.ts";
-import type { VisibleEntryRaw } from "../utils.ts";
-
-type ModuleFrontmatter = {
-  visible?: VisibleEntryRaw[];
-  readonly?: string[];
-};
+import { parseVisibleEntry, type VisibleEntryRaw, type ModuleFrontmatter } from "./frontmatter-parser.ts";
 
 type IndexContext = {
   cwd: string;
