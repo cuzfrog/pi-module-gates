@@ -6,9 +6,27 @@ Experimental pi extension that enforces AI coding agents to respect code module 
 
 AI coding agents produce ad-hoc edits with no awareness of module boundaries — they freely modify internal files, leak implementation details into public APIs, and break architectural contracts. The codebase has structure; the agent has none.
 
+## Configuration
+
+Create `.pi/module-gate-config.json` at the project root:
+
+```json
+{
+  "moduleDescriptorFileName": "CONTEXT.md",
+  "sourceRoot": "lib/"
+}
+```
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `moduleDescriptorFileName` | `"module.md"` | File name used for module descriptors (case-insensitive) |
+| `sourceRoot` | `"src/"` | Directory to scan for descriptor files and enforce gates. Set to `""` to scan from project root. |
+
+When no config file exists, defaults apply.
+
 ### Approach
 
-**Module contracts as guardrails.** Each directory can contain a `module.md` (case-insensitive, name configurable) that declares:
+**Module contracts as guardrails.** Each directory can contain a descriptor file (default `module.md`, case-insensitive, name configurable) that declares:
 
 - `visible` — the set of exports allowed to be added or modified in that module
 - `readonly` — files and directories the agent must not touch
@@ -17,8 +35,8 @@ The extension intercepts agent `write`/`edit` operations and enforces these cont
 
 ### How it works
 
-1. **Indexing** — On session start, scans the project tree for `module.md` files and builds a module index.
-2. **System prompt** — Injects a hint so the agent knows to respect `module.md` conventions.
+1. **Indexing** — On session start, scans the project tree for descriptor files and builds a module index.
+2. **System prompt** — Injects a hint so the agent knows to respect descriptor file conventions.
 3. **Gating** — On every write/edit, checks:
    - **Readonly gate** — is the target file locked?
    - **Export gate** — would the change introduce an export not in the `visible` list?

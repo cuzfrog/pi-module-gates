@@ -22,11 +22,17 @@ import * as fs from "node:fs";
 import { parseFrontmatter } from "@earendil-works/pi-coding-agent";
 import { validateVisibleEntries } from "../../src/graph/validation.ts";
 import { buildModuleIndex } from "../../src/graph/module-index-builder.ts";
+import type { ModuleGateConfig } from "../../src/config.ts";
 
 const mockedReaddir = readdir as unknown as ReturnType<typeof vi.fn>;
 const mockedReadFileSync = vi.mocked(fs.readFileSync);
 const mockedParseFrontmatter = vi.mocked(parseFrontmatter);
 const mockedValidateVisibleEntries = vi.mocked(validateVisibleEntries);
+
+const defaultConfig: ModuleGateConfig = {
+  moduleDescriptorFileName: "module.md",
+  sourceRoot: "",
+};
 
 function makeDirent(name: string, isDir: boolean): Dirent {
   return {
@@ -75,7 +81,7 @@ describe("buildModuleIndex", () => {
       body: "Greeting module.",
     });
 
-    const index = await buildModuleIndex(makeCtx("/project"));
+    const index = await buildModuleIndex(makeCtx("/project"), defaultConfig);
 
     expect(index.contracts).toHaveLength(1);
     expect(index.contracts[0].modulePath).toBe("/project/src");
@@ -98,7 +104,7 @@ describe("buildModuleIndex", () => {
       body: "Root.",
     });
 
-    const index = await buildModuleIndex(makeCtx("/project"));
+    const index = await buildModuleIndex(makeCtx("/project"), defaultConfig);
 
     expect(index.contracts[0].readonly).toContain("module.md");
     expect(index.contracts[0].readonly).toContain("config.json");
@@ -118,7 +124,7 @@ describe("buildModuleIndex", () => {
       body: "Some prose.",
     });
 
-    const index = await buildModuleIndex(makeCtx("/project"));
+    const index = await buildModuleIndex(makeCtx("/project"), defaultConfig);
 
     expect(index.contracts[0].visible).toEqual([{ name: "exportA" }, { name: "exportB" }]);
     expect(index.contracts[0].readonly).toContain("locked/");
@@ -142,7 +148,7 @@ describe("buildModuleIndex", () => {
       body: "",
     });
 
-    const index = await buildModuleIndex(makeCtx("/project"));
+    const index = await buildModuleIndex(makeCtx("/project"), defaultConfig);
 
     expect(index.contracts[0].visible).toEqual([
       { modifier: "pub(super)", name: "Foo" },
@@ -165,7 +171,7 @@ describe("buildModuleIndex", () => {
       body: "No visible constraint.",
     });
 
-    const index = await buildModuleIndex(makeCtx("/project"));
+    const index = await buildModuleIndex(makeCtx("/project"), defaultConfig);
     expect(index.contracts[0].visible).toBeNull();
   });
 
@@ -186,14 +192,14 @@ describe("buildModuleIndex", () => {
       body: "",
     });
 
-    const index = await buildModuleIndex(makeCtx("/project"));
+    const index = await buildModuleIndex(makeCtx("/project"), defaultConfig);
 
     expect(index.contracts).toHaveLength(2);
     expect(index.dirToModule.get("/project/src")).toBe("/project/src");
     expect(index.dirToModule.get("/project")).toBe("/project");
   });
 
-  it("skips malformed module.md and warns via notify", async () => {
+  it("skips malformed module.md and notifies with info level", async () => {
     mockedReaddir.mockImplementation(async (dir: unknown) => {
       const d = dir as string;
       if (d === "/project")
@@ -216,20 +222,46 @@ describe("buildModuleIndex", () => {
       return { frontmatter: { visible: ["ok"] }, body: "good" };
     });
 
-    const warnings: string[] = [];
-    const ctx = makeCtx("/project", (msg) => warnings.push(msg));
+    const notifications: { message: string; type: string }[] = [];
+    const ctx = makeCtx("/project", (msg, type) =>
+      notifications.push({ message: msg, type: type ?? "info" }),
+    );
 
-    const index = await buildModuleIndex(ctx);
+    const index = await buildModuleIndex(ctx, defaultConfig);
 
-    expect(warnings).toHaveLength(1);
-    expect(warnings[0]).toContain("Failed to parse");
-    expect(warnings[0]).toContain("/project/module.md");
-    expect(warnings[0]).toContain("unguarded");
+    expect(notifications).toHaveLength(1);
+    expect(notifications[0].message).toContain("Failed to parse");
+    expect(notifications[0].message).toContain("/project/module.md");
+    expect(notifications[0].message).toContain("unguarded");
+    expect(notifications[0].type).toBe("info");
 
-    // Only the valid module is in contracts
     expect(index.contracts).toHaveLength(1);
     expect(index.contracts[0].modulePath).toBe("/project/good");
     expect(index.contracts[0].visible).toEqual([{ name: "ok" }]);
+  });
+
+  it("matches configurable descriptor file name", async () => {
+    mockedReaddir.mockImplementation(async (dir: unknown) => {
+      const d = dir as string;
+      if (d === "/project")
+        return [makeDirent("CONTEXT.md", false)] as Dirent[];
+      return [] as Dirent[];
+    });
+
+    mockedReadFileSync.mockReturnValue("content");
+    mockedParseFrontmatter.mockReturnValue({
+      frontmatter: {},
+      body: "Root.",
+    });
+
+    const config: ModuleGateConfig = {
+      moduleDescriptorFileName: "CONTEXT.md",
+      sourceRoot: "",
+    };
+    const index = await buildModuleIndex(makeCtx("/project"), config);
+    expect(index.contracts).toHaveLength(1);
+    expect(index.contracts[0].modulePath).toBe("/project");
+    expect(index.contracts[0].readonly).toContain("CONTEXT.md");
   });
 
   it("matches module.md case-insensitively", async () => {
@@ -246,10 +278,31 @@ describe("buildModuleIndex", () => {
       body: "Root.",
     });
 
-    const index = await buildModuleIndex(makeCtx("/project"));
+    const index = await buildModuleIndex(makeCtx("/project"), defaultConfig);
     expect(index.contracts).toHaveLength(1);
     expect(index.contracts[0].modulePath).toBe("/project");
   });
+
+  it("scans only within sourceRoot", async () => {
+    mockedReaddir.mockImplementation(async (dir: unknown) => {
+      const d = dir as string;
+      if (d === "/project/src") return [makeDirent("module.md", false)] as Dirent[];
+      return [] as Dirent[];
+    });
+
+    mockedReadFileSync.mockReturnValue("content");
+    mockedParseFrontmatter.mockReturnValue({
+      frontmatter: {},
+      body: "Src module.",
+    });
+
+    const config: ModuleGateConfig = {
+      moduleDescriptorFileName: "module.md",
+      sourceRoot: "src/",
+    };
+    const index = await buildModuleIndex(makeCtx("/project"), config);
+
+    expect(index.contracts).toHaveLength(1);
+    expect(index.contracts[0].modulePath).toBe("/project/src");
+  });
 });
-
-

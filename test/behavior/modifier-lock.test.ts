@@ -1,10 +1,15 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import {
   MockExtensionAPI,
   MODIFIER_LOCK,
   startSession,
   doWrite,
 } from "./helpers.ts";
+
+vi.mock("../../src/config.ts", () => ({
+  loadConfig: () => ({ moduleDescriptorFileName: "module.md", sourceRoot: "" }),
+}));
+
 import mod from "../../src/index.ts";
 
 describe("modifier lock", () => {

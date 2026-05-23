@@ -14,6 +14,7 @@ export function checkExports(
   afterContent: string,
   index: ModuleIndex,
   cwd: string,
+  descriptorFileName: string,
 ): ExportCheckResult {
   const absFile = path.resolve(cwd, filePath);
   const checker = getChecker(absFile);
@@ -36,8 +37,8 @@ export function checkExports(
         (c) => c.visible !== null && !c.visible.some((s) => s.name === sig.name),
       );
       const imposedBy = imposer
-        ? path.relative(cwd, path.join(imposer.modulePath, "module.md"))
-        : path.relative(cwd, path.join(constraining[0].modulePath, "module.md"));
+        ? path.relative(cwd, path.join(imposer.modulePath, descriptorFileName))
+        : path.relative(cwd, path.join(constraining[0].modulePath, descriptorFileName));
       violations.push({ name: sig.name, imposedBy });
       continue;
     }
@@ -50,8 +51,8 @@ export function checkExports(
           c.visible.some((s) => s.name === sig.name && s.modifier === requiredMod),
       );
       const imposedBy = imposer
-        ? path.relative(cwd, path.join(imposer.modulePath, "module.md"))
-        : path.relative(cwd, path.join(constraining[0].modulePath, "module.md"));
+        ? path.relative(cwd, path.join(imposer.modulePath, descriptorFileName))
+        : path.relative(cwd, path.join(constraining[0].modulePath, descriptorFileName));
       violations.push({
         name: `${sig.modifier ?? ""} ${sig.name}`.trim(),
         imposedBy,

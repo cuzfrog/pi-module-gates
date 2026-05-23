@@ -79,12 +79,12 @@ describe("validateVisibleEntries", () => {
       getNewExports: () => [],
     });
 
-    await validateVisibleEntries(index, cwd, notify);
+    await validateVisibleEntries(index, cwd, notify, "module.md");
 
     expect(notifications).toHaveLength(1);
     expect(notifications[0].message).toContain("Dangling visible entry");
     expect(notifications[0].message).toContain("GhostType");
-    expect(notifications[0].type).toBe("warning");
+    expect(notifications[0].type).toBe("info");
   });
 
   it("does not warn when visible entry exists as export", async () => {
@@ -107,7 +107,7 @@ describe("validateVisibleEntries", () => {
       getNewExports: () => [{ name: "greet" }],
     });
 
-    await validateVisibleEntries(index, cwd, notify);
+    await validateVisibleEntries(index, cwd, notify, "module.md");
 
     expect(notifications).toHaveLength(0);
   });
@@ -122,7 +122,7 @@ describe("validateVisibleEntries", () => {
       },
     ]);
 
-    await validateVisibleEntries(index, cwd, notify);
+    await validateVisibleEntries(index, cwd, notify, "module.md");
     expect(notifications).toHaveLength(0);
   });
 
@@ -142,7 +142,7 @@ describe("validateVisibleEntries", () => {
 
     mockedGetChecker.mockReturnValue(undefined);
 
-    await validateVisibleEntries(index, cwd, notify);
+    await validateVisibleEntries(index, cwd, notify, "module.md");
 
     expect(notifications).toHaveLength(1);
   });
@@ -193,7 +193,7 @@ describe("validateVisibleEntries", () => {
       return undefined;
     });
 
-    await validateVisibleEntries(index, cwd, notify);
+    await validateVisibleEntries(index, cwd, notify, "module.md");
 
     expect(notifications).toHaveLength(1);
     expect(notifications[0].message).toContain("GhostType");
@@ -220,7 +220,7 @@ describe("validateVisibleEntries", () => {
       getNewExports: () => [],
     });
 
-    await validateVisibleEntries(index, cwd, notify);
+    await validateVisibleEntries(index, cwd, notify, "module.md");
 
     expect(notifications).toHaveLength(2);
   });

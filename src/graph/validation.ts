@@ -11,6 +11,7 @@ export async function validateVisibleEntries(
   idx: ModuleIndex,
   cwd: string,
   notify: NotifyFn,
+  descriptorFileName: string,
 ): Promise<void> {
   const childModules = new Set(
     idx.contracts.map((c) => c.modulePath),
@@ -23,10 +24,10 @@ export async function validateVisibleEntries(
 
     for (const sig of contract.visible) {
       if (!exportedSymbols.has(sig.name)) {
-        const relModule = path.relative(cwd, path.join(contract.modulePath, "module.md"));
+        const relModule = path.relative(cwd, path.join(contract.modulePath, descriptorFileName));
         notify(
           `[Module Gate] Dangling visible entry "${sig.name}" in ${relModule}`,
-          "warning",
+          "info",
         );
       }
     }

@@ -22,7 +22,7 @@ describe("checkExports", () => {
 
     const before = "";
     const after = "export function notAllowed() {}";
-    const result = checkExports("src/app.ts", before, after, index, cwd);
+    const result = checkExports("src/app.ts", before, after, index, cwd, "module.md");
 
     expect(result.blocked).toBe(true);
     if (result.blocked) {
@@ -46,7 +46,7 @@ describe("checkExports", () => {
 
     const before = "";
     const after = "export function allowedFn() {}";
-    const result = checkExports("src/app.ts", before, after, index, cwd);
+    const result = checkExports("src/app.ts", before, after, index, cwd, "module.md");
 
     expect(result.blocked).toBe(false);
   });
@@ -67,6 +67,7 @@ describe("checkExports", () => {
       '{"new": true}',
       index,
       cwd,
+      "module.md",
     );
 
     expect(result.blocked).toBe(false);
@@ -90,7 +91,7 @@ describe("checkExports", () => {
 
     const before = "";
     const after = "export function rootOnly() {}";
-    const result = checkExports("src/app.ts", before, after, index, cwd);
+    const result = checkExports("src/app.ts", before, after, index, cwd, "module.md");
 
     expect(result.blocked).toBe(true);
     if (result.blocked) {
@@ -110,7 +111,7 @@ describe("checkExports", () => {
 
     const before = "";
     const after = "export function anything() {}";
-    const result = checkExports("src/app.ts", before, after, index, cwd);
+    const result = checkExports("src/app.ts", before, after, index, cwd, "module.md");
 
     expect(result.blocked).toBe(false);
   });
@@ -127,7 +128,7 @@ describe("checkExports", () => {
 
     const before = "";
     const after = "export function blocked() {}";
-    const result = checkExports("src/app.ts", before, after, index, cwd);
+    const result = checkExports("src/app.ts", before, after, index, cwd, "module.md");
 
     expect(result.blocked).toBe(true);
     if (result.blocked) {
@@ -146,7 +147,7 @@ describe("checkExports", () => {
     ]);
 
     const code = "export function existing() {}";
-    const result = checkExports("src/app.ts", code, code, index, cwd);
+    const result = checkExports("src/app.ts", code, code, index, cwd, "module.md");
 
     expect(result.blocked).toBe(false);
   });
@@ -164,7 +165,7 @@ describe("checkExports", () => {
     const before = "export function allowedFn() {}";
     const after =
       "export function allowedFn() {}\nexport function unlistedA() {}\nexport type unlistedB = string;";
-    const result = checkExports("src/app.ts", before, after, index, cwd);
+    const result = checkExports("src/app.ts", before, after, index, cwd, "module.md");
 
     expect(result.blocked).toBe(true);
     if (result.blocked) {
@@ -180,7 +181,7 @@ describe("checkExports", () => {
 
     const before = "";
     const after = "export function anything() {}";
-    const result = checkExports("src/app.ts", before, after, index, cwd);
+    const result = checkExports("src/app.ts", before, after, index, cwd, "module.md");
 
     expect(result.blocked).toBe(false);
   });
@@ -203,7 +204,7 @@ describe("checkExports", () => {
 
     const before = "";
     const after = "export function sharedFn() {}";
-    const result = checkExports("src/app.ts", before, after, index, cwd);
+    const result = checkExports("src/app.ts", before, after, index, cwd, "module.md");
 
     expect(result.blocked).toBe(false);
   });
@@ -226,7 +227,7 @@ describe("checkExports", () => {
 
     const before = "";
     const after = "export function childFn() {}";
-    const result = checkExports("src/app.ts", before, after, index, cwd);
+    const result = checkExports("src/app.ts", before, after, index, cwd, "module.md");
 
     expect(result.blocked).toBe(false);
   });
@@ -261,6 +262,7 @@ describe("checkExports", () => {
       after,
       index,
       cwd,
+      "module.md",
     );
 
     expect(result.blocked).toBe(true);

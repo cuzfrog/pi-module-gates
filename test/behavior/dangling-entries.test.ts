@@ -1,9 +1,14 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import {
   MockExtensionAPI,
   FIXTURES,
   startSession,
 } from "./helpers.ts";
+
+vi.mock("../../src/config.ts", () => ({
+  loadConfig: () => ({ moduleDescriptorFileName: "module.md", sourceRoot: "" }),
+}));
+
 import mod from "../../src/index.ts";
 
 describe("dangling visible entries", () => {
@@ -20,7 +25,7 @@ describe("dangling visible entries", () => {
 
     const rootDangling = mock.notifications.filter(
       (n) =>
-        n.type === "warning" &&
+        n.type === "info" &&
         n.message.includes("Dangling visible entry") &&
         /\sin module\.md$/.test(n.message),
     );
@@ -38,6 +43,6 @@ describe("dangling visible entries", () => {
 
     const ghostWarn = rootDangling.find((n) => n.message.includes("GhostType"))!;
     expect(ghostWarn.message).toContain("module.md");
-    expect(ghostWarn.type).toBe("warning");
+    expect(ghostWarn.type).toBe("info");
   });
 });

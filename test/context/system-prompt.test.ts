@@ -16,7 +16,7 @@ describe("buildSystemPromptHint", () => {
       dirToModule: new Map(),
     };
 
-    const result = buildSystemPromptHint(index, "You are a helpful assistant.");
+    const result = buildSystemPromptHint(index, "You are a helpful assistant.", "module.md");
 
     expect(result).toContain("You are a helpful assistant.");
     expect(result).toContain("module.md");
@@ -30,7 +30,7 @@ describe("buildSystemPromptHint", () => {
       dirToModule: new Map(),
     };
 
-    const result = buildSystemPromptHint(index, "You are a helpful assistant.");
+    const result = buildSystemPromptHint(index, "You are a helpful assistant.", "module.md");
 
     expect(result).toBe("You are a helpful assistant.");
   });
@@ -48,9 +48,10 @@ describe("buildSystemPromptHint", () => {
       dirToModule: new Map(),
     };
 
-    const result = buildSystemPromptHint(index, "Base prompt.");
+    const result = buildSystemPromptHint(index, "Base prompt.", "CONTEXT.md");
 
     expect(result).toContain("Base prompt.");
+    expect(result).toContain("CONTEXT.md");
     expect(result.length).toBeGreaterThan("Base prompt.".length);
   });
 });
