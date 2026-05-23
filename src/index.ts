@@ -4,24 +4,23 @@ import type {
   ExtensionAPI,
   ToolCallEventResult,
   BeforeAgentStartEventResult,
-  ExtensionContext,
 } from "@earendil-works/pi-coding-agent";
 import { isToolCallEventType } from "@earendil-works/pi-coding-agent";
 import type { ModuleIndex } from "./types.ts";
-import { buildModuleIndex } from "./graph/module-index-builder.ts";
+import { buildModuleIndex, findOwningModule } from "./graph/module-index-builder.ts";
+import { validateVisibleEntries } from "./graph/validation.ts";
 import { checkReadonly } from "./gates/readonly-gate.ts";
 import { checkExports } from "./gates/export-gate.ts";
-import { getChecker } from "./gates/checkers/registry.ts";
 import { buildSystemPromptHint } from "./context/system-prompt.ts";
 import "./gates/checkers/typescript.ts";
 import "./gates/checkers/rust.ts";
 
 export default function (pi: ExtensionAPI): void {
-  let index: ModuleIndex = { contracts: [], fileToModule: new Map() };
+  let index: ModuleIndex = { contracts: [], dirToModule: new Map() };
 
   pi.on("session_start", async (_event, ctx) => {
     index = await buildModuleIndex(ctx.cwd);
-    validateVisibleEntries(index, ctx);
+    await validateVisibleEntries(index, ctx.cwd, ctx.ui.notify.bind(ctx.ui));
   });
 
   pi.on("before_agent_start", async (event): Promise<BeforeAgentStartEventResult | void> => {
@@ -88,36 +87,6 @@ function handleWrite(
   return undefined;
 }
 
-function validateVisibleEntries(idx: ModuleIndex, ctx: ExtensionContext): void {
-  for (const contract of idx.contracts) {
-    if (contract.visible === null) continue;
-    const moduleFiles = [...idx.fileToModule.entries()]
-      .filter(([, modPath]) => modPath === contract.modulePath)
-      .map(([filePath]) => filePath);
-
-    const exportedSymbols = new Set<string>();
-    for (const filePath of moduleFiles) {
-      const checker = getChecker(filePath);
-      if (!checker) continue;
-      const content = readFileSafe(filePath);
-      const exports = checker.getNewExports("", content);
-      for (const name of exports) {
-        exportedSymbols.add(name);
-      }
-    }
-
-    for (const entry of contract.visible) {
-      if (!exportedSymbols.has(entry)) {
-        const relModule = path.relative(ctx.cwd, path.join(contract.modulePath, "module.md"));
-        ctx.ui.notify(
-          `[Module Gate] Dangling visible entry "${entry}" in ${relModule}`,
-          "warning",
-        );
-      }
-    }
-  }
-}
-
 function formatDenial(
   relPath: string,
   reason: string,
@@ -125,7 +94,7 @@ function formatDenial(
   index: ModuleIndex,
   cwd: string,
 ): string {
-  const modulePath = index.fileToModule.get(absPath);
+  const modulePath = findOwningModule(absPath, index);
   const contract = modulePath
     ? index.contracts.find((c) => c.modulePath === modulePath)
     : undefined;

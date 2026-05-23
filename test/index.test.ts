@@ -63,7 +63,7 @@ class MockExtensionAPI implements ExtensionAPI {
   registerMessageRenderer() {}
   registerProvider() {}
   unregisterProvider() {}
-  exec = async () => ({ exitCode: 0, stdout: "", stderr: "" });
+  exec = async () => ({ exitCode: 0, code: 0, killed: false, stdout: "", stderr: "" });
   sendMessage = () => {};
   sendUserMessage = () => {};
   appendEntry = () => {};

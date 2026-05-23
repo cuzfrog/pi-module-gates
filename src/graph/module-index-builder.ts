@@ -3,6 +3,7 @@ import * as path from "node:path";
 import { readdir } from "node:fs/promises";
 import { parseFrontmatter } from "@earendil-works/pi-coding-agent";
 import type { ModuleContract, ModuleIndex } from "../types.ts";
+import type { Dirent } from "node:fs";
 
 type ModuleFrontmatter = {
   visible?: string[];
@@ -12,8 +13,8 @@ type ModuleFrontmatter = {
 export async function buildModuleIndex(cwd: string): Promise<ModuleIndex> {
   const moduleFiles = await findModuleFiles(cwd);
   const contracts = buildContracts(moduleFiles);
-  const fileToModule = await buildFileToModuleMap(contracts);
-  return { contracts, fileToModule };
+  const dirToModule = await buildDirToModuleMap(contracts);
+  return { contracts, dirToModule };
 }
 
 function buildContracts(moduleFiles: string[]): ModuleContract[] {
@@ -39,71 +40,90 @@ function buildContracts(moduleFiles: string[]): ModuleContract[] {
   return contracts;
 }
 
-async function buildFileToModuleMap(
+async function buildDirToModuleMap(
   contracts: ModuleContract[],
 ): Promise<Map<string, string>> {
-  const fileToModule = new Map<string, string>();
+  const dirToModule = new Map<string, string>();
   const sortedByDepth = [...contracts].sort(
     (a, b) => a.modulePath.length - b.modulePath.length,
   );
 
   for (const contract of sortedByDepth) {
-    const files = await walkDir(contract.modulePath);
-    for (const file of files) {
-      fileToModule.set(file, contract.modulePath);
+    const dirs = await walkDirs(contract.modulePath);
+    for (const dir of dirs) {
+      dirToModule.set(dir, contract.modulePath);
     }
   }
 
-  return fileToModule;
+  return dirToModule;
 }
 
 async function findModuleFiles(dir: string): Promise<string[]> {
   const results: string[] = [];
-  await walkForModuleFiles(dir, results);
+  const stack: string[] = [dir];
+
+  while (stack.length > 0) {
+    const current = stack.pop()!;
+    let entries: Dirent[];
+    try {
+      entries = await readdir(current, { withFileTypes: true });
+    } catch {
+      continue;
+    }
+
+    for (const entry of entries) {
+      if (entry.name === "node_modules" || entry.name === ".git") continue;
+      const fullPath = path.join(current, entry.name);
+      if (entry.isDirectory()) {
+        stack.push(fullPath);
+      } else if (entry.name.toLowerCase() === "module.md") {
+        results.push(fullPath);
+      }
+    }
+  }
+
   return results;
 }
 
+async function walkDirs(root: string): Promise<string[]> {
+  const results: string[] = [root];
+  const stack: string[] = [root];
 
-async function walkForModuleFiles(dir: string, results: string[]): Promise<void> {
-  let entries;
-  try {
-    entries = await readdir(dir, { withFileTypes: true });
-  } catch {
-    return;
-  }
+  while (stack.length > 0) {
+    const current = stack.pop()!;
+    let entries: Dirent[];
+    try {
+      entries = await readdir(current, { withFileTypes: true });
+    } catch {
+      continue;
+    }
 
-  for (const entry of entries) {
-    if (entry.name === "node_modules" || entry.name === ".git") continue;
-    const fullPath = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      await walkForModuleFiles(fullPath, results);
-    } else if (entry.name === "module.md") {
-      results.push(fullPath);
+    for (const entry of entries) {
+      if (entry.name === "node_modules" || entry.name === ".git") continue;
+      if (entry.isDirectory()) {
+        const fullPath = path.join(current, entry.name);
+        results.push(fullPath);
+        stack.push(fullPath);
+      }
     }
   }
-}
 
-async function walkDir(dir: string): Promise<string[]> {
-  const results: string[] = [];
-  await walkDirRecursive(dir, results);
   return results;
 }
 
-async function walkDirRecursive(dir: string, results: string[]): Promise<void> {
-  let entries;
-  try {
-    entries = await readdir(dir, { withFileTypes: true });
-  } catch {
-    return;
+export function findOwningModule(
+  absPath: string,
+  index: ModuleIndex,
+): string | undefined {
+  let current = path.dirname(absPath);
+  const root = path.parse(current).root;
+
+  while (true) {
+    const owner = index.dirToModule.get(current);
+    if (owner !== undefined) return owner;
+    if (current === root) break;
+    current = path.dirname(current);
   }
 
-  for (const entry of entries) {
-    if (entry.name === "node_modules" || entry.name === ".git") continue;
-    const fullPath = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      await walkDirRecursive(fullPath, results);
-    } else {
-      results.push(fullPath);
-    }
-  }
+  return undefined;
 }

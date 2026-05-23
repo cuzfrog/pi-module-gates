@@ -4,7 +4,7 @@ import type { ModuleIndex, ModuleContract } from "../../src/types.ts";
 import "../../src/gates/checkers/typescript.ts";
 
 function makeIndex(contracts: ModuleContract[]): ModuleIndex {
-  return { contracts, fileToModule: new Map() };
+  return { contracts, dirToModule: new Map() };
 }
 
 describe("checkExports", () => {

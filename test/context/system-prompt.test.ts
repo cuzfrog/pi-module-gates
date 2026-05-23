@@ -13,7 +13,7 @@ describe("buildSystemPromptHint", () => {
           prose: "Greeting module.",
         },
       ],
-      fileToModule: new Map(),
+      dirToModule: new Map(),
     };
 
     const result = buildSystemPromptHint(index, "You are a helpful assistant.");
@@ -27,7 +27,7 @@ describe("buildSystemPromptHint", () => {
   it("returns original prompt when no contracts", () => {
     const index: ModuleIndex = {
       contracts: [],
-      fileToModule: new Map(),
+      dirToModule: new Map(),
     };
 
     const result = buildSystemPromptHint(index, "You are a helpful assistant.");
@@ -45,7 +45,7 @@ describe("buildSystemPromptHint", () => {
           prose: "Module A.",
         },
       ],
-      fileToModule: new Map(),
+      dirToModule: new Map(),
     };
 
     const result = buildSystemPromptHint(index, "Base prompt.");
@@ -57,7 +57,7 @@ describe("buildSystemPromptHint", () => {
   it("does not modify prompt when no modules declared", () => {
     const index: ModuleIndex = {
       contracts: [],
-      fileToModule: new Map(),
+      dirToModule: new Map(),
     };
 
     const result = buildSystemPromptHint(index, "Prompt.");

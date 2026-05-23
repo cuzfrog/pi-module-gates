@@ -7,5 +7,5 @@ export type ModuleContract = {
 
 export type ModuleIndex = {
   contracts: ModuleContract[];
-  fileToModule: Map<string, string>;
+  dirToModule: Map<string, string>;
 };

@@ -3,7 +3,7 @@ import { checkReadonly } from "../../src/gates/readonly-gate.ts";
 import type { ModuleIndex, ModuleContract } from "../../src/types.ts";
 
 function makeIndex(contracts: ModuleContract[]): ModuleIndex {
-  return { contracts, fileToModule: new Map() };
+  return { contracts, dirToModule: new Map() };
 }
 
 describe("checkReadonly", () => {
