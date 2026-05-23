@@ -9,7 +9,7 @@ import type { ModuleIndex } from "./types.ts";
 import { loadConfig } from "./config.ts";
 import type { ModuleGateConfig } from "./config.ts";
 import { buildModuleIndex } from "./graph/module-index-builder.ts";
-import { findOwningModule, readFileSafe, applyEdits } from "./utils.ts";
+import { findOwningModule, readFileSafe, applyEdits, isWithinSourceRoot } from "./utils.ts";
 import { checkReadonly } from "./gates/readonly-gate.ts";
 import { checkExports } from "./gates/export-gate.ts";
 import { buildSystemPromptHint } from "./context/system-prompt.ts";
@@ -45,10 +45,6 @@ export default function (pi: ExtensionAPI): void {
       return handleWrite(event.input.path, event.input.content, ctx.cwd, index, config);
     }
   });
-}
-
-function isWithinSourceRoot(absPath: string, resolvedRoot: string): boolean {
-  return absPath.startsWith(resolvedRoot + path.sep) || absPath === resolvedRoot;
 }
 
 function handleEdit(
