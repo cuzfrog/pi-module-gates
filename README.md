@@ -1,13 +1,11 @@
-# pi-module-gates
+# pi-module-gates - Constraints liberate, liberties constrain.
 
 Experimental pi extension that controls the entropy of the codebase by enforcing agents to respect code module boundaries.
 I helps combat slop generation and code architecture degradation.
 
 ## Problem
 
-AI coding agents produce ad-hoc edits with no awareness of module boundaries — they freely modify internal files, leak implementation details, and break architectural contracts. The codebase has structure; the agent has none.
-
-__Constraints liberate, liberties constrain.__
+AI coding agents produce edits with limited context knowledge (myopia) — their changes may leak implementation details, and break architectural contracts (slop).
 
 ### Approach
 
@@ -25,6 +23,7 @@ The extension intercepts agent `write`/`edit` operations and enforces these cont
 3. **Gating** — On every write/edit, checks:
    - **Readonly gate** — is the target file locked?
    - **Export gate** — would the change introduce an export not in the `visible` list?
+   - **Import gate** (not implemented yet) — would the change introduce an import violating visibility scope?
 
 System prompt:
 ```markdown
@@ -46,12 +45,55 @@ A module descriptor is a Markdown file (default name: `MODULE.md`) placed in a d
 
 ```markdown
 ---
-visible: [greet, formatName]
-readonly: [index.ts]
+readonly: [mod.rs]
 ---
 
-Any prose you want the agent to read.
+Any prose for the agent.
 ```
+
+### Visibility whitelist
+
+```yaml
+visible:
+  - greet # equivalent to `path: ./greet`
+  - sub/mod1/Foo
+```
+or:
+```yaml
+visible:
+  - path: my_function
+    modifier: pub(crate) # (optional) demands an exact match
+```
+
+| Scenario | Behavior |
+|----------|----------|
+| `visible` key absent or no `MODULE.md` | Module is unconstrained — exports are not gated. Equivalent to `null` internally. |
+| `visible: []` | Module is fully closed — no new exports may be added. Editing existing exports is still allowed. |
+| Malformed YAML frontmatter | The module is left unguarded and an info notification is emitted. |
+
+### Export gating
+
+```
+project/
+  MODULE.md          visible: [Foo, Bar]
+  src/
+    MODULE.md        visible: [Bar, Baz]
+    app.ts           ← checked against `src/MODULE.md` only
+```
+A `MODULE.md` only enforces exports within its immediate directory.
+
+### Import gating (not implemented yet)
+
+```yaml
+# parent/MODULE.md
+visible:
+  - sub/Tool # type Tool is allowed to be imported from parent
+
+# parent/sub/MODULE.md (before complement pass)
+visible:
+  - Bar # type Bar is allowed to be imported from parent/sub within parent, but not outside parent
+```
+A `MODULE.md` semantically gates exposures at the module level it resides.
 
 ## Configuration
 
@@ -68,7 +110,7 @@ Add a `module-gate` entry to `.pi/settings.json`:
 
 | Option | Default | Description |
 |--------|---------|-------------|
-| `moduleDescriptorFileName` | `"module.md"` | File name used for module descriptors (case-insensitive) |
+| `moduleDescriptorFileName` | `"MODULE.md"` | File name used for module descriptors (case-insensitive) |
 | `sourceRoot` | `"src/"` | Directory to scan for descriptor files and enforce gates. Set to `""` to scan from project root. |
 
 When no settings file exists or no `module-gate` key is present, defaults apply.
