@@ -11,8 +11,8 @@ export function buildSystemPromptHint(
 
 ## Module gates (boundary enforcement)
 This project uses \`${descriptorFileName}\` files to declare visibility and readonly rules that you should follow.
-If you cannot comply the constraints, consider your design, if impossible, raise to user with pros and cons.
-Each \`${descriptorFileName}\` gates its immediate directory.
+If you cannot comply, reconsider your design, if impossible, raise to the user with tradeoffs.
+Each \`${descriptorFileName}\` gates its branching point in the tree.
 A \`${descriptorFileName}\` with a \`visible\` list means only entries in the list are allowed to be visible outside the module.
 A \`${descriptorFileName}\` and its mentioned \`readonly\` files are readonly.
 Violations will be blocked.`;
