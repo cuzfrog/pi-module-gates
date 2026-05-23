@@ -1,0 +1,153 @@
+import { describe, it, expect } from "vitest";
+import { checkExports } from "../../src/gates/export-gate.ts";
+import type { ModuleIndex, ModuleContract } from "../../src/types.ts";
+import "../../src/gates/checkers/typescript.ts";
+
+function makeIndex(contracts: ModuleContract[]): ModuleIndex {
+  return { contracts, fileToModule: new Map() };
+}
+
+describe("checkExports", () => {
+  const cwd = "/project";
+
+  it("blocks new export not in visible list", () => {
+    const index = makeIndex([
+      {
+        modulePath: "/project/src",
+        visible: ["allowedFn"],
+        readonly: ["module.md"],
+        prose: "",
+      },
+    ]);
+
+    const before = "";
+    const after = "export function notAllowed() {}";
+    const result = checkExports("src/app.ts", before, after, index, cwd);
+
+    expect(result.blocked).toBe(true);
+    if (result.blocked) {
+      expect(result.violations).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ name: "notAllowed" }),
+        ]),
+      );
+    }
+  });
+
+  it("passes new export that is in visible list", () => {
+    const index = makeIndex([
+      {
+        modulePath: "/project/src",
+        visible: ["allowedFn"],
+        readonly: ["module.md"],
+        prose: "",
+      },
+    ]);
+
+    const before = "";
+    const after = "export function allowedFn() {}";
+    const result = checkExports("src/app.ts", before, after, index, cwd);
+
+    expect(result.blocked).toBe(false);
+  });
+
+  it("does not block when no checker exists for extension", () => {
+    const index = makeIndex([
+      {
+        modulePath: "/project/src",
+        visible: [],
+        readonly: ["module.md"],
+        prose: "",
+      },
+    ]);
+
+    const result = checkExports(
+      "src/data.json",
+      "{}",
+      '{"new": true}',
+      index,
+      cwd,
+    );
+
+    expect(result.blocked).toBe(false);
+  });
+
+  it("all ancestor modules with visible key form intersection", () => {
+    const index = makeIndex([
+      {
+        modulePath: "/project",
+        visible: ["sharedFn", "rootOnly"],
+        readonly: ["module.md"],
+        prose: "",
+      },
+      {
+        modulePath: "/project/src",
+        visible: ["sharedFn", "srcOnly"],
+        readonly: ["module.md"],
+        prose: "",
+      },
+    ]);
+
+    const before = "";
+    const after = "export function rootOnly() {}";
+    const result = checkExports("src/app.ts", before, after, index, cwd);
+
+    expect(result.blocked).toBe(true);
+    if (result.blocked) {
+      expect(result.violations[0].name).toBe("rootOnly");
+    }
+  });
+
+  it("module with no visible key does not constrain", () => {
+    const index = makeIndex([
+      {
+        modulePath: "/project/src",
+        visible: null,
+        readonly: ["module.md"],
+        prose: "",
+      },
+    ]);
+
+    const before = "";
+    const after = "export function anything() {}";
+    const result = checkExports("src/app.ts", before, after, index, cwd);
+
+    expect(result.blocked).toBe(false);
+  });
+
+  it("empty visible list blocks all exports", () => {
+    const index = makeIndex([
+      {
+        modulePath: "/project/src",
+        visible: [],
+        readonly: ["module.md"],
+        prose: "",
+      },
+    ]);
+
+    const before = "";
+    const after = "export function blocked() {}";
+    const result = checkExports("src/app.ts", before, after, index, cwd);
+
+    expect(result.blocked).toBe(true);
+    if (result.blocked) {
+      expect(result.violations[0].name).toBe("blocked");
+    }
+  });
+
+  it("does not block when there are no new exports", () => {
+    const index = makeIndex([
+      {
+        modulePath: "/project/src",
+        visible: [],
+        readonly: ["module.md"],
+        prose: "",
+      },
+    ]);
+
+    const code = "export function existing() {}";
+    const result = checkExports("src/app.ts", code, code, index, cwd);
+
+    expect(result.blocked).toBe(false);
+  });
+});
