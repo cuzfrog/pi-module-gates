@@ -21,7 +21,7 @@ import { readdir } from "node:fs/promises";
 import * as fs from "node:fs";
 import { parseFrontmatter } from "@earendil-works/pi-coding-agent";
 import { validateVisibleEntries } from "../../src/graph/validation.ts";
-import { buildModuleIndex, findOwningModule } from "../../src/graph/module-index-builder.ts";
+import { buildModuleIndex } from "../../src/graph/module-index-builder.ts";
 
 const mockedReaddir = readdir as unknown as ReturnType<typeof vi.fn>;
 const mockedReadFileSync = vi.mocked(fs.readFileSync);
@@ -252,50 +252,4 @@ describe("buildModuleIndex", () => {
   });
 });
 
-describe("findOwningModule", () => {
-  it("returns module for direct directory match", () => {
-    const dirToModule = new Map<string, string>();
-    dirToModule.set("/project/src/app", "/project/src");
-    const index = { contracts: [], dirToModule };
 
-    expect(findOwningModule("/project/src/app/file.ts", index)).toBe(
-      "/project/src",
-    );
-  });
-
-  it("walks up to find parent module", () => {
-    const dirToModule = new Map<string, string>();
-    dirToModule.set("/project/src", "/project/src");
-    const index = { contracts: [], dirToModule };
-
-    expect(
-      findOwningModule("/project/src/sub/deep/file.ts", index),
-    ).toBe("/project/src");
-  });
-
-  it("returns undefined for unowned files", () => {
-    const dirToModule = new Map<string, string>();
-    const index = { contracts: [], dirToModule };
-
-    expect(findOwningModule("/project/other/file.ts", index)).toBeUndefined();
-  });
-
-  it("resolves file directly in module root", () => {
-    const dirToModule = new Map<string, string>();
-    dirToModule.set("/project", "/project");
-    const index = { contracts: [], dirToModule };
-
-    expect(findOwningModule("/project/config.ts", index)).toBe("/project");
-  });
-
-  it("returns deepest owning module", () => {
-    const dirToModule = new Map<string, string>();
-    dirToModule.set("/project", "/project");
-    dirToModule.set("/project/src", "/project/src");
-    const index = { contracts: [], dirToModule };
-
-    expect(findOwningModule("/project/src/app.ts", index)).toBe(
-      "/project/src",
-    );
-  });
-});

@@ -1,7 +1,8 @@
 ## Git
 
-- Use `./scripts/gh-bot.mjs` as `gh` for GitHub App identity.
+- Do not use `gh`. use `./scripts/gh-bot.mjs` so you will have your identity `abao-bot`.
 - When file changes in `src`, update version in `package.json`.
+- Keep your PR comments concise and clear. Reply in a review thread. 
 
 ### branching
 - Main branch: `main`

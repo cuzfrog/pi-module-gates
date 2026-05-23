@@ -1,0 +1,4 @@
+---
+visible: [buildModuleIndex]
+---
+

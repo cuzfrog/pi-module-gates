@@ -1,8 +1,8 @@
-import * as fs from "node:fs";
 import * as path from "node:path";
 import { readdir } from "node:fs/promises";
 import type { ModuleIndex } from "../types.ts";
 import { getChecker } from "../gates/checkers/registry.ts";
+import { readFileSafe } from "../utils.ts";
 import type { Dirent } from "node:fs";
 
 type NotifyFn = (message: string, type?: "info" | "warning" | "error") => void;
@@ -82,10 +82,4 @@ async function listFiles(
   return results;
 }
 
-function readFileSafe(absPath: string): string {
-  try {
-    return fs.readFileSync(absPath, "utf-8");
-  } catch {
-    return "";
-  }
-}
+

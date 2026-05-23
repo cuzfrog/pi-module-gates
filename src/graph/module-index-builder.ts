@@ -2,9 +2,10 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { readdir } from "node:fs/promises";
 import { parseFrontmatter } from "@earendil-works/pi-coding-agent";
-import type { ModuleContract, ModuleIndex, Signature } from "../types.ts";
+import type { ModuleContract, ModuleIndex } from "../types.ts";
 import type { Dirent } from "node:fs";
 import { validateVisibleEntries } from "./validation.ts";
+import { parseVisibleEntry } from "../utils.ts";
 
 type ModuleFrontmatter = {
   visible?: string[];
@@ -141,27 +142,4 @@ async function walkDirs(root: string): Promise<string[]> {
   return results;
 }
 
-function parseVisibleEntry(raw: string): Signature {
-  const parts = raw.trim().split(/\s+/);
-  if (parts.length >= 2) {
-    return { modifier: parts[0], name: parts.slice(1).join(" ") };
-  }
-  return { name: raw };
-}
 
-export function findOwningModule(
-  absPath: string,
-  index: ModuleIndex,
-): string | undefined {
-  let current = path.dirname(absPath);
-  const root = path.parse(current).root;
-
-  while (true) {
-    const owner = index.dirToModule.get(current);
-    if (owner !== undefined) return owner;
-    if (current === root) break;
-    current = path.dirname(current);
-  }
-
-  return undefined;
-}

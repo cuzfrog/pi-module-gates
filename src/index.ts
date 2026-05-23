@@ -1,4 +1,3 @@
-import * as fs from "node:fs";
 import * as path from "node:path";
 import type {
   ExtensionAPI,
@@ -7,7 +6,8 @@ import type {
 } from "@earendil-works/pi-coding-agent";
 import { isToolCallEventType } from "@earendil-works/pi-coding-agent";
 import type { ModuleIndex } from "./types.ts";
-import { buildModuleIndex, findOwningModule } from "./graph/module-index-builder.ts";
+import { buildModuleIndex } from "./graph/module-index-builder.ts";
+import { findOwningModule, readFileSafe, applyEdits } from "./utils.ts";
 import { checkReadonly } from "./gates/readonly-gate.ts";
 import { checkExports } from "./gates/export-gate.ts";
 import { buildSystemPromptHint } from "./context/system-prompt.ts";
@@ -106,18 +106,4 @@ function formatDenial(
   return message;
 }
 
-function readFileSafe(absPath: string): string {
-  try {
-    return fs.readFileSync(absPath, "utf-8");
-  } catch {
-    return "";
-  }
-}
 
-function applyEdits(content: string, edits: { oldText: string; newText: string }[]): string {
-  let result = content;
-  for (const edit of edits) {
-    result = result.replace(edit.oldText, edit.newText);
-  }
-  return result;
-}
