@@ -3,8 +3,8 @@
  * Wrapper: run `gh` as a GitHub App bot identity.
  *
  * Generates a short-lived installation token from the app's private key,
- * then executes `gh` with it. Tokens expire after 1 hour — each invocation
- * gets a fresh one.
+ * then executes `gh` with it. Tokens expire after 1 hour — the result is
+ * cached under /tmp/ and reused until 5 minutes before expiry.
  *
  * Usage:  ./scripts/gh-bot.mjs pr comment 42 --body "Reviewed. LGTM."
  *
@@ -16,9 +16,15 @@
 
 import * as crypto from "node:crypto";
 import * as fs from "node:fs";
+import * as os from "node:os";
 import * as path from "node:path";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
+
+/* ── Config ───────────────────────────────────────────────────────── */
+
+const CACHE_DIR = os.tmpdir();
+const EXPIRY_BUFFER_SEC = 300; // refresh 5 min before actual expiry
 
 /* ── Helpers ──────────────────────────────────────────────────────── */
 
@@ -67,7 +73,36 @@ function createJWT(appId, privateKey) {
   return `${message}.${base64UrlEncode(signature)}`;
 }
 
-async function getInstallationToken(appId, installationId, privateKey) {
+function cachePath(installationId) {
+  return path.join(CACHE_DIR, `gh-bot-${installationId}.json`);
+}
+
+function readCachedToken(cacheFile) {
+  try {
+    const raw = fs.readFileSync(cacheFile, "utf-8");
+    const cached = JSON.parse(raw);
+    if (cached.token && cached.expiresAt) {
+      const expiresAt = new Date(cached.expiresAt).getTime();
+      // Reuse if more than EXPIRY_BUFFER_SEC seconds left
+      if (Date.now() + EXPIRY_BUFFER_SEC * 1000 < expiresAt) {
+        return cached.token;
+      }
+    }
+  } catch {
+    // missing, corrupt, or expired
+  }
+  return null;
+}
+
+function writeCachedToken(cacheFile, token, expiresAt) {
+  try {
+    fs.writeFileSync(cacheFile, JSON.stringify({ token, expiresAt }), "utf-8");
+  } catch {
+    // non-fatal: cache is a perf optimisation
+  }
+}
+
+async function fetchInstallationToken(appId, installationId, privateKey) {
   const jwt = createJWT(appId, privateKey);
   const url = `https://api.github.com/app/installations/${installationId}/access_tokens`;
 
@@ -86,7 +121,7 @@ async function getInstallationToken(appId, installationId, privateKey) {
   }
 
   const data = await response.json();
-  return data.token;
+  return { token: data.token, expiresAt: data.expires_at };
 }
 
 /* ── Main ─────────────────────────────────────────────────────────── */
@@ -113,27 +148,37 @@ async function main() {
     process.exit(1);
   }
 
-  // Expand ~/ to home directory
   if (privateKeyPath.startsWith("~/")) {
     privateKeyPath = path.join(process.env.HOME || process.env.USERPROFILE || "~", privateKeyPath.slice(2));
   } else if (!path.isAbsolute(privateKeyPath)) {
     privateKeyPath = path.resolve(projectRoot, privateKeyPath);
   }
 
-  let privateKey;
-  try {
-    privateKey = fs.readFileSync(privateKeyPath, "utf-8");
-  } catch (err) {
-    console.error(`ERROR: Cannot read private key at ${privateKeyPath}:`, err.message);
-    process.exit(1);
-  }
+  // Try cache first
+  const cacheFile = cachePath(installationId);
+  let token = readCachedToken(cacheFile);
 
-  let token;
-  try {
-    token = await getInstallationToken(appId, installationId, privateKey);
-  } catch (err) {
-    console.error("ERROR: Failed to get installation token:", err.message);
-    process.exit(1);
+  if (token) {
+    console.error("[gh-bot] using cached token");
+  } else {
+    console.error("[gh-bot] fetching new token");
+
+    let privateKey;
+    try {
+      privateKey = fs.readFileSync(privateKeyPath, "utf-8");
+    } catch (err) {
+      console.error(`ERROR: Cannot read private key at ${privateKeyPath}:`, err.message);
+      process.exit(1);
+    }
+
+    try {
+      const result = await fetchInstallationToken(appId, installationId, privateKey);
+      token = result.token;
+      writeCachedToken(cacheFile, token, result.expiresAt);
+    } catch (err) {
+      console.error("ERROR: Failed to get installation token:", err.message);
+      process.exit(1);
+    }
   }
 
   const ghArgs = process.argv.slice(2);
