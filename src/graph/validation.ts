@@ -1,8 +1,8 @@
-import * as fs from "node:fs";
 import * as path from "node:path";
 import { readdir } from "node:fs/promises";
 import type { ModuleIndex } from "../types.ts";
 import { getChecker } from "../gates/checkers/registry.ts";
+import { readFileSafe } from "../utils.ts";
 import type { Dirent } from "node:fs";
 
 type NotifyFn = (message: string, type?: "info" | "warning" | "error") => void;
@@ -21,11 +21,11 @@ export async function validateVisibleEntries(
 
     const exportedSymbols = await collectExports(contract.modulePath, childModules);
 
-    for (const entry of contract.visible) {
-      if (!exportedSymbols.has(entry)) {
+    for (const sig of contract.visible) {
+      if (!exportedSymbols.has(sig.name)) {
         const relModule = path.relative(cwd, path.join(contract.modulePath, "module.md"));
         notify(
-          `[Module Gate] Dangling visible entry "${entry}" in ${relModule}`,
+          `[Module Gate] Dangling visible entry "${sig.name}" in ${relModule}`,
           "warning",
         );
       }
@@ -44,8 +44,8 @@ async function collectExports(
     if (!checker) continue;
     const content = readFileSafe(filePath);
     const exports = checker.getNewExports("", content);
-    for (const name of exports) {
-      symbols.add(name);
+    for (const sig of exports) {
+      symbols.add(sig.name);
     }
   }
   return symbols;
@@ -82,10 +82,4 @@ async function listFiles(
   return results;
 }
 
-function readFileSafe(absPath: string): string {
-  try {
-    return fs.readFileSync(absPath, "utf-8");
-  } catch {
-    return "";
-  }
-}
+

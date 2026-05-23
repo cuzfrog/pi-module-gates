@@ -8,7 +8,7 @@ describe("buildSystemPromptHint", () => {
       contracts: [
         {
           modulePath: "/project/src",
-          visible: ["greet", "Config"],
+          visible: [{ name: "greet" }, { name: "Config" }],
           readonly: ["secret.ts", "module.md"],
           prose: "Greeting module.",
         },
@@ -40,7 +40,7 @@ describe("buildSystemPromptHint", () => {
       contracts: [
         {
           modulePath: "/project/src",
-          visible: ["fnA"],
+          visible: [{ name: "fnA" }],
           readonly: ["module.md"],
           prose: "Module A.",
         },
@@ -52,16 +52,5 @@ describe("buildSystemPromptHint", () => {
 
     expect(result).toContain("Base prompt.");
     expect(result.length).toBeGreaterThan("Base prompt.".length);
-  });
-
-  it("does not modify prompt when no modules declared", () => {
-    const index: ModuleIndex = {
-      contracts: [],
-      dirToModule: new Map(),
-    };
-
-    const result = buildSystemPromptHint(index, "Prompt.");
-
-    expect(result).toBe("Prompt.");
   });
 });

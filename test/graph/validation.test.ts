@@ -63,7 +63,7 @@ describe("validateVisibleEntries", () => {
     const index = makeIndex([
       {
         modulePath: "/project",
-        visible: ["GhostType"],
+        visible: [{ name: "GhostType" }],
         readonly: ["module.md"],
         prose: "",
       },
@@ -91,7 +91,7 @@ describe("validateVisibleEntries", () => {
     const index = makeIndex([
       {
         modulePath: "/project",
-        visible: ["greet"],
+        visible: [{ name: "greet" }],
         readonly: ["module.md"],
         prose: "",
       },
@@ -104,7 +104,7 @@ describe("validateVisibleEntries", () => {
     mockedReadFileSync.mockReturnValue("export function greet() {}");
     mockedGetChecker.mockReturnValue({
       extensions: [".ts"],
-      getNewExports: () => ["greet"],
+      getNewExports: () => [{ name: "greet" }],
     });
 
     await validateVisibleEntries(index, cwd, notify);
@@ -130,7 +130,7 @@ describe("validateVisibleEntries", () => {
     const index = makeIndex([
       {
         modulePath: "/project",
-        visible: ["anything"],
+        visible: [{ name: "anything" }],
         readonly: ["module.md"],
         prose: "",
       },
@@ -151,13 +151,13 @@ describe("validateVisibleEntries", () => {
     const index = makeIndex([
       {
         modulePath: "/project",
-        visible: ["GhostType"],
+        visible: [{ name: "GhostType" }],
         readonly: ["module.md"],
         prose: "",
       },
       {
         modulePath: "/project/src",
-        visible: ["greet"],
+        visible: [{ name: "greet" }],
         readonly: ["module.md"],
         prose: "",
       },
@@ -185,7 +185,7 @@ describe("validateVisibleEntries", () => {
         return {
           extensions: [".ts"],
           getNewExports: (_before: string, after: string) => {
-            if (after.includes("export function greet")) return ["greet"];
+            if (after.includes("export function greet")) return [{ name: "greet" }];
             return [];
           },
         };
@@ -204,7 +204,7 @@ describe("validateVisibleEntries", () => {
     const index = makeIndex([
       {
         modulePath: "/project",
-        visible: ["GhostA", "GhostB"],
+        visible: [{ name: "GhostA" }, { name: "GhostB" }],
         readonly: ["module.md"],
         prose: "",
       },
