@@ -1,6 +1,7 @@
 export type Signature = {
   modifier?: string;
   name: string;
+  path?: string;
 };
 
 export type ModuleContract = {

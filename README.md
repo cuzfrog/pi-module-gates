@@ -1,10 +1,13 @@
 # pi-module-gates
 
-Experimental pi extension that enforces AI coding agents to respect code module boundaries.
+Experimental pi extension that controls the entropy of the codebase by enforcing agents to respect code module boundaries.
+I helps combat slop generation and code architecture degradation.
 
 ## Problem
 
-AI coding agents produce ad-hoc edits with no awareness of module boundaries — they freely modify internal files, leak implementation details into public APIs, and break architectural contracts. The codebase has structure; the agent has none.
+AI coding agents produce ad-hoc edits with no awareness of module boundaries — they freely modify internal files, leak implementation details, and break architectural contracts. The codebase has structure; the agent has none.
+
+__Constraints liberate, liberties constrain.__
 
 ### Approach
 
@@ -41,8 +44,8 @@ Add a `module-gate` entry to `.pi/settings.json`:
 ```json
 {
   "module-gate": {
-    "moduleDescriptorFileName": "CONTEXT.md",
-    "sourceRoot": "lib/"
+    "moduleDescriptorFileName": "MODULE.md",
+    "sourceRoot": "src/"
   }
 }
 ```

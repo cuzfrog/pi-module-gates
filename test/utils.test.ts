@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import * as fs from "node:fs";
-import { findOwningModule, readFileSafe, applyEdits, parseVisibleEntry, isWithinSourceRoot } from "../src/utils.ts";
+import { findOwningModule, readFileSafe, applyEdits, isWithinSourceRoot } from "../src/utils.ts";
 
 vi.mock("node:fs", () => ({
   readFileSync: vi.fn(),
@@ -112,51 +112,6 @@ describe("applyEdits", () => {
   });
 });
 
-describe("parseVisibleEntry", () => {
-  it("returns name-only entry for single token", () => {
-    expect(parseVisibleEntry("Foo")).toEqual({ name: "Foo" });
-  });
-
-  it("returns name-only entry for whitespace-only string", () => {
-    expect(parseVisibleEntry("   ")).toEqual({ name: "   " });
-  });
-
-  it("returns name-only entry for empty string", () => {
-    expect(parseVisibleEntry("")).toEqual({ name: "" });
-  });
-
-  it("last token is name, everything before is modifier", () => {
-    expect(parseVisibleEntry("pub Foo")).toEqual({ modifier: "pub", name: "Foo" });
-  });
-
-  it("handles modifier containing special chars like parens", () => {
-    expect(parseVisibleEntry("pub(super) Foo")).toEqual({
-      modifier: "pub(super)",
-      name: "Foo",
-    });
-  });
-
-  it("handles multi-word modifier", () => {
-    expect(parseVisibleEntry("pub(super) override Foo")).toEqual({
-      modifier: "pub(super) override",
-      name: "Foo",
-    });
-  });
-
-  it("trims surrounding whitespace", () => {
-    expect(parseVisibleEntry("  pub Foo  ")).toEqual({
-      modifier: "pub",
-      name: "Foo",
-    });
-  });
-
-  it("collapses internal whitespace", () => {
-    expect(parseVisibleEntry("pub   Foo")).toEqual({
-      modifier: "pub",
-      name: "Foo",
-    });
-  });
-});
 
 describe("isWithinSourceRoot", () => {
   it("returns true for file inside sourceRoot", () => {

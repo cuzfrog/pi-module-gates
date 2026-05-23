@@ -21,9 +21,17 @@ export async function validateVisibleEntries(
     if (contract.visible === null) continue;
 
     const exportedSymbols = await collectExports(contract.modulePath, childModules);
+    // Cache for non-local path resolution
+    const pathExportsCache = new Map<string, Set<string>>();
 
     for (const sig of contract.visible) {
-      if (!exportedSymbols.has(sig.name)) {
+      const targetDir = resolveValidationTarget(contract.modulePath, sig.path);
+      const symbols =
+        targetDir !== contract.modulePath
+          ? await resolvePathExports(targetDir, pathExportsCache, childModules)
+          : exportedSymbols;
+
+      if (!symbols.has(sig.name)) {
         const relModule = path.relative(cwd, path.join(contract.modulePath, descriptorFileName));
         notify(
           `[Module Gate] Dangling visible entry "${sig.name}" in ${relModule}`,
@@ -32,6 +40,15 @@ export async function validateVisibleEntries(
       }
     }
   }
+}
+
+function resolveValidationTarget(modulePath: string, entryPath?: string): string {
+  if (!entryPath) return modulePath;
+  const lastSlash = entryPath.lastIndexOf("/");
+  if (lastSlash < 0) return modulePath;
+  const dirPart = entryPath.slice(0, lastSlash + 1);
+  const joined = path.join(modulePath, dirPart);
+  return joined.endsWith(path.sep) ? joined.slice(0, -1) : joined;
 }
 
 async function collectExports(
@@ -48,6 +65,19 @@ async function collectExports(
     for (const sig of exports) {
       symbols.add(sig.name);
     }
+  }
+  return symbols;
+}
+
+async function resolvePathExports(
+  targetDir: string,
+  cache: Map<string, Set<string>>,
+  childModules: Set<string>,
+): Promise<Set<string>> {
+  let symbols = cache.get(targetDir);
+  if (!symbols) {
+    symbols = await collectExports(targetDir, childModules);
+    cache.set(targetDir, symbols);
   }
   return symbols;
 }
