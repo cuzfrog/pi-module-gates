@@ -150,4 +150,119 @@ describe("checkExports", () => {
 
     expect(result.blocked).toBe(false);
   });
+
+  it("reports multiple new unlisted exports in one write", () => {
+    const index = makeIndex([
+      {
+        modulePath: "/project/src",
+        visible: ["allowedFn"],
+        readonly: ["module.md"],
+        prose: "",
+      },
+    ]);
+
+    const before = "export function allowedFn() {}";
+    const after =
+      "export function allowedFn() {}\nexport function unlistedA() {}\nexport type unlistedB = string;";
+    const result = checkExports("src/app.ts", before, after, index, cwd);
+
+    expect(result.blocked).toBe(true);
+    if (result.blocked) {
+      expect(result.violations).toHaveLength(2);
+      expect(result.violations.map((v) => v.name)).toEqual(
+        expect.arrayContaining(["unlistedA", "unlistedB"]),
+      );
+    }
+  });
+
+  it("allows anything when index has no contracts", () => {
+    const index = makeIndex([]);
+
+    const before = "";
+    const after = "export function anything() {}";
+    const result = checkExports("src/app.ts", before, after, index, cwd);
+
+    expect(result.blocked).toBe(false);
+  });
+
+  it("allows symbol listed in both child and parent visible", () => {
+    const index = makeIndex([
+      {
+        modulePath: "/project",
+        visible: ["sharedFn", "rootOnly"],
+        readonly: ["module.md"],
+        prose: "",
+      },
+      {
+        modulePath: "/project/src",
+        visible: ["sharedFn", "srcOnly"],
+        readonly: ["module.md"],
+        prose: "",
+      },
+    ]);
+
+    const before = "";
+    const after = "export function sharedFn() {}";
+    const result = checkExports("src/app.ts", before, after, index, cwd);
+
+    expect(result.blocked).toBe(false);
+  });
+
+  it("allows export when parent has no visible key but child does", () => {
+    const index = makeIndex([
+      {
+        modulePath: "/project",
+        visible: null,
+        readonly: ["module.md"],
+        prose: "",
+      },
+      {
+        modulePath: "/project/src",
+        visible: ["childFn"],
+        readonly: ["module.md"],
+        prose: "",
+      },
+    ]);
+
+    const before = "";
+    const after = "export function childFn() {}";
+    const result = checkExports("src/app.ts", before, after, index, cwd);
+
+    expect(result.blocked).toBe(false);
+  });
+
+  it("blocks symbol absent from grandparent in three-level nesting", () => {
+    const index = makeIndex([
+      {
+        modulePath: "/project",
+        visible: ["rootOnly"],
+        readonly: ["module.md"],
+        prose: "",
+      },
+      {
+        modulePath: "/project/src",
+        visible: ["sharedFn", "rootOnly"],
+        readonly: ["module.md"],
+        prose: "",
+      },
+      {
+        modulePath: "/project/src/payments",
+        visible: ["sharedFn", "leafOnly"],
+        readonly: ["module.md"],
+        prose: "",
+      },
+    ]);
+
+    const before = "";
+    const after = "export function leafOnly() {}";
+    const result = checkExports(
+      "src/payments/app.ts",
+      before,
+      after,
+      index,
+      cwd,
+    );
+
+    expect(result.blocked).toBe(true);
+  });
 });

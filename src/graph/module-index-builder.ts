@@ -63,6 +63,7 @@ async function findModuleFiles(dir: string): Promise<string[]> {
   return results;
 }
 
+
 async function walkForModuleFiles(dir: string, results: string[]): Promise<void> {
   let entries;
   try {
