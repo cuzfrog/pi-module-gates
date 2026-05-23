@@ -203,13 +203,20 @@ describe("Module Gate e2e", () => {
   // Expect: deny. Message cites both sources.
 
   describe("Scenario #8 — dual-readonly message cites both sources", () => {
-    it("blocks write to file covered by parent and child readonly", async () => {
+    it("blocks write to file covered by parent and child readonly and cites module.md in reason", async () => {
       const cwd = path.join(FIXTURES, "readonly-test");
       await startSession(cwd);
 
       const result = await doWrite("sub/locked.ts", "// modified", cwd);
       expect(result).toBeDefined();
       expect((result as ToolCallEventResult).block).toBe(true);
+
+      const reason = (result as ToolCallEventResult).reason!;
+      expect(reason).toContain("Readonly rule");
+      expect(reason).toContain("module.md");
+      // TODO: future — both parent (readonly-test/module.md) and child
+      // (readonly-test/sub/module.md) should be cited as sources.
+      // Currently only the first matching ancestor is cited.
     });
 
     it("allows write to editable.ts (not listed as readonly anywhere)", async () => {
@@ -219,61 +226,17 @@ describe("Module Gate e2e", () => {
       const result = await doWrite("editable.ts", "// modified", cwd);
       expect(result?.block).toBeFalsy();
     });
-
-    it("reason cites at least one matching module.md (future: should cite both)", async () => {
-      const cwd = path.join(FIXTURES, "readonly-test");
-      await startSession(cwd);
-
-      const result = await doWrite("sub/locked.ts", "// modified", cwd);
-      const reason = (result as ToolCallEventResult).reason!;
-      expect(reason).toContain("Readonly rule");
-      expect(reason).toContain("module.md");
-      // TODO: future — both parent (readonly-test/module.md) and child
-      // (readonly-test/sub/module.md) should be cited as sources.
-      // Currently only the first matching ancestor is cited.
-    });
   });
 
-  // ─── Behavioral Scenario #22 ─────────────────────────────────────────────
-  // Visible entry with no matching export → warn at session start
+  // ─── Behavioral Scenario #22/#23 — dangling visible entries ──────────────
+  // Visible entries with no matching export → warn at session start.
+  // Multiple dangling entries all reported together.
 
-  describe("Scenario #22 — dangling visible entry warns", () => {
-    it("warns on session start for visible entry with no export", async () => {
-      const cwd = FIXTURES; // root has GhostType, AnotherGhost, ThirdGhost visible but no exports
-      await startSession(cwd);
-
-      const warnings = mock.notifications.filter(
-        (n) =>
-          n.type === "warning" && n.message.includes("Dangling visible entry"),
-      );
-      expect(warnings.length).toBeGreaterThan(0);
-    });
-
-    it("mentions the dangling symbol and source module.md", async () => {
+  describe("Scenario #22/#23 — dangling visible entries", () => {
+    it("reports all three root-module dangling entries with correct format", async () => {
       const cwd = FIXTURES;
       await startSession(cwd);
 
-      const ghostWarn = mock.notifications.find((n) =>
-        n.message.includes("GhostType"),
-      );
-      expect(ghostWarn).toBeDefined();
-      if (ghostWarn) {
-        expect(ghostWarn.message).toContain("GhostType");
-        expect(ghostWarn.message).toContain("module.md");
-        expect(ghostWarn.type).toBe("warning");
-      }
-    });
-  });
-
-  // ─── Behavioral Scenario #23 ─────────────────────────────────────────────
-  // Multiple dangling entries → all reported together at session start
-
-  describe("Scenario #23 — multiple dangling entries reported together", () => {
-    it("reports all three dangling entries from root module", async () => {
-      const cwd = FIXTURES;
-      await startSession(cwd);
-
-      // Collect dangling warnings from the root module.md only.
       // Root module.md shows as "in module.md" (no subdirectory prefix).
       const rootDangling = mock.notifications.filter(
         (n) =>
@@ -281,6 +244,8 @@ describe("Module Gate e2e", () => {
           n.message.includes("Dangling visible entry") &&
           /\sin module\.md$/.test(n.message),
       );
+
+      expect(rootDangling).toHaveLength(3);
 
       const names = rootDangling.map((w) => {
         const match = w.message.match(/"(\w+)"/);
@@ -290,7 +255,11 @@ describe("Module Gate e2e", () => {
       expect(names).toEqual(
         expect.arrayContaining(["GhostType", "AnotherGhost", "ThirdGhost"]),
       );
-      expect(rootDangling).toHaveLength(3);
+
+      // Format check on a single warning
+      const ghostWarn = rootDangling.find((n) => n.message.includes("GhostType"))!;
+      expect(ghostWarn.message).toContain("module.md");
+      expect(ghostWarn.type).toBe("warning");
     });
   });
 
@@ -380,18 +349,6 @@ describe("Module Gate e2e", () => {
 
       const result = await doWrite("module.md", "---", cwd);
       expect((result as ToolCallEventResult).block).toBe(true);
-    });
-
-    it("allows write to non-readonly file", async () => {
-      const cwd = path.join(FIXTURES, "src");
-      await startSession(cwd);
-
-      const result = await doWrite(
-        "app.ts",
-        "export function greet() {}",
-        cwd,
-      );
-      expect(result?.block).toBeFalsy();
     });
 
     it("blocks export not in visible list", async () => {

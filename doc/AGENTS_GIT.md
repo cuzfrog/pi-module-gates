@@ -1,6 +1,7 @@
 ## Git
 
 - Use `./scripts/gh-bot.mjs` as `gh` for GitHub App identity.
+- When file changes in `src`, update version in `package.json`.
 
 ### branching
 - Main branch: `main`
