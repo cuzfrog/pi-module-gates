@@ -34,3 +34,9 @@ readonly: [index.ts]
 Any prose you want the agent to read.
 ```
 
+## License
+
+MIT
+
+## Author
+Cause Chung (cuzfrog@gmail.com)
