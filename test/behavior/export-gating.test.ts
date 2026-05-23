@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import * as path from "node:path";
 import {
   MockExtensionAPI,
@@ -7,6 +7,11 @@ import {
   doWrite,
   doEdit,
 } from "./helpers.ts";
+
+vi.mock("../../src/config.ts", () => ({
+  loadConfig: () => ({ moduleDescriptorFileName: "module.md", sourceRoot: "" }),
+}));
+
 import mod from "../../src/index.ts";
 
 describe("export gating", () => {

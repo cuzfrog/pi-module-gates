@@ -44,3 +44,7 @@ export function parseVisibleEntry(raw: string): Signature {
   const modifier = parts.slice(0, -1).join(" ");
   return { modifier, name };
 }
+
+export function isWithinSourceRoot(absPath: string, resolvedRoot: string): boolean {
+  return absPath.startsWith(resolvedRoot + path.sep) || absPath === resolvedRoot;
+}

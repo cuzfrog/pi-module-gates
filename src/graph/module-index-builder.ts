@@ -3,6 +3,7 @@ import * as path from "node:path";
 import { readdir } from "node:fs/promises";
 import { parseFrontmatter } from "@earendil-works/pi-coding-agent";
 import type { ModuleContract, ModuleIndex } from "../types.ts";
+import type { ModuleGateConfig } from "../config.ts";
 import type { Dirent } from "node:fs";
 import { validateVisibleEntries } from "./validation.ts";
 import { parseVisibleEntry } from "../utils.ts";
@@ -17,22 +18,27 @@ type IndexContext = {
   ui: { notify(message: string, type?: string): void };
 };
 
-export async function buildModuleIndex(ctx: IndexContext): Promise<ModuleIndex> {
-  const notify = (msg: string) => ctx.ui.notify(msg, "warning");
+export async function buildModuleIndex(
+  ctx: IndexContext,
+  config: ModuleGateConfig,
+): Promise<ModuleIndex> {
+  const notify = (msg: string) => ctx.ui.notify(msg, "info");
+  const scanRoot = path.resolve(ctx.cwd, config.sourceRoot);
 
-  const moduleFiles = await findModuleFiles(ctx.cwd);
-  const contracts = buildContracts(moduleFiles, notify);
+  const moduleFiles = await findModuleFiles(scanRoot, config.moduleDescriptorFileName);
+  const contracts = buildContracts(moduleFiles, notify, config.moduleDescriptorFileName);
   const dirToModule = await buildDirToModuleMap(contracts);
   const index: ModuleIndex = { contracts, dirToModule };
 
-  await validateVisibleEntries(index, ctx.cwd, ctx.ui.notify);
+  await validateVisibleEntries(index, ctx.cwd, ctx.ui.notify, config.moduleDescriptorFileName);
 
   return index;
 }
 
 function buildContracts(
   moduleFiles: string[],
-  onWarn: (message: string) => void,
+  onInfo: (message: string) => void,
+  descriptorFileName: string,
 ): ModuleContract[] {
   const contracts: ModuleContract[] = [];
 
@@ -47,14 +53,14 @@ function buildContracts(
       frontmatter = parsed.frontmatter;
       body = parsed.body;
     } catch {
-      onWarn(
+      onInfo(
         `[Module Gate] Failed to parse ${absModuleFile} — module will be unguarded`,
       );
       continue;
     }
 
     const readonlyEntries = frontmatter.readonly ?? [];
-    readonlyEntries.push("module.md");
+    readonlyEntries.push(descriptorFileName);
 
     contracts.push({
       modulePath,
@@ -89,7 +95,7 @@ async function buildDirToModuleMap(
   return dirToModule;
 }
 
-async function findModuleFiles(dir: string): Promise<string[]> {
+async function findModuleFiles(dir: string, descriptorFileName: string): Promise<string[]> {
   const results: string[] = [];
   const stack: string[] = [dir];
 
@@ -107,7 +113,7 @@ async function findModuleFiles(dir: string): Promise<string[]> {
       const fullPath = path.join(current, entry.name);
       if (entry.isDirectory()) {
         stack.push(fullPath);
-      } else if (entry.name.toLowerCase() === "module.md") {
+      } else if (entry.name.toLowerCase() === descriptorFileName.toLowerCase()) {
         results.push(fullPath);
       }
     }

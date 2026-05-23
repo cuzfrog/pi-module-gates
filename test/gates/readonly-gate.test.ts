@@ -19,7 +19,7 @@ describe("checkReadonly", () => {
       },
     ]);
 
-    const result = checkReadonly("src/config.json", index, cwd);
+    const result = checkReadonly("src/config.json", index, cwd, "module.md");
     expect(result.blocked).toBe(true);
   });
 
@@ -33,7 +33,7 @@ describe("checkReadonly", () => {
       },
     ]);
 
-    const result = checkReadonly("src/vendor/lib.ts", index, cwd);
+    const result = checkReadonly("src/vendor/lib.ts", index, cwd, "module.md");
     expect(result.blocked).toBe(true);
   });
 
@@ -47,7 +47,7 @@ describe("checkReadonly", () => {
       },
     ]);
 
-    const result = checkReadonly("src/generated-types.ts", index, cwd);
+    const result = checkReadonly("src/generated-types.ts", index, cwd, "module.md");
     expect(result.blocked).toBe(true);
   });
 
@@ -61,7 +61,7 @@ describe("checkReadonly", () => {
       },
     ]);
 
-    const result = checkReadonly("src/app.ts", index, cwd);
+    const result = checkReadonly("src/app.ts", index, cwd, "module.md");
     expect(result.blocked).toBe(false);
   });
 
@@ -75,7 +75,7 @@ describe("checkReadonly", () => {
       },
     ]);
 
-    const result = checkReadonly("src/module.md", index, cwd);
+    const result = checkReadonly("src/module.md", index, cwd, "module.md");
     expect(result.blocked).toBe(true);
   });
 
@@ -95,24 +95,24 @@ describe("checkReadonly", () => {
       },
     ]);
 
-    const result = checkReadonly("src/secret.ts", index, cwd);
+    const result = checkReadonly("src/secret.ts", index, cwd, "module.md");
     expect(result.blocked).toBe(true);
   });
 
-  it("provides reason mentioning module.md when blocked", () => {
+  it("provides reason mentioning descriptor file name when blocked", () => {
     const index = makeIndex([
       {
         modulePath: "/project/src",
         visible: null,
-        readonly: ["locked.ts", "module.md"],
+        readonly: ["locked.ts", "CONTEXT.md"],
         prose: "",
       },
     ]);
 
-    const result = checkReadonly("src/locked.ts", index, cwd);
+    const result = checkReadonly("src/locked.ts", index, cwd, "CONTEXT.md");
     expect(result.blocked).toBe(true);
     if (result.blocked) {
-      expect(result.reason).toContain("module.md");
+      expect(result.reason).toContain("CONTEXT.md");
     }
   });
 });

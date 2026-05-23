@@ -1,10 +1,15 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import {
   MockExtensionAPI,
   MALFORMED,
   startSession,
   doWrite,
 } from "./helpers.ts";
+
+vi.mock("../../src/config.ts", () => ({
+  loadConfig: () => ({ moduleDescriptorFileName: "module.md", sourceRoot: "" }),
+}));
+
 import mod from "../../src/index.ts";
 
 describe("malformed frontmatter", () => {
@@ -19,13 +24,13 @@ describe("malformed frontmatter", () => {
     const cwd = MALFORMED;
     await startSession(mock, cwd);
 
-    const warnings = mock.notifications.filter(
-      (n) => n.type === "warning",
+    const infoMessages = mock.notifications.filter(
+      (n) => n.type === "info",
     );
-    expect(warnings.length).toBeGreaterThan(0);
-    expect(warnings[0].message).toContain("Failed to parse");
-    expect(warnings[0].message).toContain("module.md");
-    expect(warnings[0].message).toContain("unguarded");
+    expect(infoMessages.length).toBeGreaterThan(0);
+    expect(infoMessages[0].message).toContain("Failed to parse");
+    expect(infoMessages[0].message).toContain("module.md");
+    expect(infoMessages[0].message).toContain("unguarded");
   });
 
   it("treats malformed module as unguarded (writes allowed)", async () => {

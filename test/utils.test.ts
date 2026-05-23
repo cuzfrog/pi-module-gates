@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import * as fs from "node:fs";
-import { findOwningModule, readFileSafe, applyEdits, parseVisibleEntry } from "../src/utils.ts";
+import { findOwningModule, readFileSafe, applyEdits, parseVisibleEntry, isWithinSourceRoot } from "../src/utils.ts";
 
 vi.mock("node:fs", () => ({
   readFileSync: vi.fn(),
@@ -155,5 +155,35 @@ describe("parseVisibleEntry", () => {
       modifier: "pub",
       name: "Foo",
     });
+  });
+});
+
+describe("isWithinSourceRoot", () => {
+  it("returns true for file inside sourceRoot", () => {
+    expect(isWithinSourceRoot("/project/src/app/file.ts", "/project/src")).toBe(true);
+  });
+
+  it("returns true for file exactly at sourceRoot", () => {
+    expect(isWithinSourceRoot("/project/src", "/project/src")).toBe(true);
+  });
+
+  it("returns false for file outside sourceRoot", () => {
+    expect(isWithinSourceRoot("/project/lib/app.ts", "/project/src")).toBe(false);
+  });
+
+  it("returns false for similarly-named sibling directory", () => {
+    expect(isWithinSourceRoot("/project/src-other/file.ts", "/project/src")).toBe(false);
+  });
+
+  it("returns true for file at project root when sourceRoot is empty string", () => {
+    expect(isWithinSourceRoot("/project/app.ts", "/project")).toBe(true);
+  });
+
+  it("returns true for file exactly at filesystem root", () => {
+    expect(isWithinSourceRoot("/", "/")).toBe(true);
+  });
+
+  it("returns false for file in root when resolvedRoot is a child path", () => {
+    expect(isWithinSourceRoot("/project", "/project/src")).toBe(false);
   });
 });

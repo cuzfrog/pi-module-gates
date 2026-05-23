@@ -14,6 +14,6 @@ registerChecker(tsChecker);
 
 function extractExports(src: string): Signature[] {
   return [...src.matchAll(
-    /^export\s+(?:default\s+)?(?:function|class|const|let|var|type|interface|enum)\s+(\w+)/gm,
+    /^export\s+(?:default\s+)?(?:\w+\s+)*(?:function(?:\s*\*)?|class|const|let|var|type|interface|enum)\s+(\w+)/gm,
   )].map((m) => ({ name: m[1] }));
 }
