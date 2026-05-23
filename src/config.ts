@@ -3,11 +3,13 @@ import * as path from "node:path";
 
 export type ModuleGateConfig = {
   moduleDescriptorFileName: string;
+  moduleDescriptorReadonly: boolean;
   sourceRoot: string;
 };
 
 const DEFAULTS: ModuleGateConfig = {
   moduleDescriptorFileName: "module.md",
+  moduleDescriptorReadonly: true,
   sourceRoot: "src/",
 };
 

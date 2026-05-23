@@ -1,7 +1,7 @@
 # pi-module-gates - Constraints liberate, liberties constrain.
 
-Experimental pi extension that controls the entropy of the codebase by enforcing agents to respect code module boundaries.
-I helps combat slop generation and code architecture degradation.
+pi cli extension that controls the entropy of the codebase by enforcing code module boundaries.
+It helps combat slop generation and code architecture degradation.
 
 ## Problem
 
@@ -48,7 +48,7 @@ A module descriptor is a Markdown file (default name: `MODULE.md`) placed in a d
 readonly: [mod.rs]
 ---
 
-Any prose for the agent.
+Any prose for the agent to better understand the module.
 ```
 
 ### Visibility whitelist
@@ -103,6 +103,7 @@ Add a `module-gate` entry to `.pi/settings.json`:
 {
   "module-gate": {
     "moduleDescriptorFileName": "MODULE.md",
+    "moduleDescriptorReadonly": true,
     "sourceRoot": "src/"
   }
 }
@@ -111,6 +112,7 @@ Add a `module-gate` entry to `.pi/settings.json`:
 | Option | Default | Description |
 |--------|---------|-------------|
 | `moduleDescriptorFileName` | `"MODULE.md"` | File name used for module descriptors (case-insensitive) |
+| `moduleDescriptorReadonly` | `true` | When `true`, descriptor files are readonly.|
 | `sourceRoot` | `"src/"` | Directory to scan for descriptor files and enforce gates. Set to `""` to scan from project root. |
 
 When no settings file exists or no `module-gate` key is present, defaults apply.
