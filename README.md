@@ -1,6 +1,7 @@
 # pi-module-gates
 
-Experimental pi extension that enforces AI coding agents to respect code module boundaries.
+Experimental pi extension that controls the entropy of the codebase by enforcing agents to respect code module boundaries.
+I helps combat slop generation and code architecture degradation.
 
 ## Problem
 
