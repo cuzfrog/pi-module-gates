@@ -23,6 +23,7 @@ The extension intercepts agent `write`/`edit` operations and enforces these cont
 3. **Gating** — On every write/edit, checks:
    - **Readonly gate** — is the target file locked?
    - **Export gate** — would the change introduce an export not in the `visible` list?
+   - **Import gate** (not implemented yet) — would the change introduce an import violating visibility scope?
 
 ## Module Descriptor Semantics
 
