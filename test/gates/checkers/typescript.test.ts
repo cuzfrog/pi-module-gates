@@ -35,6 +35,84 @@ describe("TypeScript export checker", () => {
     expect(checker.getNewExports(before, after)).toEqual([{ name: "Logger" }]);
   });
 
+  it("detects export async function", () => {
+    const before = "";
+    const after = "export async function fetchData() {}";
+    expect(checker.getNewExports(before, after)).toEqual([{ name: "fetchData" }]);
+  });
+
+  it("detects export abstract class", () => {
+    const before = "";
+    const after = "export abstract class BaseService {}";
+    expect(checker.getNewExports(before, after)).toEqual([{ name: "BaseService" }]);
+  });
+
+  it("detects export function* generator", () => {
+    const before = "";
+    const after = "export function* generate() {}";
+    expect(checker.getNewExports(before, after)).toEqual([{ name: "generate" }]);
+  });
+
+  it("detects export async function* generator", () => {
+    const before = "";
+    const after = "export async function* stream() {}";
+    expect(checker.getNewExports(before, after)).toEqual([{ name: "stream" }]);
+  });
+
+  it("detects export declare function", () => {
+    const before = "";
+    const after = "export declare function init(): void;";
+    expect(checker.getNewExports(before, after)).toEqual([{ name: "init" }]);
+  });
+
+  it("detects export declare class", () => {
+    const before = "";
+    const after = "export declare class Options {}";
+    expect(checker.getNewExports(before, after)).toEqual([{ name: "Options" }]);
+  });
+
+  it("detects export declare const", () => {
+    const before = "";
+    const after = "export declare const VERSION: string;";
+    expect(checker.getNewExports(before, after)).toEqual([{ name: "VERSION" }]);
+  });
+
+  it("detects export declare type", () => {
+    const before = "";
+    const after = "export declare type ID = string;";
+    expect(checker.getNewExports(before, after)).toEqual([{ name: "ID" }]);
+  });
+
+  it("detects export declare interface", () => {
+    const before = "";
+    const after = "export declare interface Plugin {}";
+    expect(checker.getNewExports(before, after)).toEqual([{ name: "Plugin" }]);
+  });
+
+  it("detects export declare enum", () => {
+    const before = "";
+    const after = "export declare enum Status { Active, Inactive }";
+    expect(checker.getNewExports(before, after)).toEqual([{ name: "Status" }]);
+  });
+
+  it("detects export default abstract class", () => {
+    const before = "";
+    const after = "export default abstract class AppBase {}";
+    expect(checker.getNewExports(before, after)).toEqual([{ name: "AppBase" }]);
+  });
+
+  it("detects export default async function", () => {
+    const before = "";
+    const after = "export default async function bootstrap() {}";
+    expect(checker.getNewExports(before, after)).toEqual([{ name: "bootstrap" }]);
+  });
+
+  it("detects export declare async function", () => {
+    const before = "";
+    const after = "export declare async function resolve(): Promise<void>;";
+    expect(checker.getNewExports(before, after)).toEqual([{ name: "resolve" }]);
+  });
+
   it("detects export default function with name", () => {
     const before = "";
     const after = "export default function main() {}";
