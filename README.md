@@ -26,7 +26,23 @@ The extension intercepts agent `write`/`edit` operations and enforces these cont
    - **Readonly gate** — is the target file locked?
    - **Export gate** — would the change introduce an export not in the `visible` list?
 
-### Example `module.md`
+System prompt:
+```markdown
+## Module gates (boundary enforcement)
+   This project uses `module.md` files to declare visibility and readonly rules that you should follow.
+   If you cannot comply, reconsider your design, if impossible, raise to the user with tradeoffs.
+   Each `module.md` gates its branching point in the tree.
+   A `module.md` with a `visible` list means only entries in the list are allowed to be visible outside the module.
+   A `module.md` and its mentioned `readonly` files are readonly.
+   Violations will be blocked.
+```
+`module.md` filename is configurable.
+
+## Module Descriptor Semantics
+
+A module descriptor is a Markdown file (default name: `MODULE.md`) placed in a directory. You can piggy-back on your module context file for example `CONTEXT.md`.
+
+### Simple readonly constraints
 
 ```markdown
 ---
