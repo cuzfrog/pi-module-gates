@@ -35,14 +35,25 @@ export function applyEdits(content: string, edits: { oldText: string; newText: s
   return result;
 }
 
-export function parseVisibleEntry(raw: string): Signature {
-  const trimmed = raw.trim();
-  if (trimmed.length === 0) return { name: raw };
-  const parts = trimmed.split(/\s+/);
-  if (parts.length === 1) return { name: parts[0] };
-  const name = parts[parts.length - 1];
-  const modifier = parts.slice(0, -1).join(" ");
-  return { modifier, name };
+export type VisibleEntryRaw = string | { path: string; modifier?: string };
+
+export function parseVisibleEntry(raw: VisibleEntryRaw): Signature {
+  if (typeof raw === "string") {
+    const trimmed = raw.trim();
+    return { name: extractNameFromPath(trimmed), path: trimmed };
+  }
+  return {
+    name: extractNameFromPath(raw.path),
+    modifier: raw.modifier,
+    path: raw.path,
+  };
+}
+
+function extractNameFromPath(pathStr: string): string {
+  let p = pathStr.trim();
+  if (p.endsWith("/")) p = p.slice(0, -1);
+  const lastSlash = p.lastIndexOf("/");
+  return lastSlash >= 0 ? p.slice(lastSlash + 1) : p;
 }
 
 export function isWithinSourceRoot(absPath: string, resolvedRoot: string): boolean {

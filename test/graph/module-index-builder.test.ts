@@ -85,7 +85,7 @@ describe("buildModuleIndex", () => {
 
     expect(index.contracts).toHaveLength(1);
     expect(index.contracts[0].modulePath).toBe("/project/src");
-    expect(index.contracts[0].visible).toEqual([{ name: "greet" }]);
+    expect(index.contracts[0].visible).toEqual([{ name: "greet", path: "greet" }]);
     expect(index.contracts[0].readonly).toContain("secret.ts");
     expect(index.contracts[0].prose).toBe("Greeting module.");
   });
@@ -126,12 +126,12 @@ describe("buildModuleIndex", () => {
 
     const index = await buildModuleIndex(makeCtx("/project"), defaultConfig);
 
-    expect(index.contracts[0].visible).toEqual([{ name: "exportA" }, { name: "exportB" }]);
+    expect(index.contracts[0].visible).toEqual([{ name: "exportA", path: "exportA" }, { name: "exportB", path: "exportB" }]);
     expect(index.contracts[0].readonly).toContain("locked/");
     expect(index.contracts[0].prose).toBe("Some prose.");
   });
 
-  it("parses visible entries with modifiers", async () => {
+  it("parses visible entries with paths and modifiers from object form", async () => {
     mockedReaddir.mockImplementation(async (dir: unknown) => {
       const d = dir as string;
       if (d === "/project") return [makeDirent("module.md", false)] as Dirent[];
@@ -142,7 +142,7 @@ describe("buildModuleIndex", () => {
 
     mockedParseFrontmatter.mockReturnValue({
       frontmatter: {
-        visible: ["pub(super) Foo", "pub(crate) Bar", "Baz"],
+        visible: [{ path: "sub/Foo", modifier: "pub(super)" }, { path: "Bar" }],
         readonly: [],
       },
       body: "",
@@ -151,9 +151,8 @@ describe("buildModuleIndex", () => {
     const index = await buildModuleIndex(makeCtx("/project"), defaultConfig);
 
     expect(index.contracts[0].visible).toEqual([
-      { modifier: "pub(super)", name: "Foo" },
-      { modifier: "pub(crate)", name: "Bar" },
-      { name: "Baz" },
+      { modifier: "pub(super)", name: "Foo", path: "sub/Foo" },
+      { name: "Bar", path: "Bar" },
     ]);
   });
 
@@ -237,7 +236,7 @@ describe("buildModuleIndex", () => {
 
     expect(index.contracts).toHaveLength(1);
     expect(index.contracts[0].modulePath).toBe("/project/good");
-    expect(index.contracts[0].visible).toEqual([{ name: "ok" }]);
+    expect(index.contracts[0].visible).toEqual([{ name: "ok", path: "ok" }]);
   });
 
   it("matches configurable descriptor file name", async () => {
@@ -304,5 +303,108 @@ describe("buildModuleIndex", () => {
 
     expect(index.contracts).toHaveLength(1);
     expect(index.contracts[0].modulePath).toBe("/project/src");
+  });
+
+  it("complements child visible with parent's path-based entry", async () => {
+    mockedReaddir.mockImplementation(async (dir: unknown) => {
+      const d = dir as string;
+      if (d === "/project") return [makeDirent("module.md", false), makeDirent("sub", true)] as Dirent[];
+      if (d === "/project/sub") return [makeDirent("module.md", false)] as Dirent[];
+      return [] as Dirent[];
+    });
+
+    mockedReadFileSync.mockImplementation((p: unknown): string => {
+      const filePath = p as string;
+      if (filePath.endsWith("project/sub/module.md")) return "child";
+      return "parent";
+    });
+
+    mockedParseFrontmatter.mockImplementation((content: string) => {
+      if (content === "parent") return { frontmatter: { visible: [{ path: "sub/Helper" }] }, body: "" };
+      return { frontmatter: { visible: ["OwnType"] }, body: "" };
+    });
+
+    const index = await buildModuleIndex(makeCtx("/project"), defaultConfig);
+
+    expect(index.contracts).toHaveLength(2);
+    const child = index.contracts.find((c) => c.modulePath === "/project/sub")!;
+    expect(child.visible).toEqual(
+      expect.arrayContaining([
+        { name: "OwnType", path: "OwnType" },
+        { name: "Helper" },
+      ])
+    );
+    const parent = index.contracts.find((c) => c.modulePath === "/project")!;
+    expect(parent.visible).toEqual([{ name: "Helper", path: "sub/Helper" }]);
+  });
+
+  it("does not complement when child has no module.md", async () => {
+    mockedReaddir.mockImplementation(async (dir: unknown) => {
+      const d = dir as string;
+      if (d === "/project") return [makeDirent("module.md", false), makeDirent("sub", true)] as Dirent[];
+      if (d === "/project/sub") return [makeDirent("lib.rs", false)] as Dirent[];
+      return [] as Dirent[];
+    });
+
+    mockedReadFileSync.mockReturnValue("content");
+    mockedParseFrontmatter.mockReturnValue({
+      frontmatter: { visible: [{ path: "sub/Helper" }] },
+      body: "",
+    });
+
+    const index = await buildModuleIndex(makeCtx("/project"), defaultConfig);
+
+    expect(index.contracts).toHaveLength(1);
+    expect(index.contracts[0].visible).toEqual([{ name: "Helper", path: "sub/Helper" }]);
+  });
+
+  it("complements with trailing slash (directory as module reference)", async () => {
+    mockedReaddir.mockImplementation(async (dir: unknown) => {
+      const d = dir as string;
+      if (d === "/project") return [makeDirent("module.md", false), makeDirent("sub", true)] as Dirent[];
+      if (d === "/project/sub") return [makeDirent("module.md", false)] as Dirent[];
+      return [] as Dirent[];
+    });
+
+    mockedReadFileSync.mockImplementation((p: unknown): string => {
+      const filePath = p as string;
+      if (filePath.endsWith("project/sub/module.md")) return "child";
+      return "parent";
+    });
+
+    mockedParseFrontmatter.mockImplementation((content: string) => {
+      if (content === "parent") return { frontmatter: { visible: [{ path: "sub/" }] }, body: "" };
+      return { frontmatter: { visible: [] }, body: "" };
+    });
+
+    const index = await buildModuleIndex(makeCtx("/project"), defaultConfig);
+
+    const child = index.contracts.find((c) => c.modulePath === "/project/sub")!;
+    expect(child.visible).toEqual(expect.arrayContaining([{ name: "sub" }]));
+  });
+
+  it("complements with bare string path containing slash", async () => {
+    mockedReaddir.mockImplementation(async (dir: unknown) => {
+      const d = dir as string;
+      if (d === "/project") return [makeDirent("module.md", false), makeDirent("sub", true)] as Dirent[];
+      if (d === "/project/sub") return [makeDirent("module.md", false)] as Dirent[];
+      return [] as Dirent[];
+    });
+
+    mockedReadFileSync.mockImplementation((p: unknown): string => {
+      const filePath = p as string;
+      if (filePath.endsWith("project/sub/module.md")) return "child";
+      return "parent";
+    });
+
+    mockedParseFrontmatter.mockImplementation((content: string) => {
+      if (content === "parent") return { frontmatter: { visible: ["sub/Helper"] }, body: "" };
+      return { frontmatter: { visible: [] }, body: "" };
+    });
+
+    const index = await buildModuleIndex(makeCtx("/project"), defaultConfig);
+
+    const child = index.contracts.find((c) => c.modulePath === "/project/sub")!;
+    expect(child.visible).toEqual(expect.arrayContaining([{ name: "Helper" }]));
   });
 });

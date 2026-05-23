@@ -113,48 +113,46 @@ describe("applyEdits", () => {
 });
 
 describe("parseVisibleEntry", () => {
-  it("returns name-only entry for single token", () => {
-    expect(parseVisibleEntry("Foo")).toEqual({ name: "Foo" });
+  it("parses bare string as path with extracted name", () => {
+    expect(parseVisibleEntry("Foo")).toEqual({ name: "Foo", path: "Foo" });
   });
 
-  it("returns name-only entry for whitespace-only string", () => {
-    expect(parseVisibleEntry("   ")).toEqual({ name: "   " });
+  it("extracts name from sub-path bare string", () => {
+    expect(parseVisibleEntry("sub/Helper")).toEqual({ name: "Helper", path: "sub/Helper" });
   });
 
-  it("returns name-only entry for empty string", () => {
-    expect(parseVisibleEntry("")).toEqual({ name: "" });
+  it("extracts name from bare string with trailing slash (dir reference)", () => {
+    expect(parseVisibleEntry("sub/mod1/")).toEqual({ name: "mod1", path: "sub/mod1/" });
   });
 
-  it("last token is name, everything before is modifier", () => {
-    expect(parseVisibleEntry("pub Foo")).toEqual({ modifier: "pub", name: "Foo" });
-  });
-
-  it("handles modifier containing special chars like parens", () => {
-    expect(parseVisibleEntry("pub(super) Foo")).toEqual({
+  it("parses object form with path and modifier", () => {
+    expect(parseVisibleEntry({ path: "sub/Type", modifier: "pub(super)" })).toEqual({
+      name: "Type",
       modifier: "pub(super)",
-      name: "Foo",
+      path: "sub/Type",
     });
   });
 
-  it("handles multi-word modifier", () => {
-    expect(parseVisibleEntry("pub(super) override Foo")).toEqual({
-      modifier: "pub(super) override",
+  it("parses object form with path only, no modifier", () => {
+    expect(parseVisibleEntry({ path: "Foo" })).toEqual({
       name: "Foo",
+      path: "Foo",
     });
   });
 
-  it("trims surrounding whitespace", () => {
-    expect(parseVisibleEntry("  pub Foo  ")).toEqual({
-      modifier: "pub",
-      name: "Foo",
+  it("parses object form with trailing slash", () => {
+    expect(parseVisibleEntry({ path: "sub/mod1/" })).toEqual({
+      name: "mod1",
+      path: "sub/mod1/",
     });
   });
 
-  it("collapses internal whitespace", () => {
-    expect(parseVisibleEntry("pub   Foo")).toEqual({
-      modifier: "pub",
-      name: "Foo",
-    });
+  it("trims whitespace from bare string", () => {
+    expect(parseVisibleEntry("  Foo  ")).toEqual({ name: "Foo", path: "Foo" });
+  });
+
+  it("handles empty string", () => {
+    expect(parseVisibleEntry("")).toEqual({ name: "", path: "" });
   });
 });
 

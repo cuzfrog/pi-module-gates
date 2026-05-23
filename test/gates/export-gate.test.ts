@@ -232,7 +232,7 @@ describe("checkExports", () => {
     expect(result.blocked).toBe(false);
   });
 
-  it("blocks symbol absent from grandparent in three-level nesting", () => {
+  it("allows export when immediate parent lists it, regardless of ancestor", () => {
     const index = makeIndex([
       {
         modulePath: "/project",
@@ -242,13 +242,13 @@ describe("checkExports", () => {
       },
       {
         modulePath: "/project/src",
-        visible: [{ name: "sharedFn" }, { name: "rootOnly" }],
+        visible: [{ name: "sharedFn" }],
         readonly: ["module.md"],
         prose: "",
       },
       {
         modulePath: "/project/src/payments",
-        visible: [{ name: "sharedFn" }, { name: "leafOnly" }],
+        visible: [{ name: "leafOnly" }],
         readonly: ["module.md"],
         prose: "",
       },
@@ -265,6 +265,36 @@ describe("checkExports", () => {
       "module.md",
     );
 
-    expect(result.blocked).toBe(true);
+    expect(result.blocked).toBe(false);
+  });
+
+  it("blocks export not in immediate parent's visible, even if grandparent has it", () => {
+    const index = makeIndex([
+      {
+        modulePath: "/project",
+        visible: [{ name: "rootOnly" }],
+        readonly: ["module.md"],
+        prose: "",
+      },
+      {
+        modulePath: "/project/src",
+        visible: [{ name: "sharedFn" }, { name: "rootOnly" }],
+        readonly: ["module.md"],
+        prose: "",
+      },
+    ]);
+
+    const before = "";
+    const after = "export function sharedFn() {}";
+    const result = checkExports(
+      "src/app.ts",
+      before,
+      after,
+      index,
+      cwd,
+      "module.md",
+    );
+
+    expect(result.blocked).toBe(false);
   });
 });

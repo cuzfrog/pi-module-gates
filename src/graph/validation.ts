@@ -21,17 +21,44 @@ export async function validateVisibleEntries(
     if (contract.visible === null) continue;
 
     const exportedSymbols = await collectExports(contract.modulePath, childModules);
+    // Cache for non-local path resolution
+    const pathExportsCache = new Map<string, Set<string>>();
 
     for (const sig of contract.visible) {
-      if (!exportedSymbols.has(sig.name)) {
-        const relModule = path.relative(cwd, path.join(contract.modulePath, descriptorFileName));
-        notify(
-          `[Module Gate] Dangling visible entry "${sig.name}" in ${relModule}`,
-          "info",
-        );
+      const targetDir = resolveValidationTarget(contract.modulePath, sig.path);
+      if (targetDir !== contract.modulePath) {
+        let symbols = pathExportsCache.get(targetDir);
+        if (!symbols) {
+          symbols = await collectExports(targetDir, childModules);
+          pathExportsCache.set(targetDir, symbols);
+        }
+        if (!symbols.has(sig.name)) {
+          const relModule = path.relative(cwd, path.join(contract.modulePath, descriptorFileName));
+          notify(
+            `[Module Gate] Dangling visible entry "${sig.name}" in ${relModule}`,
+            "info",
+          );
+        }
+      } else {
+        if (!exportedSymbols.has(sig.name)) {
+          const relModule = path.relative(cwd, path.join(contract.modulePath, descriptorFileName));
+          notify(
+            `[Module Gate] Dangling visible entry "${sig.name}" in ${relModule}`,
+            "info",
+          );
+        }
       }
     }
   }
+}
+
+function resolveValidationTarget(modulePath: string, entryPath?: string): string {
+  if (!entryPath) return modulePath;
+  const lastSlash = entryPath.lastIndexOf("/");
+  if (lastSlash < 0) return modulePath;
+  const dirPart = entryPath.slice(0, lastSlash + 1);
+  const joined = path.join(modulePath, dirPart);
+  return joined.endsWith(path.sep) ? joined.slice(0, -1) : joined;
 }
 
 async function collectExports(

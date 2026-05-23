@@ -7,9 +7,10 @@ import type { ModuleGateConfig } from "../config.ts";
 import type { Dirent } from "node:fs";
 import { validateVisibleEntries } from "./validation.ts";
 import { parseVisibleEntry } from "../utils.ts";
+import type { VisibleEntryRaw } from "../utils.ts";
 
 type ModuleFrontmatter = {
-  visible?: string[];
+  visible?: VisibleEntryRaw[];
   readonly?: string[];
 };
 
@@ -27,6 +28,7 @@ export async function buildModuleIndex(
 
   const moduleFiles = await findModuleFiles(scanRoot, config.moduleDescriptorFileName);
   const contracts = buildContracts(moduleFiles, notify, config.moduleDescriptorFileName);
+  applyComplementPass(contracts);
   const dirToModule = await buildDirToModuleMap(contracts);
   const index: ModuleIndex = { contracts, dirToModule };
 
@@ -120,6 +122,35 @@ async function findModuleFiles(dir: string, descriptorFileName: string): Promise
   }
 
   return results;
+}
+
+function applyComplementPass(contracts: ModuleContract[]): void {
+  for (const contract of contracts) {
+    if (contract.visible === null) continue;
+    for (const sig of contract.visible) {
+      if (!sig.path) continue;
+      const targetDir = resolveDir(contract.modulePath, sig.path);
+      if (targetDir === contract.modulePath) continue;
+      const target = contracts.find((c) => c.modulePath === targetDir);
+      if (!target || target.visible === null) continue;
+      if (target.visible.some((s) => s.name === sig.name)) continue;
+      target.visible.push({ name: sig.name, modifier: sig.modifier });
+    }
+  }
+}
+
+function resolveDir(modulePath: string, entryPath: string): string {
+  const dirPart = pathDirPart(entryPath);
+  if (!dirPart) return modulePath;
+  const joined = path.join(modulePath, dirPart);
+  return joined.endsWith(path.sep) ? joined.slice(0, -1) : joined;
+}
+
+function pathDirPart(entryPath: string): string {
+  const trimmed = entryPath.trim();
+  const lastSlash = trimmed.lastIndexOf("/");
+  if (lastSlash < 0) return "";
+  return trimmed.slice(0, lastSlash + 1);
 }
 
 async function walkDirs(root: string): Promise<string[]> {
