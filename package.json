@@ -1,8 +1,10 @@
 {
   "name": "@cuzfrog/pi-module-gates",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "pi extension that controls the entropy of the codebase by enforcing code module boundaries.",
-  "keywords": ["pi-package"],
+  "keywords": [
+    "pi-package"
+  ],
   "type": "module",
   "scripts": {
     "check": "tsc --noEmit",
@@ -35,7 +37,12 @@
   "homepage": "https://github.com/cuzfrog/pi-module-gate#readme",
   "license": "MIT",
   "author": "Cause Chung (cuzfrog@gmail.com)",
-  "files": ["src/", "skills/", "README.md", "LICENSE"],
+  "files": [
+    "src/",
+    "skills/",
+    "README.md",
+    "LICENSE"
+  ],
   "engines": {
     "node": ">=18"
   },
