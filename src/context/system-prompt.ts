@@ -14,7 +14,6 @@ This project uses \`${descriptorFileName}\`(case-insensitive) files to declare v
 If you cannot comply, reconsider your design, if impossible, raise to the user with tradeoffs.
 Each \`${descriptorFileName}\` gates its branching point in the tree.
 A \`${descriptorFileName}\` with a \`visible\` list means only entries in the list are allowed to be visible outside the module.
-A \`${descriptorFileName}\` and its mentioned \`readonly\` files are readonly.
-A \`${descriptorFileName}\` and its mentioned \`frozen\` files cannot grow their surface size (no new exports).
+\`readonly\` files are readonly; \`frozen\` files cannot grow their surface size (no new exports).
 Violations will be blocked.`;
 }
