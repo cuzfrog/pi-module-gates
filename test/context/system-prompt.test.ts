@@ -17,7 +17,7 @@ describe("buildSystemPromptHint", () => {
       dirToModule: new Map(),
     };
 
-    const result = buildSystemPromptHint(index, "You are a helpful assistant.", "module.md", true);
+    const result = buildSystemPromptHint(index, "You are a helpful assistant.", "module.md", "file");
 
     expect(result).toContain("You are a helpful assistant.");
     expect(result).toContain("module.md");
@@ -31,7 +31,7 @@ describe("buildSystemPromptHint", () => {
       dirToModule: new Map(),
     };
 
-    const result = buildSystemPromptHint(index, "You are a helpful assistant.", "module.md", true);
+    const result = buildSystemPromptHint(index, "You are a helpful assistant.", "module.md", "file");
 
     expect(result).toBe("You are a helpful assistant.");
   });
@@ -50,10 +50,49 @@ describe("buildSystemPromptHint", () => {
       dirToModule: new Map(),
     };
 
-    const result = buildSystemPromptHint(index, "Base prompt.", "CONTEXT.md", true);
+    const result = buildSystemPromptHint(index, "Base prompt.", "CONTEXT.md", "file");
 
     expect(result).toContain("Base prompt.");
     expect(result).toContain("CONTEXT.md");
     expect(result.length).toBeGreaterThan("Base prompt.".length);
+  });
+
+  it("mentions frontmatter in note when mode is frontmatter", () => {
+    const index: ModuleIndex = {
+      contracts: [
+        {
+          modulePath: "/project/src",
+          visible: [{ name: "fnA" }],
+          readonly: ["module.md"],
+          frozen: [],
+          prose: "Module A.",
+        },
+      ],
+      dirToModule: new Map(),
+    };
+
+    const result = buildSystemPromptHint(index, "Base prompt.", "module.md", "frontmatter");
+
+    expect(result).toContain("The frontmatter of");
+    expect(result).toContain("is readonly");
+  });
+
+  it("omits descriptor note when mode is off", () => {
+    const index: ModuleIndex = {
+      contracts: [
+        {
+          modulePath: "/project/src",
+          visible: [{ name: "fnA" }],
+          readonly: ["config.ts"],
+          frozen: [],
+          prose: "Module A.",
+        },
+      ],
+      dirToModule: new Map(),
+    };
+
+    const result = buildSystemPromptHint(index, "Base prompt.", "module.md", "off");
+
+    expect(result).not.toContain("is readonly");
   });
 });

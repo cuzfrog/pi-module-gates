@@ -31,7 +31,7 @@ const mockedValidateVisibleEntries = vi.mocked(validateVisibleEntries);
 
 const defaultConfig: ModuleGateConfig = {
   moduleDescriptorFileName: "module.md",
-  moduleDescriptorReadonly: true,
+  moduleDescriptorReadonly: "file",
   sourceRoot: "",
 };
 
@@ -91,7 +91,7 @@ describe("buildModuleIndex", () => {
     expect(index.contracts[0].prose).toBe("Greeting module.");
   });
 
-  it("adds module.md to readonly implicitly when moduleDescriptorReadonly is true", async () => {
+  it("adds module.md to readonly implicitly when moduleDescriptorReadonly is file", async () => {
     mockedReaddir.mockImplementation(async (dir: unknown) => {
       const d = dir as string;
       if (d === "/project") return [makeDirent("module.md", false)] as Dirent[];
@@ -111,7 +111,7 @@ describe("buildModuleIndex", () => {
     expect(index.contracts[0].readonly).toContain("config.json");
   });
 
-  it("does not add module.md to readonly when moduleDescriptorReadonly is false", async () => {
+  it("does not add module.md to readonly when moduleDescriptorReadonly is off", async () => {
     mockedReaddir.mockImplementation(async (dir: unknown) => {
       const d = dir as string;
       if (d === "/project") return [makeDirent("module.md", false)] as Dirent[];
@@ -127,12 +127,37 @@ describe("buildModuleIndex", () => {
 
     const config: ModuleGateConfig = {
       moduleDescriptorFileName: "module.md",
-      moduleDescriptorReadonly: false,
+      moduleDescriptorReadonly: "off",
       sourceRoot: "",
     };
     const index = await buildModuleIndex(makeCtx("/project"), config);
 
     expect(index.contracts[0].readonly).not.toContain("module.md");
+    expect(index.contracts[0].readonly).toContain("config.json");
+  });
+
+  it("adds module.md to readonly when moduleDescriptorReadonly is frontmatter", async () => {
+    mockedReaddir.mockImplementation(async (dir: unknown) => {
+      const d = dir as string;
+      if (d === "/project") return [makeDirent("module.md", false)] as Dirent[];
+      return [] as Dirent[];
+    });
+
+    mockedReadFileSync.mockReturnValue("---\nreadonly: [config.json]\n---\nRoot.");
+
+    mockedParseFrontmatter.mockReturnValue({
+      frontmatter: { readonly: ["config.json"] },
+      body: "Root.",
+    });
+
+    const config: ModuleGateConfig = {
+      moduleDescriptorFileName: "module.md",
+      moduleDescriptorReadonly: "frontmatter",
+      sourceRoot: "",
+    };
+    const index = await buildModuleIndex(makeCtx("/project"), config);
+
+    expect(index.contracts[0].readonly).toContain("module.md");
     expect(index.contracts[0].readonly).toContain("config.json");
   });
 
@@ -281,7 +306,7 @@ describe("buildModuleIndex", () => {
 
     const config: ModuleGateConfig = {
       moduleDescriptorFileName: "CONTEXT.md",
-      moduleDescriptorReadonly: true,
+      moduleDescriptorReadonly: "file",
       sourceRoot: "",
     };
     const index = await buildModuleIndex(makeCtx("/project"), config);
@@ -324,7 +349,7 @@ describe("buildModuleIndex", () => {
 
     const config: ModuleGateConfig = {
       moduleDescriptorFileName: "module.md",
-      moduleDescriptorReadonly: true,
+      moduleDescriptorReadonly: "file",
       sourceRoot: "src/",
     };
     const index = await buildModuleIndex(makeCtx("/project"), config);

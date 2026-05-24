@@ -1,16 +1,20 @@
 import type { ModuleIndex } from "../types.ts";
+import type { ModuleGateConfig } from "../config.ts";
 
 export function buildSystemPromptHint(
   index: ModuleIndex,
   systemPrompt: string,
   descriptorFileName: string,
-  moduleDescriptorReadonly: boolean,
+  moduleDescriptorReadonly: ModuleGateConfig["moduleDescriptorReadonly"],
 ): string {
   if (index.contracts.length === 0) return systemPrompt;
 
-  const descriptorNote = moduleDescriptorReadonly
-    ? ` The \`${descriptorFileName}\` file itself is readonly.`
-    : "";
+  const descriptorNote =
+    moduleDescriptorReadonly === "frontmatter"
+      ? ` The frontmatter of \`${descriptorFileName}\` is readonly.`
+      : moduleDescriptorReadonly === "file"
+        ? ` The \`${descriptorFileName}\` file itself is readonly.`
+        : "";
 
   return systemPrompt + `
 

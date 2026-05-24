@@ -4,6 +4,8 @@ import { readdir } from "node:fs/promises";
 import { parseFrontmatter } from "@earendil-works/pi-coding-agent";
 import type { ModuleContract, ModuleIndex } from "../types.ts";
 import type { ModuleGateConfig } from "../config.ts";
+
+type ModuleDescriptorReadonly = ModuleGateConfig["moduleDescriptorReadonly"];
 import type { Dirent } from "node:fs";
 import { validateVisibleEntries } from "./validation.ts";
 import { parseVisibleEntry, type VisibleEntryRaw, type ModuleFrontmatter } from "./frontmatter-parser.ts";
@@ -35,7 +37,7 @@ function buildContracts(
   moduleFiles: string[],
   onInfo: (message: string) => void,
   descriptorFileName: string,
-  moduleDescriptorReadonly: boolean,
+  moduleDescriptorReadonly: ModuleDescriptorReadonly,
 ): ModuleContract[] {
   const contracts: ModuleContract[] = [];
 
@@ -57,7 +59,7 @@ function buildContracts(
     }
 
     const readonlyEntries = frontmatter.readonly ?? [];
-    if (moduleDescriptorReadonly) {
+    if (moduleDescriptorReadonly !== "off") {
       readonlyEntries.push(descriptorFileName);
     }
 
