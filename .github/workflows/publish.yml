@@ -25,6 +25,9 @@ jobs:
 
       - run: npm test
 
+      - name: Upgrade npm for OIDC registry auth support
+        run: npm install -g npm@latest
+
       - name: Publish with OIDC auth
         run: |
           unset NODE_AUTH_TOKEN
