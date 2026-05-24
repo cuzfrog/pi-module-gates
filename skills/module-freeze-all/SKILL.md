@@ -1,13 +1,17 @@
 ---
 name: module-freeze-all
-description: Auto-freeze all files in module descriptors. Scans module.md files in the source tree and populates the frozen field with every file in each module directory. Use when initializing module gates or after adding new source files to enforce module boundaries.
+description: Auto-freeze all files in module descriptors so their module surface area cannot be increased.
+disable-model-invocation: true
+argument-hint: <user-instructions>
 ---
 
-# Module Freeze All
+## What you do
+- Find out module descriptor filename in the context.
+- Find out source root in the context or from configurations.
+- Derive scripts args from user instructions.
+- Call the script to scans the source tree for module descriptors and auto-populates their `frozen` entries with all files in each module directory.
 
-Scans the source tree for `module.md` descriptors and auto-populates their `frozen` entries with all files in each module directory.
-
-## Usage
+## Script Usage
 
 ```bash
 node skills/module-freeze-all/scripts/freeze-all.mjs [options]
@@ -16,13 +20,12 @@ node skills/module-freeze-all/scripts/freeze-all.mjs [options]
 Options:
 - `--root <dir>` - Source root directory (default: `src`)
 - `--dry-run` - Show what would change without writing files
-- `--create` - Create `module.md` for directories without one (adds `frozen` only)
+- `--create` - Create module descriptor files for directories without one (adds `frozen` only)
 - `--descriptor-name <name>` - Module descriptor filename (default: `module.md`)
 
-## Behavior
+### Behavior
 
-1. Finds all `module.md` files under the source root
-2. For each module directory, lists all direct files (not subdirectories, not `module.md` itself)
+1. Finds all module descriptor files under the source root.
+2. For each module directory, lists all direct files (not subdirectories, not module descriptor file itself)
 3. Adds those files to the `frozen` frontmatter field
-4. Preserves existing `frozen` entries, `visible`, `readonly`, and body prose
-5. Skips files that belong to nested sub-modules
+4. Preserves existing `frozen` entries, other fields in the frontmatter, and body prose
