@@ -21,7 +21,7 @@ describe("loadConfig", () => {
 
     const config = loadConfig("/project");
     expect(config.moduleDescriptorFileName).toBe("module.md");
-    expect(config.moduleDescriptorReadonly).toBe(true);
+    expect(config.moduleDescriptorReadonly).toBe("file");
     expect(config.sourceRoot).toBe("src/");
   });
 
@@ -32,7 +32,7 @@ describe("loadConfig", () => {
 
     const config = loadConfig("/project");
     expect(config.moduleDescriptorFileName).toBe("module.md");
-    expect(config.moduleDescriptorReadonly).toBe(true);
+    expect(config.moduleDescriptorReadonly).toBe("file");
     expect(config.sourceRoot).toBe("src/");
   });
 
@@ -41,7 +41,7 @@ describe("loadConfig", () => {
 
     const config = loadConfig("/project");
     expect(config.moduleDescriptorFileName).toBe("module.md");
-    expect(config.moduleDescriptorReadonly).toBe(true);
+    expect(config.moduleDescriptorReadonly).toBe("file");
     expect(config.sourceRoot).toBe("src/");
   });
 
@@ -50,7 +50,7 @@ describe("loadConfig", () => {
       JSON.stringify({
         "module-gate": {
           moduleDescriptorFileName: "CONTEXT.md",
-          moduleDescriptorReadonly: false,
+          moduleDescriptorReadonly: "off",
           sourceRoot: "lib/",
         },
       }),
@@ -58,7 +58,7 @@ describe("loadConfig", () => {
 
     const config = loadConfig("/project");
     expect(config.moduleDescriptorFileName).toBe("CONTEXT.md");
-    expect(config.moduleDescriptorReadonly).toBe(false);
+    expect(config.moduleDescriptorReadonly).toBe("off");
     expect(config.sourceRoot).toBe("lib/");
   });
 
@@ -73,8 +73,47 @@ describe("loadConfig", () => {
 
     const config = loadConfig("/project");
     expect(config.moduleDescriptorFileName).toBe("CONTEXT.md");
-    expect(config.moduleDescriptorReadonly).toBe(true);
+    expect(config.moduleDescriptorReadonly).toBe("file");
     expect(config.sourceRoot).toBe("src/");
+  });
+
+  it("accepts frontmatter mode", () => {
+    mockedReadFileSync.mockReturnValue(
+      JSON.stringify({
+        "module-gate": {
+          moduleDescriptorReadonly: "frontmatter",
+        },
+      }),
+    );
+
+    const config = loadConfig("/project");
+    expect(config.moduleDescriptorReadonly).toBe("frontmatter");
+  });
+
+  it("normalizes boolean true to file mode", () => {
+    mockedReadFileSync.mockReturnValue(
+      JSON.stringify({
+        "module-gate": {
+          moduleDescriptorReadonly: true,
+        },
+      }),
+    );
+
+    const config = loadConfig("/project");
+    expect(config.moduleDescriptorReadonly).toBe("file");
+  });
+
+  it("normalizes boolean false to off mode", () => {
+    mockedReadFileSync.mockReturnValue(
+      JSON.stringify({
+        "module-gate": {
+          moduleDescriptorReadonly: false,
+        },
+      }),
+    );
+
+    const config = loadConfig("/project");
+    expect(config.moduleDescriptorReadonly).toBe("off");
   });
 
   it("reads from .pi/settings.json relative to cwd", () => {

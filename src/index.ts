@@ -4,7 +4,7 @@ import type {
   ToolCallEventResult,
   BeforeAgentStartEventResult,
 } from "@earendil-works/pi-coding-agent";
-import { isToolCallEventType } from "@earendil-works/pi-coding-agent";
+import { isToolCallEventType, parseFrontmatter } from "@earendil-works/pi-coding-agent";
 import type { ModuleIndex } from "./types.ts";
 import { loadConfig } from "./config.ts";
 import type { ModuleGateConfig } from "./config.ts";
@@ -67,6 +67,27 @@ function handleEdit(
 
   const readonlyResult = checkReadonly(filePath, index, cwd, config.moduleDescriptorFileName);
   if (readonlyResult.blocked) {
+    if (
+      config.moduleDescriptorReadonly === "frontmatter" &&
+      isDescriptorFile(absPath, config.moduleDescriptorFileName)
+    ) {
+      const fmBefore = extractFrontmatter(before);
+      const fmAfter = extractFrontmatter(after);
+      if (JSON.stringify(fmBefore) === JSON.stringify(fmAfter)) {
+        return undefined;
+      }
+      return {
+        block: true,
+        reason: formatDenial(
+          filePath,
+          `Readonly rule: frontmatter of ${config.moduleDescriptorFileName} is readonly`,
+          absPath,
+          index,
+          cwd,
+          config.moduleDescriptorFileName,
+        ),
+      };
+    }
     return { block: true, reason: formatDenial(filePath, readonlyResult.reason, absPath, index, cwd, config.moduleDescriptorFileName) };
   }
 
@@ -104,4 +125,17 @@ function formatDenial(
   }
 
   return message;
+}
+
+function isDescriptorFile(absPath: string, descriptorFileName: string): boolean {
+  const basename = path.basename(absPath);
+  return basename.toLowerCase() === descriptorFileName.toLowerCase();
+}
+
+function extractFrontmatter(content: string): Record<string, unknown> {
+  try {
+    return parseFrontmatter(content).frontmatter;
+  } catch {
+    return {};
+  }
 }
