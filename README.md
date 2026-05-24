@@ -27,7 +27,8 @@ The extension intercepts agent `write`/`edit` operations and enforces these cont
    - **Export gate** — would the change introduce an export not in the `visible` list?
    - **Import gate** (not implemented yet) — would the change introduce an import violating visibility scope?
 
-System prompt: [system-prompt.md](src/context/system-prompt.ts)
+- System prompt: [system-prompt.md](src/context/system-prompt.ts)
+- Currently [supported languages](src/gates/checkers/index.ts): **Rust**, **TypeScript**
 
 ## Installation
 ```bash
@@ -60,7 +61,6 @@ frozen: [mod.rs]
 Frozen files cannot change their surface size: no new exports or public entries are allowed.
 
 ### Visibility whitelist (under redesign)
-Supported languages: Rust, TypeScript
 
 ```yaml
 visible:
