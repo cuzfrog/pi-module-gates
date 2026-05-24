@@ -38,3 +38,31 @@ export function applyEdits(content: string, edits: { oldText: string; newText: s
 export function isWithinSourceRoot(absPath: string, resolvedRoot: string): boolean {
   return absPath.startsWith(resolvedRoot + path.sep) || absPath === resolvedRoot;
 }
+
+export function getAncestorContracts(
+  absFile: string,
+  index: ModuleIndex,
+): { modulePath: string; readonly: string[]; frozen: string[] }[] {
+  return index.contracts
+    .filter((c) => absFile.startsWith(c.modulePath + path.sep) || absFile === c.modulePath)
+    .map(({ modulePath, readonly, frozen }) => ({ modulePath, readonly, frozen }));
+}
+
+export function matchesPattern(
+  absFile: string,
+  pattern: string,
+  modulePath: string,
+): boolean {
+  const resolved = path.resolve(modulePath, pattern);
+
+  if (pattern.endsWith("*")) {
+    const prefix = path.resolve(modulePath, pattern.slice(0, -1));
+    return absFile.startsWith(prefix);
+  }
+
+  if (absFile === resolved) return true;
+
+  if (absFile.startsWith(resolved + path.sep)) return true;
+
+  return false;
+}

@@ -12,6 +12,7 @@ import { buildModuleIndex } from "./graph/module-index-builder.ts";
 import { findOwningModule, readFileSafe, applyEdits, isWithinSourceRoot } from "./utils.ts";
 import { checkReadonly } from "./gates/readonly-gate.ts";
 import { checkExports } from "./gates/export-gate.ts";
+import { checkFrozen } from "./gates/frozen-gate.ts";
 import { buildSystemPromptHint } from "./context/system-prompt.ts";
 import "./gates/checkers/index.ts";
 
@@ -67,6 +68,11 @@ function handleEdit(
   const before = readFileSafe(absPath);
   const after = applyEdits(before, edits);
 
+  const frozenResult = checkFrozen(filePath, before, after, index, cwd, config.moduleDescriptorFileName);
+  if (frozenResult.blocked) {
+    return { block: true, reason: formatDenial(filePath, frozenResult.reason, absPath, index, cwd, config.moduleDescriptorFileName) };
+  }
+
   const exportResult = checkExports(filePath, before, after, index, cwd, config.moduleDescriptorFileName);
   if (exportResult.blocked) {
     return { block: true, reason: formatDenial(filePath, exportResult.reason, absPath, index, cwd, config.moduleDescriptorFileName) };
@@ -93,6 +99,11 @@ function handleWrite(
   }
 
   const before = readFileSafe(absPath);
+
+  const frozenResult = checkFrozen(filePath, before, content, index, cwd, config.moduleDescriptorFileName);
+  if (frozenResult.blocked) {
+    return { block: true, reason: formatDenial(filePath, frozenResult.reason, absPath, index, cwd, config.moduleDescriptorFileName) };
+  }
 
   const exportResult = checkExports(filePath, before, content, index, cwd, config.moduleDescriptorFileName);
   if (exportResult.blocked) {

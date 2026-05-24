@@ -16,6 +16,7 @@ describe("checkExports", () => {
         modulePath: "/project/src",
         visible: [{ name: "allowedFn" }],
         readonly: ["module.md"],
+        frozen: [],
         prose: "",
       },
     ]);
@@ -40,6 +41,7 @@ describe("checkExports", () => {
         modulePath: "/project/src",
         visible: [{ name: "allowedFn" }],
         readonly: ["module.md"],
+        frozen: [],
         prose: "",
       },
     ]);
@@ -57,6 +59,7 @@ describe("checkExports", () => {
         modulePath: "/project/src",
         visible: [],
         readonly: ["module.md"],
+        frozen: [],
         prose: "",
       },
     ]);
@@ -79,12 +82,14 @@ describe("checkExports", () => {
         modulePath: "/project",
         visible: [{ name: "sharedFn" }, { name: "rootOnly" }],
         readonly: ["module.md"],
+        frozen: [],
         prose: "",
       },
       {
         modulePath: "/project/src",
         visible: [{ name: "sharedFn" }, { name: "srcOnly" }],
         readonly: ["module.md"],
+        frozen: [],
         prose: "",
       },
     ]);
@@ -105,6 +110,7 @@ describe("checkExports", () => {
         modulePath: "/project/src",
         visible: null,
         readonly: ["module.md"],
+        frozen: [],
         prose: "",
       },
     ]);
@@ -122,6 +128,7 @@ describe("checkExports", () => {
         modulePath: "/project/src",
         visible: [],
         readonly: ["module.md"],
+        frozen: [],
         prose: "",
       },
     ]);
@@ -142,6 +149,7 @@ describe("checkExports", () => {
         modulePath: "/project/src",
         visible: [],
         readonly: ["module.md"],
+        frozen: [],
         prose: "",
       },
     ]);
@@ -158,6 +166,7 @@ describe("checkExports", () => {
         modulePath: "/project/src",
         visible: [{ name: "allowedFn" }],
         readonly: ["module.md"],
+        frozen: [],
         prose: "",
       },
     ]);
@@ -192,12 +201,14 @@ describe("checkExports", () => {
         modulePath: "/project",
         visible: [{ name: "sharedFn" }, { name: "rootOnly" }],
         readonly: ["module.md"],
+        frozen: [],
         prose: "",
       },
       {
         modulePath: "/project/src",
         visible: [{ name: "sharedFn" }, { name: "srcOnly" }],
         readonly: ["module.md"],
+        frozen: [],
         prose: "",
       },
     ]);
@@ -215,12 +226,14 @@ describe("checkExports", () => {
         modulePath: "/project",
         visible: null,
         readonly: ["module.md"],
+        frozen: [],
         prose: "",
       },
       {
         modulePath: "/project/src",
         visible: [{ name: "childFn" }],
         readonly: ["module.md"],
+        frozen: [],
         prose: "",
       },
     ]);
@@ -238,18 +251,21 @@ describe("checkExports", () => {
         modulePath: "/project",
         visible: [{ name: "rootOnly" }],
         readonly: ["module.md"],
+        frozen: [],
         prose: "",
       },
       {
         modulePath: "/project/src",
         visible: [{ name: "sharedFn" }],
         readonly: ["module.md"],
+        frozen: [],
         prose: "",
       },
       {
         modulePath: "/project/src/payments",
         visible: [{ name: "leafOnly" }],
         readonly: ["module.md"],
+        frozen: [],
         prose: "",
       },
     ]);
@@ -274,12 +290,14 @@ describe("checkExports", () => {
         modulePath: "/project",
         visible: [{ name: "rootOnly" }],
         readonly: ["module.md"],
+        frozen: [],
         prose: "",
       },
       {
         modulePath: "/project/src",
         visible: [{ name: "sharedFn" }, { name: "rootOnly" }],
         readonly: ["module.md"],
+        frozen: [],
         prose: "",
       },
     ]);

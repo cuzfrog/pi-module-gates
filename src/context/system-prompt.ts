@@ -10,10 +10,11 @@ export function buildSystemPromptHint(
   return systemPrompt + `
 
 ## Module gates (boundary enforcement)
-This project uses \`${descriptorFileName}\`(case-insensitive) files to declare visibility and readonly rules that you should follow.
+This project uses \`${descriptorFileName}\`(case-insensitive) files to declare visibility, readonly and frozen rules that you should follow.
 If you cannot comply, reconsider your design, if impossible, raise to the user with tradeoffs.
 Each \`${descriptorFileName}\` gates its branching point in the tree.
 A \`${descriptorFileName}\` with a \`visible\` list means only entries in the list are allowed to be visible outside the module.
 A \`${descriptorFileName}\` and its mentioned \`readonly\` files are readonly.
+A \`${descriptorFileName}\` and its mentioned \`frozen\` files cannot grow their surface size (no new exports).
 Violations will be blocked.`;
 }
