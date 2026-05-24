@@ -25,11 +25,7 @@ jobs:
 
       - run: npm test
 
-      - name: Clear .npmrc auth token for OIDC flow
+      - name: Publish with OIDC auth
         run: |
-          if [ -f "$NPM_CONFIG_USERCONFIG" ]; then
-            grep -v 'authToken' "$NPM_CONFIG_USERCONFIG" > /tmp/.npmrc.clean
-            mv /tmp/.npmrc.clean "$NPM_CONFIG_USERCONFIG"
-          fi
-
-      - run: npm publish --provenance --access public
+          unset NODE_AUTH_TOKEN
+          npm publish --provenance --access public
