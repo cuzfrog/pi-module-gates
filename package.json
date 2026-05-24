@@ -11,6 +11,9 @@
   "pi": {
     "extensions": [
       "./src/index.ts"
+    ],
+    "skills": [
+      "./skills"
     ]
   },
   "peerDependencies": {
@@ -32,7 +35,7 @@
   "homepage": "https://github.com/cuzfrog/pi-module-gate#readme",
   "license": "MIT",
   "author": "Cause Chung (cuzfrog@gmail.com)",
-  "files": ["src/", "README.md", "LICENSE"],
+  "files": ["src/", "skills/", "README.md", "LICENSE"],
   "engines": {
     "node": ">=18"
   },

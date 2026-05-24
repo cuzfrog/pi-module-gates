@@ -1,4 +1,10 @@
 ---
-visible: [buildModuleIndex]
+visible:
+  - buildModuleIndex
+frozen:
+  - frontmatter-parser.ts
+  - module-index-builder.ts
+  - validation.ts
 ---
+
 
