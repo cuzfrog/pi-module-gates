@@ -28,7 +28,7 @@ The extension intercepts agent `write`/`edit` operations and enforces these cont
    - **Import gate** (not implemented yet) — would the change introduce an import violating visibility scope?
 
 - System prompt: [system-prompt.md](src/context/system-prompt.ts)
-- Currently [supported languages](src/gates/checkers/index.ts): **Rust**, **TypeScript**
+- Currently [supported languages](src/gates/checkers/index.ts): **TypeScript/JavaScript**, **Rust**, **Java**, **Go**, **Kotlin**, **Scala**
 
 ## Installation
 ```bash
