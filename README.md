@@ -11,8 +11,9 @@ AI coding agents produce edits with limited context knowledge (myopia) — their
 
 **Module contracts as guardrails.** Each directory can contain a descriptor file that declares:
 
-- `visible` — the set of exports allowed to be added or modified in that module
 - `readonly` — files and directories the agent must not touch
+- `frozen` — files where no new exports are allowed
+- `visible` — the set of exports allowed to be added or modified in that module
 
 The extension intercepts agent `write`/`edit` operations and enforces these contracts. Violations are blocked with a clear reason.
 
