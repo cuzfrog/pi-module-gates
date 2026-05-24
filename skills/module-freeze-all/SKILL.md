@@ -29,3 +29,7 @@ Options:
 2. For each module directory, lists all direct files (not subdirectories, not module descriptor file itself)
 3. Adds those files to the `frozen` frontmatter field
 4. Preserves existing `frozen` entries, other fields in the frontmatter, and body prose
+
+
+## Extra user instructions:
+"$ARGUMENTS"

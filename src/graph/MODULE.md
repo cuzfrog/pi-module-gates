@@ -1,6 +1,4 @@
 ---
-visible:
-  - buildModuleIndex
 frozen:
   - frontmatter-parser.ts
   - module-index-builder.ts
