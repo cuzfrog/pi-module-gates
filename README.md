@@ -60,6 +60,8 @@ frozen: [mod.rs]
 ```
 Frozen files cannot change their surface size: no new exports or public entries are allowed.
 
+A skill [module-freeze-all](src/skills/module-freeze-all) has been included to auto-freeze modules.
+
 ### Visibility whitelist (under redesign)
 
 ```yaml
