@@ -17,6 +17,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+          registry-url: "https://registry.npmjs.org"
 
       - run: npm ci
 
@@ -24,4 +25,11 @@ jobs:
 
       - run: npm test
 
-      - run: npm publish --provenance
+      - name: Clear .npmrc auth token for OIDC flow
+        run: |
+          if [ -f "$NPM_CONFIG_USERCONFIG" ]; then
+            grep -v 'authToken' "$NPM_CONFIG_USERCONFIG" > /tmp/.npmrc.clean
+            mv /tmp/.npmrc.clean "$NPM_CONFIG_USERCONFIG"
+          fi
+
+      - run: npm publish --provenance --access public
