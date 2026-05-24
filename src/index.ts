@@ -12,6 +12,7 @@ import { buildModuleIndex } from "./graph/module-index-builder.ts";
 import { findOwningModule, readFileSafe, applyEdits, isWithinSourceRoot } from "./utils.ts";
 import { checkReadonly } from "./gates/readonly-gate.ts";
 import { checkExports } from "./gates/export-gate.ts";
+import { checkFrozen } from "./gates/frozen-gate.ts";
 import { buildSystemPromptHint } from "./context/system-prompt.ts";
 import "./gates/checkers/index.ts";
 
@@ -33,7 +34,7 @@ export default function (pi: ExtensionAPI): void {
   pi.on("before_agent_start", async (event): Promise<BeforeAgentStartEventResult | void> => {
     if (index.contracts.length === 0) return;
     return {
-      systemPrompt: buildSystemPromptHint(index, event.systemPrompt, config.moduleDescriptorFileName),
+      systemPrompt: buildSystemPromptHint(index, event.systemPrompt, config.moduleDescriptorFileName, config.moduleDescriptorReadonly),
     };
   });
 
@@ -42,7 +43,9 @@ export default function (pi: ExtensionAPI): void {
       return handleEdit(event.input.path, event.input.edits, ctx.cwd, index, config);
     }
     if (isToolCallEventType("write", event)) {
-      return handleWrite(event.input.path, event.input.content, ctx.cwd, index, config);
+      const absPath = path.resolve(ctx.cwd, event.input.path);
+      const before = readFileSafe(absPath);
+      return handleEdit(event.input.path, [{ oldText: before, newText: event.input.content }], ctx.cwd, index, config);
     }
   });
 }
@@ -55,46 +58,24 @@ function handleEdit(
   config: ModuleGateConfig,
 ): ToolCallEventResult | undefined {
   const absPath = path.resolve(cwd, filePath);
-  const resolvedRoot = path.resolve(cwd, config.sourceRoot);
-
-  if (!isWithinSourceRoot(absPath, resolvedRoot)) return undefined;
-
-  const readonlyResult = checkReadonly(filePath, index, cwd, config.moduleDescriptorFileName);
-  if (readonlyResult.blocked) {
-    return { block: true, reason: formatDenial(filePath, readonlyResult.reason, absPath, index, cwd, config.moduleDescriptorFileName) };
-  }
 
   const before = readFileSafe(absPath);
   const after = applyEdits(before, edits);
+  const srcRoot = path.resolve(cwd, config.sourceRoot);
 
-  const exportResult = checkExports(filePath, before, after, index, cwd, config.moduleDescriptorFileName);
-  if (exportResult.blocked) {
-    return { block: true, reason: formatDenial(filePath, exportResult.reason, absPath, index, cwd, config.moduleDescriptorFileName) };
-  }
-
-  return undefined;
-}
-
-function handleWrite(
-  filePath: string,
-  content: string,
-  cwd: string,
-  index: ModuleIndex,
-  config: ModuleGateConfig,
-): ToolCallEventResult | undefined {
-  const absPath = path.resolve(cwd, filePath);
-  const resolvedRoot = path.resolve(cwd, config.sourceRoot);
-
-  if (!isWithinSourceRoot(absPath, resolvedRoot)) return undefined;
+  if (!isWithinSourceRoot(absPath, srcRoot)) return undefined;
 
   const readonlyResult = checkReadonly(filePath, index, cwd, config.moduleDescriptorFileName);
   if (readonlyResult.blocked) {
     return { block: true, reason: formatDenial(filePath, readonlyResult.reason, absPath, index, cwd, config.moduleDescriptorFileName) };
   }
 
-  const before = readFileSafe(absPath);
+  const frozenResult = checkFrozen(filePath, before, after, index, cwd, config.moduleDescriptorFileName);
+  if (frozenResult.blocked) {
+    return { block: true, reason: formatDenial(filePath, frozenResult.reason, absPath, index, cwd, config.moduleDescriptorFileName) };
+  }
 
-  const exportResult = checkExports(filePath, before, content, index, cwd, config.moduleDescriptorFileName);
+  const exportResult = checkExports(filePath, before, after, index, cwd, config.moduleDescriptorFileName);
   if (exportResult.blocked) {
     return { block: true, reason: formatDenial(filePath, exportResult.reason, absPath, index, cwd, config.moduleDescriptorFileName) };
   }

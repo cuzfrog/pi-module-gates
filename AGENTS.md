@@ -11,6 +11,7 @@
 - No emojis in commits, issues, PR comments, or code
 - When the user asks a question, answer it first before making edits or running implementation commands.
 - When writing text, think from the reader's perspective, write only what they need to know.
+- When writing to README, be concise.
 
 ## Code Conventions
 
@@ -30,8 +31,9 @@
 5. concrete implementation
 6. private functions
 
-### Git 
-When involving git/gh operations, refer to @doc/AGENTS_GIT.md.
+### Git
+- When involving git operations, refer to @doc/AGENTS_GIT.md.
+- Use `scripts/gh-bot.mjs` instead of `gh` to assume your identity.
 
 ## Coding Principles
 - Read files in full before making wide-ranging changes, before editing files you have not already fully inspected, and when the user asks you to investigate or audit something. Do not rely only on search snippets for broad changes. Given a change, do not first attempt to insert into current code base. First look at it from a higher perspective, discover refactor opportunities.

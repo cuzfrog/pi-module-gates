@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import * as fs from "node:fs";
-import { findOwningModule, readFileSafe, applyEdits, isWithinSourceRoot } from "../src/utils.ts";
+import { findOwningModule, readFileSafe, applyEdits, isWithinSourceRoot, getAncestorContracts, matchesPattern } from "../src/utils.ts";
+import type { ModuleContract } from "../src/types.ts";
 
 vi.mock("node:fs", () => ({
   readFileSync: vi.fn(),
@@ -140,5 +141,82 @@ describe("isWithinSourceRoot", () => {
 
   it("returns false for file in root when resolvedRoot is a child path", () => {
     expect(isWithinSourceRoot("/project", "/project/src")).toBe(false);
+  });
+});
+
+describe("getAncestorContracts", () => {
+  function contract(modulePath: string, readonly: string[] = [], frozen: string[] = []): ModuleContract {
+    return { modulePath, visible: null, readonly, frozen, prose: "" };
+  }
+
+  it("returns matching contracts for file under module path", () => {
+    const index = { contracts: [contract("/project/src")], dirToModule: new Map() };
+    expect(getAncestorContracts("/project/src/app.ts", index)).toHaveLength(1);
+  });
+
+  it("returns multiple ancestor contracts", () => {
+    const index = {
+      contracts: [contract("/project"), contract("/project/src"), contract("/project/other")],
+      dirToModule: new Map(),
+    };
+    expect(getAncestorContracts("/project/src/app.ts", index)).toHaveLength(2);
+  });
+
+  it("excludes non-ancestor contracts", () => {
+    const index = {
+      contracts: [contract("/project/other")],
+      dirToModule: new Map(),
+    };
+    expect(getAncestorContracts("/project/src/app.ts", index)).toHaveLength(0);
+  });
+
+  it("includes contract for exact module path match", () => {
+    const index = { contracts: [contract("/project/src")], dirToModule: new Map() };
+    expect(getAncestorContracts("/project/src", index)).toHaveLength(1);
+  });
+
+  it("returns only readonly and frozen from each contract", () => {
+    const index = {
+      contracts: [contract("/project/src", ["a.ts"], ["b.ts"])],
+      dirToModule: new Map(),
+    };
+    const result = getAncestorContracts("/project/src/app.ts", index);
+    expect(result[0]).toEqual({ modulePath: "/project/src", readonly: ["a.ts"], frozen: ["b.ts"] });
+  });
+});
+
+describe("matchesPattern", () => {
+  const modulePath = "/project/src";
+
+  it("matches exact file path", () => {
+    expect(matchesPattern("/project/src/app.ts", "app.ts", modulePath)).toBe(true);
+  });
+
+  it("does not match different file", () => {
+    expect(matchesPattern("/project/src/app.ts", "other.ts", modulePath)).toBe(false);
+  });
+
+  it("matches file under a directory pattern", () => {
+    expect(matchesPattern("/project/src/vendor/lib.ts", "vendor", modulePath)).toBe(true);
+  });
+
+  it("matches the directory itself", () => {
+    expect(matchesPattern("/project/src/vendor", "vendor", modulePath)).toBe(true);
+  });
+
+  it("matches glob pattern (wildcard suffix)", () => {
+    expect(matchesPattern("/project/src/generated-types.ts", "generated*", modulePath)).toBe(true);
+  });
+
+  it("glob matches directory prefix", () => {
+    expect(matchesPattern("/project/src/generated/sub/file.ts", "generated*", modulePath)).toBe(true);
+  });
+
+  it("glob does not match unrelated prefix", () => {
+    expect(matchesPattern("/project/src/generic/file.ts", "generated*", modulePath)).toBe(false);
+  });
+
+  it("resolves pattern relative to module path", () => {
+    expect(matchesPattern("/project/src/sub/app.ts", "sub", modulePath)).toBe(true);
   });
 });

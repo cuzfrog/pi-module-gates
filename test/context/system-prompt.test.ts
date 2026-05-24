@@ -10,13 +10,14 @@ describe("buildSystemPromptHint", () => {
           modulePath: "/project/src",
           visible: [{ name: "greet" }, { name: "Config" }],
           readonly: ["secret.ts", "module.md"],
+        frozen: [],
           prose: "Greeting module.",
         },
       ],
       dirToModule: new Map(),
     };
 
-    const result = buildSystemPromptHint(index, "You are a helpful assistant.", "module.md");
+    const result = buildSystemPromptHint(index, "You are a helpful assistant.", "module.md", true);
 
     expect(result).toContain("You are a helpful assistant.");
     expect(result).toContain("module.md");
@@ -30,7 +31,7 @@ describe("buildSystemPromptHint", () => {
       dirToModule: new Map(),
     };
 
-    const result = buildSystemPromptHint(index, "You are a helpful assistant.", "module.md");
+    const result = buildSystemPromptHint(index, "You are a helpful assistant.", "module.md", true);
 
     expect(result).toBe("You are a helpful assistant.");
   });
@@ -42,13 +43,14 @@ describe("buildSystemPromptHint", () => {
           modulePath: "/project/src",
           visible: [{ name: "fnA" }],
           readonly: ["module.md"],
+        frozen: [],
           prose: "Module A.",
         },
       ],
       dirToModule: new Map(),
     };
 
-    const result = buildSystemPromptHint(index, "Base prompt.", "CONTEXT.md");
+    const result = buildSystemPromptHint(index, "Base prompt.", "CONTEXT.md", true);
 
     expect(result).toContain("Base prompt.");
     expect(result).toContain("CONTEXT.md");

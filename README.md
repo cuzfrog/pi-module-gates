@@ -3,18 +3,6 @@
 pi cli extension that controls the entropy of the codebase by enforcing code module boundaries.
 It helps combat slop generation and code architecture degradation.
 
-## Installation
-
-```bash
-pi install npm:@cuzfrog/pi-module-gates
-```
-
-Or load directly for a single session:
-
-```bash
-pi -e npm:@cuzfrog/pi-module-gates
-```
-
 ## Problem
 
 AI coding agents produce edits with limited context knowledge (myopia) — their changes may leak implementation details, and break architectural contracts (slop).
@@ -34,26 +22,26 @@ The extension intercepts agent `write`/`edit` operations and enforces these cont
 2. **System prompt** — Injects a hint so the agent knows to respect descriptor file conventions.
 3. **Gating** — On every write/edit, checks:
    - **Readonly gate** — is the target file locked?
+     **Fronzen gate** — is there any surface change to the target file?
    - **Export gate** — would the change introduce an export not in the `visible` list?
    - **Import gate** (not implemented yet) — would the change introduce an import violating visibility scope?
 
-System prompt:
-```markdown
-## Module gates (boundary enforcement)
-   This project uses `module.md` files to declare visibility and readonly rules that you should follow.
-   If you cannot comply, reconsider your design, if impossible, raise to the user with tradeoffs.
-   Each `module.md` gates its branching point in the tree.
-   A `module.md` with a `visible` list means only entries in the list are allowed to be visible outside the module.
-   A `module.md` and its mentioned `readonly` files are readonly.
-   Violations will be blocked.
+System prompt: [system-prompt.md](src/context/system-prompt.ts)
+
+## Installation
+```bash
+pi install npm:@cuzfrog/pi-module-gates
 ```
-`module.md` filename is configurable.
+Or load directly for a single session:
+```bash
+pi -e npm:@cuzfrog/pi-module-gates
+```
 
 ## Module Descriptor Semantics
 
 A module descriptor is a Markdown file (default name: `MODULE.md`) placed in a directory. You can piggy-back on your module context file for example `CONTEXT.md`.
 
-### Simple readonly constraints
+### Readonly constraints
 
 ```markdown
 ---
@@ -63,7 +51,15 @@ readonly: [mod.rs]
 Any prose for the agent to better understand the module.
 ```
 
-### Visibility whitelist
+### Frozen constraints
+
+```yaml
+frozen: [mod.rs]
+```
+Frozen files cannot change their surface size: no new exports or public entries are allowed.
+
+### Visibility whitelist (under redesign)
+Supported languages: Rust, TypeScript
 
 ```yaml
 visible:

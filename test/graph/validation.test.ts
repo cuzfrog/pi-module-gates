@@ -65,6 +65,7 @@ describe("validateVisibleEntries", () => {
         modulePath: "/project",
         visible: [{ name: "GhostType" }],
         readonly: ["module.md"],
+        frozen: [],
         prose: "",
       },
     ]);
@@ -93,6 +94,7 @@ describe("validateVisibleEntries", () => {
         modulePath: "/project",
         visible: [{ name: "greet" }],
         readonly: ["module.md"],
+        frozen: [],
         prose: "",
       },
     ]);
@@ -118,6 +120,7 @@ describe("validateVisibleEntries", () => {
         modulePath: "/project",
         visible: null,
         readonly: ["module.md"],
+        frozen: [],
         prose: "",
       },
     ]);
@@ -132,6 +135,7 @@ describe("validateVisibleEntries", () => {
         modulePath: "/project",
         visible: [{ name: "anything" }],
         readonly: ["module.md"],
+        frozen: [],
         prose: "",
       },
     ]);
@@ -153,12 +157,14 @@ describe("validateVisibleEntries", () => {
         modulePath: "/project",
         visible: [{ name: "GhostType" }],
         readonly: ["module.md"],
+        frozen: [],
         prose: "",
       },
       {
         modulePath: "/project/src",
         visible: [{ name: "greet" }],
         readonly: ["module.md"],
+        frozen: [],
         prose: "",
       },
     ]);
@@ -206,6 +212,7 @@ describe("validateVisibleEntries", () => {
         modulePath: "/project",
         visible: [{ name: "GhostA" }, { name: "GhostB" }],
         readonly: ["module.md"],
+        frozen: [],
         prose: "",
       },
     ]);
