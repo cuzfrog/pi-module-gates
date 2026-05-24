@@ -11,8 +11,9 @@ AI coding agents produce edits with limited context knowledge (myopia) — their
 
 **Module contracts as guardrails.** Each directory can contain a descriptor file that declares:
 
-- `visible` — the set of exports allowed to be added or modified in that module
 - `readonly` — files and directories the agent must not touch
+- `frozen` — files where no new exports are allowed
+- `visible` — the set of exports allowed to be added or modified in that module
 
 The extension intercepts agent `write`/`edit` operations and enforces these contracts. Violations are blocked with a clear reason.
 
@@ -26,7 +27,8 @@ The extension intercepts agent `write`/`edit` operations and enforces these cont
    - **Export gate** — would the change introduce an export not in the `visible` list?
    - **Import gate** (not implemented yet) — would the change introduce an import violating visibility scope?
 
-System prompt: [system-prompt.md](src/context/system-prompt.ts)
+- System prompt: [system-prompt.md](src/context/system-prompt.ts)
+- Currently [supported languages](src/gates/checkers/index.ts): **Rust**, **TypeScript**
 
 ## Installation
 ```bash
@@ -58,8 +60,9 @@ frozen: [mod.rs]
 ```
 Frozen files cannot change their surface size: no new exports or public entries are allowed.
 
+A skill [module-freeze-all](src/skills/module-freeze-all) has been included to auto-freeze modules.
+
 ### Visibility whitelist (under redesign)
-Supported languages: Rust, TypeScript
 
 ```yaml
 visible:
