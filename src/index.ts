@@ -43,7 +43,9 @@ export default function (pi: ExtensionAPI): void {
       return handleEdit(event.input.path, event.input.edits, ctx.cwd, index, config);
     }
     if (isToolCallEventType("write", event)) {
-      return handleWrite(event.input.path, event.input.content, ctx.cwd, index, config);
+      const absPath = path.resolve(ctx.cwd, event.input.path);
+      const before = readFileSafe(absPath);
+      return handleEdit(event.input.path, [{ oldText: before, newText: event.input.content }], ctx.cwd, index, config);
     }
   });
 }
@@ -56,27 +58,11 @@ function handleEdit(
   config: ModuleGateConfig,
 ): ToolCallEventResult | undefined {
   const absPath = path.resolve(cwd, filePath);
-  if (!isWithinSourceRoot(absPath, path.resolve(cwd, config.sourceRoot))) return undefined;
 
   const before = readFileSafe(absPath);
   const after = applyEdits(before, edits);
 
   return checkFileWrite(filePath, before, after, cwd, index, config);
-}
-
-function handleWrite(
-  filePath: string,
-  content: string,
-  cwd: string,
-  index: ModuleIndex,
-  config: ModuleGateConfig,
-): ToolCallEventResult | undefined {
-  const absPath = path.resolve(cwd, filePath);
-  if (!isWithinSourceRoot(absPath, path.resolve(cwd, config.sourceRoot))) return undefined;
-
-  const before = readFileSafe(absPath);
-
-  return checkFileWrite(filePath, before, content, cwd, index, config);
 }
 
 function checkFileWrite(
@@ -88,6 +74,8 @@ function checkFileWrite(
   config: ModuleGateConfig,
 ): ToolCallEventResult | undefined {
   const absPath = path.resolve(cwd, filePath);
+
+  if (!isWithinSourceRoot(absPath, path.resolve(cwd, config.sourceRoot))) return undefined;
 
   const readonlyResult = checkReadonly(filePath, index, cwd, config.moduleDescriptorFileName);
   if (readonlyResult.blocked) {
