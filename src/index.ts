@@ -61,21 +61,9 @@ function handleEdit(
 
   const before = readFileSafe(absPath);
   const after = applyEdits(before, edits);
+  const srcRoot = path.resolve(cwd, config.sourceRoot);
 
-  return checkFileWrite(filePath, before, after, cwd, index, config);
-}
-
-function checkFileWrite(
-  filePath: string,
-  before: string,
-  after: string,
-  cwd: string,
-  index: ModuleIndex,
-  config: ModuleGateConfig,
-): ToolCallEventResult | undefined {
-  const absPath = path.resolve(cwd, filePath);
-
-  if (!isWithinSourceRoot(absPath, path.resolve(cwd, config.sourceRoot))) return undefined;
+  if (!isWithinSourceRoot(absPath, srcRoot)) return undefined;
 
   const readonlyResult = checkReadonly(filePath, index, cwd, config.moduleDescriptorFileName);
   if (readonlyResult.blocked) {
