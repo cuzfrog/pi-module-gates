@@ -1,6 +1,6 @@
 # pi-module-gates - Constraints liberate, liberties constrain.
 
-pi cli extension that controls the entropy of the codebase by enforcing code module boundaries.
+Expirimental pi cli extension that controls the entropy of the codebase by enforcing code module boundaries.
 It helps combat slop generation and code architecture degradation.
 
 ## Problem
