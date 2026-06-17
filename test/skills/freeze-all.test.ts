@@ -187,7 +187,7 @@ describe("freeze-all.mjs", () => {
     const result = runScript(dir, ["--root", "src", "--create"]);
     expect(result.status).toBe(0);
 
-    const created = readFileSync(join(dir, "src", "module.md"), "utf-8");
+    const created = readFileSync(join(dir, "src", "MODULE.md"), "utf-8");
     expect(created).toContain("frozen:");
     expect(created).toContain("app.ts");
     expect(created).toContain("utils.ts");
