@@ -13,7 +13,29 @@ const tsChecker: ExportChecker = {
 registerChecker(tsChecker);
 
 function extractExports(src: string): Signature[] {
-  return [...src.matchAll(
-    /^export\s+(?:default\s+)?(?:\w+\s+)*(?:function(?:\s*\*)?|class|const|let|var|type|interface|enum)\s+(\w+)/gm,
-  )].map((m) => ({ name: m[1] }));
+  const results: Signature[] = [
+    ...src.matchAll(
+      /^export\s+(?:default\s+)?(?:\w+\s+)*(?:function(?:\s*\*)?|class|const|let|var|type|interface|enum)\s+(\w+)/gm,
+    ),
+  ].map((m) => ({ name: m[1] }));
+
+  for (const m of src.matchAll(/^export\s*\{\s*([^}]+)\s*\}\s*from/gm)) {
+    const inner = m[1];
+    for (const entry of inner.split(",")) {
+      const trimmed = entry.trim();
+      if (!trimmed) continue;
+      const asMatch = trimmed.match(/^(\w+)\s+as\s+(\w+)$/);
+      if (asMatch) {
+        results.push({ name: asMatch[2] });
+      } else {
+        results.push({ name: trimmed });
+      }
+    }
+  }
+
+  for (const m of src.matchAll(/^export\s*\*\s*as\s+(\w+)\s+from/gm)) {
+    results.push({ name: m[1] });
+  }
+
+  return results;
 }

@@ -142,10 +142,42 @@ describe("TypeScript export checker", () => {
     expect(checker.getNewExports(before, after)).toEqual([{ name: "Direction" }]);
   });
 
-  it("does not detect re-exports like export { Foo }", () => {
+  it("detects named re-export like export { Foo }", () => {
     const before = "";
     const after = 'export { Foo } from "./foo";';
-    expect(checker.getNewExports(before, after)).toEqual([]);
+    expect(checker.getNewExports(before, after)).toEqual([{ name: "Foo" }]);
+  });
+
+  it("detects multiple named re-exports", () => {
+    const before = "";
+    const after = 'export { A, B, C } from "./mod";';
+    expect(checker.getNewExports(before, after)).toEqual([
+      { name: "A" },
+      { name: "B" },
+      { name: "C" },
+    ]);
+  });
+
+  it("detects renamed re-export using exported name", () => {
+    const before = "";
+    const after = 'export { Foo as Bar } from "./foo";';
+    expect(checker.getNewExports(before, after)).toEqual([{ name: "Bar" }]);
+  });
+
+  it("detects namespace re-export", () => {
+    const before = "";
+    const after = 'export * as ns from "./mod";';
+    expect(checker.getNewExports(before, after)).toEqual([{ name: "ns" }]);
+  });
+
+  it("detects re-export mixed with declaration exports", () => {
+    const before = "export function existing() {}";
+    const after =
+      'export function existing() {}\nexport { Foo, Bar } from "./mod";';
+    expect(checker.getNewExports(before, after)).toEqual([
+      { name: "Foo" },
+      { name: "Bar" },
+    ]);
   });
 
   it("detects multiple new exports", () => {
