@@ -91,6 +91,24 @@ describe("frozen gating", () => {
     expect(reason).toContain("newFn");
   });
 
+  it("blocks write that adds re-export to frozen file", async () => {
+    const cwd = path.join(FIXTURES, "frozen-test");
+    await startSession(mock, cwd);
+
+    const result = await doWrite(
+      mock,
+      "frozen.ts",
+      'export function existingFn() { return 1; }\nexport { buildSystemPromptHint } from "./system-prompt.ts";',
+      cwd,
+    );
+    expect(result).toBeDefined();
+    expect((result as any).block).toBe(true);
+
+    const reason = (result as any).reason!;
+    expect(reason).toContain("Frozen rule");
+    expect(reason).toContain("buildSystemPromptHint");
+  });
+
   it("allows edit that modifies body without adding exports on frozen file", async () => {
     const cwd = path.join(FIXTURES, "frozen-test");
     await startSession(mock, cwd);
