@@ -25,7 +25,7 @@ describe("loadConfig", () => {
     expect(config.sourceRoot).toBe("src/");
   });
 
-  it("returns defaults when settings.json has no module-gate key", () => {
+  it("returns defaults when settings.json has no module-gates key", () => {
     mockedReadFileSync.mockReturnValue(
       JSON.stringify({ theme: "dark" }),
     );
@@ -45,10 +45,10 @@ describe("loadConfig", () => {
     expect(config.sourceRoot).toBe("src/");
   });
 
-  it("overrides defaults with module-gate values", () => {
+  it("overrides defaults with module-gates values", () => {
     mockedReadFileSync.mockReturnValue(
       JSON.stringify({
-        "module-gate": {
+        "module-gates": {
           moduleDescriptorFileName: "CONTEXT.md",
           moduleDescriptorReadonly: "off",
           sourceRoot: "lib/",
@@ -62,10 +62,10 @@ describe("loadConfig", () => {
     expect(config.sourceRoot).toBe("lib/");
   });
 
-  it("overrides only provided keys in module-gate", () => {
+  it("overrides only provided keys in module-gates", () => {
     mockedReadFileSync.mockReturnValue(
       JSON.stringify({
-        "module-gate": {
+        "module-gates": {
           moduleDescriptorFileName: "CONTEXT.md",
         },
       }),
@@ -80,7 +80,7 @@ describe("loadConfig", () => {
   it("accepts frontmatter mode", () => {
     mockedReadFileSync.mockReturnValue(
       JSON.stringify({
-        "module-gate": {
+        "module-gates": {
           moduleDescriptorReadonly: "frontmatter",
         },
       }),
@@ -93,7 +93,7 @@ describe("loadConfig", () => {
   it("normalizes boolean true to file mode", () => {
     mockedReadFileSync.mockReturnValue(
       JSON.stringify({
-        "module-gate": {
+        "module-gates": {
           moduleDescriptorReadonly: true,
         },
       }),
@@ -106,7 +106,7 @@ describe("loadConfig", () => {
   it("normalizes boolean false to off mode", () => {
     mockedReadFileSync.mockReturnValue(
       JSON.stringify({
-        "module-gate": {
+        "module-gates": {
           moduleDescriptorReadonly: false,
         },
       }),

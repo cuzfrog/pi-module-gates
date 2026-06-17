@@ -108,11 +108,11 @@ A `MODULE.md` semantically gates exposures at the module level it resides.
 
 ## Configuration
 
-Add a `module-gate` entry to `.pi/settings.json`:
+Add a `module-gates` entry to `.pi/settings.json`:
 
 ```json
 {
-  "module-gate": {
+  "module-gates": {
     "moduleDescriptorFileName": "MODULE.md",
     "moduleDescriptorReadonly": true,
     "sourceRoot": "src/"
@@ -126,7 +126,7 @@ Add a `module-gate` entry to `.pi/settings.json`:
 | `moduleDescriptorReadonly` | `true` | When `true`, descriptor files are readonly.|
 | `sourceRoot` | `"src/"` | Directory to scan for descriptor files and enforce gates. Set to `""` to scan from project root. |
 
-When no settings file exists or no `module-gate` key is present, defaults apply.
+When no settings file exists or no `module-gates` key is present, defaults apply.
 
 ## License
 

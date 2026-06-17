@@ -19,8 +19,8 @@ export function loadConfig(cwd: string): ModuleGateConfig {
   try {
     const raw = fs.readFileSync(settingsPath, "utf-8");
     const settings = JSON.parse(raw);
-    if (settings["module-gate"] && typeof settings["module-gate"] === "object") {
-      userConfig = settings["module-gate"];
+    if (settings["module-gates"] && typeof settings["module-gates"] === "object") {
+      userConfig = settings["module-gates"];
     }
   } catch {
     // file doesn't exist or invalid — use defaults
