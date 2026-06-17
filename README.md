@@ -122,7 +122,7 @@ Add a `module-gate` entry to `.pi/settings.json`:
 
 | Option | Default | Description |
 |--------|---------|-------------|
-| `moduleDescriptorFileName` | `"MODULE.md"` | File name used for module descriptors (case-insensitive) |
+| `moduleDescriptorFileName` | `MODULE.md` | File name used for module descriptors (case-insensitive) |
 | `moduleDescriptorReadonly` | `true` | When `true`, descriptor files are readonly.|
 | `sourceRoot` | `"src/"` | Directory to scan for descriptor files and enforce gates. Set to `""` to scan from project root. |
 

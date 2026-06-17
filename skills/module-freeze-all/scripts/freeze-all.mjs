@@ -17,7 +17,7 @@ function main() {
       root: { type: "string", default: "src" },
       "dry-run": { type: "boolean", default: false },
       create: { type: "boolean", default: false },
-      "descriptor-name": { type: "string", default: "module.md" },
+      "descriptor-name": { type: "string", default: "MODULE.md" },
     },
   });
 
