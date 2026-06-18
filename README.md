@@ -25,6 +25,7 @@ The extension intercepts agent `write`/`edit` operations and enforces these cont
    - **Readonly gate** — is the target file locked?
      **Fronzen gate** — is there any surface change to the target file?
    - **Export gate** — would the change introduce an export not in the `visible` list?
+   - **Module interface import gate** — external files can only import from the module not internal files, i.e. re-exports from `index.ts` or `mod.rs`. (Only Typescript/JavaScript and Rust are supported)
    - **Import gate** (not implemented yet) — would the change introduce an import violating visibility scope?
 
 - System prompt: [system-prompt.md](src/context/system-prompt.ts)
@@ -125,6 +126,7 @@ Add a `module-gates` entry to `.pi/settings.json`:
 | `moduleDescriptorFileName` | `MODULE.md` | File name used for module descriptors (case-insensitive) |
 | `moduleDescriptorReadonly` | `true` | When `true`, descriptor files are readonly.|
 | `sourceRoot` | `"src/"` | Directory to scan for descriptor files and enforce gates. Set to `""` to scan from project root. |
+| `disableModuleInterfaceImportGate` | `false` | By default, external files can only import from the module not internal files, i.e. re-exports from `index.ts` or `mod.rs` |
 
 When no settings file exists or no `module-gates` key is present, defaults apply.
 
