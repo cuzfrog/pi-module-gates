@@ -8,12 +8,15 @@ import { isToolCallEventType, parseFrontmatter } from "@earendil-works/pi-coding
 import type { ModuleIndex } from "./types.ts";
 import { loadConfig } from "./config.ts";
 import type { ModuleGateConfig } from "./config.ts";
-import { buildModuleIndex } from "./graph/module-index-builder.ts";
+import { buildModuleIndex } from "./graph/index.ts";
 import { findOwningModule, readFileSafe, applyEdits, isWithinSourceRoot } from "./utils.ts";
-import { checkReadonly } from "./gates/readonly-gate.ts";
-import { checkExports } from "./gates/export-gate.ts";
-import { checkFrozen } from "./gates/frozen-gate.ts";
-import { buildSystemPromptHint } from "./context/system-prompt.ts";
+import {
+  checkReadonly,
+  checkExports,
+  checkFrozen,
+  checkModuleInterfaceImports,
+} from "./gates/index.ts";
+import { buildSystemPromptHint } from "./context/index.ts";
 import "./gates/checkers/index.ts";
 
 export default function (pi: ExtensionAPI): void {
@@ -99,6 +102,11 @@ function handleEdit(
   const exportResult = checkExports(filePath, before, after, index, cwd, config.moduleDescriptorFileName);
   if (exportResult.blocked) {
     return { block: true, reason: formatDenial(filePath, exportResult.reason, absPath, index, cwd, config.moduleDescriptorFileName) };
+  }
+
+  const importResult = checkModuleInterfaceImports(filePath, after, index, cwd, config.disableModuleInterfaceImportGate, config.sourceRoot);
+  if (importResult.blocked) {
+    return { block: true, reason: formatDenial(filePath, importResult.reason, absPath, index, cwd, config.moduleDescriptorFileName) };
   }
 
   return undefined;

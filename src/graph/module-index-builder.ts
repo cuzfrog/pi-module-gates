@@ -8,7 +8,7 @@ import type { ModuleGateConfig } from "../config.ts";
 type ModuleDescriptorReadonly = ModuleGateConfig["moduleDescriptorReadonly"];
 import type { Dirent } from "node:fs";
 import { validateVisibleEntries } from "./validation.ts";
-import { parseVisibleEntry, type VisibleEntryRaw, type ModuleFrontmatter } from "./frontmatter-parser.ts";
+import { parseVisibleEntry, type ModuleFrontmatter } from "./frontmatter-parser.ts";
 
 type IndexContext = {
   cwd: string;

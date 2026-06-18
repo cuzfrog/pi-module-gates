@@ -9,13 +9,13 @@ vi.mock("node:fs", () => ({
   readFileSync: vi.fn(),
 }));
 
-vi.mock("../../src/gates/checkers/registry.ts", () => ({
+vi.mock("../../src/gates/checkers/index.ts", () => ({
   getChecker: vi.fn(),
 }));
 
 import { readdir } from "node:fs/promises";
 import * as fs from "node:fs";
-import { getChecker } from "../../src/gates/checkers/registry.ts";
+import { getChecker } from "../../src/gates/checkers/index.ts";
 import { validateVisibleEntries } from "../../src/graph/validation.ts";
 import type { ModuleIndex, ModuleContract } from "../../src/types.ts";
 
