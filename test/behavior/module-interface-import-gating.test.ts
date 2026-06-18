@@ -1,0 +1,99 @@
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import {
+  MockExtensionAPI,
+  FIXTURES,
+  startSession,
+  doWrite,
+} from "./helpers.ts";
+
+vi.mock("../../src/config.ts", () => ({
+  loadConfig: () => ({
+    moduleDescriptorFileName: "module.md",
+    moduleDescriptorReadonly: "file",
+    sourceRoot: "",
+    disableModuleInterfaceImportGate: false,
+  }),
+}));
+
+import mod from "../../src/index.ts";
+
+describe("module interface import gating", () => {
+  let mock: MockExtensionAPI;
+
+  beforeEach(() => {
+    mock = new MockExtensionAPI();
+    mod(mock);
+  });
+
+  it("blocks external file from importing non-interface file in a sibling module", async () => {
+    const cwd = FIXTURES;
+    await startSession(mock, cwd);
+
+    const result = await doWrite(
+      mock,
+      "src/app.ts",
+      'import { fun1 } from "../other/fun1";\n',
+      cwd,
+    );
+
+    expect((result as any).block).toBe(true);
+    expect((result as any).reason).toContain("fun1.ts");
+  });
+
+  it("blocks external file from importing non-interface file in a child module", async () => {
+    const cwd = FIXTURES;
+    await startSession(mock, cwd);
+
+    const result = await doWrite(
+      mock,
+      "src/app.ts",
+      'import { secret } from "./internal/secrets";\n',
+      cwd,
+    );
+
+    expect((result as any).block).toBe(true);
+    expect((result as any).reason).toContain("secrets.ts");
+  });
+
+  it("allows external file to import through a module's interface", async () => {
+    const cwd = FIXTURES;
+    await startSession(mock, cwd);
+
+    const result = await doWrite(
+      mock,
+      "src/app.ts",
+      'import { fun1 } from "../other/index";\n',
+      cwd,
+    );
+
+    expect(result?.block).toBeFalsy();
+  });
+
+  it("allows sibling files within the same module to import each other", async () => {
+    const cwd = FIXTURES;
+    await startSession(mock, cwd);
+
+    const result = await doWrite(
+      mock,
+      "src/app.ts",
+      'import { API_URL } from "./config";\n',
+      cwd,
+    );
+
+    expect(result?.block).toBeFalsy();
+  });
+
+  it("allows a file in an internal sub-directory to import within the same module", async () => {
+    const cwd = FIXTURES;
+    await startSession(mock, cwd);
+
+    const result = await doWrite(
+      mock,
+      "src/internal/sub/foo.ts",
+      'import { API_KEY } from "../secrets";\n',
+      cwd,
+    );
+
+    expect(result?.block).toBeFalsy();
+  });
+});

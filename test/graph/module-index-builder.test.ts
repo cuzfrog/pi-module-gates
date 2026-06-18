@@ -17,10 +17,27 @@ vi.mock("../../src/graph/validation.ts", () => ({
   validateVisibleEntries: vi.fn(),
 }));
 
+vi.mock("../../src/graph/frontmatter-parser.ts", () => ({
+  parseVisibleEntry: vi.fn((raw: any) => {
+    let pathStr: string;
+    let modifier: string | undefined;
+    if (typeof raw === "string") {
+      pathStr = raw.trim();
+    } else {
+      pathStr = raw.path;
+      modifier = raw.modifier;
+    }
+    if (pathStr.endsWith("/")) pathStr = pathStr.slice(0, -1);
+    const lastSlash = pathStr.lastIndexOf("/");
+    const name = lastSlash >= 0 ? pathStr.slice(lastSlash + 1) : pathStr;
+    return { name, modifier, path: raw.path ?? raw };
+  }),
+}));
+
 import { readdir } from "node:fs/promises";
 import * as fs from "node:fs";
 import { parseFrontmatter } from "@earendil-works/pi-coding-agent";
-import { validateVisibleEntries } from "../../src/graph/validation.ts";
+import { validateVisibleEntries } from "../../src/graph/index.ts";
 import { buildModuleIndex } from "../../src/graph/module-index-builder.ts";
 import type { ModuleGateConfig } from "../../src/config.ts";
 
@@ -33,6 +50,7 @@ const defaultConfig: ModuleGateConfig = {
   moduleDescriptorFileName: "module.md",
   moduleDescriptorReadonly: "file",
   sourceRoot: "",
+  disableModuleInterfaceImportGate: false,
 };
 
 function makeDirent(name: string, isDir: boolean): Dirent {
@@ -129,6 +147,7 @@ describe("buildModuleIndex", () => {
       moduleDescriptorFileName: "module.md",
       moduleDescriptorReadonly: "off",
       sourceRoot: "",
+      disableModuleInterfaceImportGate: false,
     };
     const index = await buildModuleIndex(makeCtx("/project"), config);
 
@@ -154,6 +173,7 @@ describe("buildModuleIndex", () => {
       moduleDescriptorFileName: "module.md",
       moduleDescriptorReadonly: "frontmatter",
       sourceRoot: "",
+      disableModuleInterfaceImportGate: false,
     };
     const index = await buildModuleIndex(makeCtx("/project"), config);
 
@@ -308,6 +328,7 @@ describe("buildModuleIndex", () => {
       moduleDescriptorFileName: "CONTEXT.md",
       moduleDescriptorReadonly: "file",
       sourceRoot: "",
+      disableModuleInterfaceImportGate: false,
     };
     const index = await buildModuleIndex(makeCtx("/project"), config);
     expect(index.contracts).toHaveLength(1);
@@ -351,6 +372,7 @@ describe("buildModuleIndex", () => {
       moduleDescriptorFileName: "module.md",
       moduleDescriptorReadonly: "file",
       sourceRoot: "src/",
+      disableModuleInterfaceImportGate: false,
     };
     const index = await buildModuleIndex(makeCtx("/project"), config);
 

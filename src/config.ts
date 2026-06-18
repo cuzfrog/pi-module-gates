@@ -5,12 +5,14 @@ export type ModuleGateConfig = {
   moduleDescriptorFileName: string;
   moduleDescriptorReadonly: "file" | "frontmatter" | "off";
   sourceRoot: string;
+  disableModuleInterfaceImportGate: boolean;
 };
 
 const DEFAULTS: ModuleGateConfig = {
   moduleDescriptorFileName: "module.md",
   moduleDescriptorReadonly: "file",
   sourceRoot: "src/",
+  disableModuleInterfaceImportGate: false,
 };
 
 export function loadConfig(cwd: string): ModuleGateConfig {
