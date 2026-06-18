@@ -1,3 +1,4 @@
+
 export type Signature = {
   modifier?: string;
   name: string;

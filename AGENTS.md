@@ -5,6 +5,25 @@
 - `test/` - unit tests
 - `.tasks/` - local development plan directory, e.g. `.tasks/ISSUE-2/` for Github issue #2.
 
+## Glossary
+Given the example code structure:
+```txt
+src/
+   file1.ts
+   file2.ts
+   sub1/
+      file3.ts
+   sub2/
+      file4.ts
+```
+- Module: a directory. `src/` is a module, `src/sub1/` is a module.
+- Siblings: files in the same directory. `src/file1.ts` and `src/file2.ts` are siblings.
+- Children: files in a sub-directory. `src/sub1/file3.ts` and `src/sub2/file4.ts` are children of module `src`.
+- External: files in external modules. `file1.ts` is an external file from module `sub1`. `file4.ts` is an external file from module `sub1`.
+- Internal: files in the same module. `file1.ts` is an internal file of module `src`, `file3.ts` is an internal file of module `sub1` and module `src`.
+
+Also refer to @README.md
+
 ## Conversational Style
 
 - Keep answers short and concise

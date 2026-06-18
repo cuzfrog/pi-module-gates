@@ -63,18 +63,11 @@ function checkViolation(
   if (isInterfaceFile(resolved)) return undefined;
 
   const sourceModule = findOwningModule(path.join(fileDir, "dummy.ts"), index);
-  if (sourceModule && areInSameHierarchy(sourceModule, targetModule)) return undefined;
+  if (sourceModule && sourceModule === targetModule) return undefined;
 
   const relTarget = path.relative(cwd, resolved);
   const relModule = path.relative(cwd, targetModule);
   return `Import from "${relTarget}" bypasses module interface of ${relModule}/`;
-}
-
-function areInSameHierarchy(a: string, b: string): boolean {
-  if (a === b) return true;
-  if (a.startsWith(b + path.sep)) return true;
-  if (b.startsWith(a + path.sep)) return true;
-  return false;
 }
 
 function extractJsImportPaths(content: string): string[] {

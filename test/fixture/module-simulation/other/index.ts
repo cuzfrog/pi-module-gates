@@ -1,0 +1,1 @@
+export { fun1 } from "./fun1.ts";
