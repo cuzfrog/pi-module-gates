@@ -19,7 +19,9 @@ function extractExports(src: string): Signature[] {
     ),
   ].map((m) => ({ name: m[1] }));
 
-  for (const m of src.matchAll(/^export\s*\{\s*([^}]+)\s*\}\s*from/gm)) {
+  for (const m of src.matchAll(
+    /^export\s*(?:type\s+)?\{\s*([^}]+)\s*\}\s*from/gm,
+  )) {
     const inner = m[1];
     for (const entry of inner.split(",")) {
       const trimmed = entry.trim();
@@ -34,6 +36,16 @@ function extractExports(src: string): Signature[] {
   }
 
   for (const m of src.matchAll(/^export\s*\*\s*as\s+(\w+)\s+from/gm)) {
+    results.push({ name: m[1] });
+  }
+
+  for (const m of src.matchAll(/^export\s*\*\s+from/gm)) {
+    results.push({ name: "*" });
+  }
+
+  for (const m of src.matchAll(
+    /^export\s+default\s+(?!function|class|const|let|var|type|interface|enum|abstract|async|declare)([a-zA-Z_]\w*)/gm,
+  )) {
     results.push({ name: m[1] });
   }
 

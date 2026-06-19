@@ -465,4 +465,82 @@ describe("checkModuleInterfaceImports", () => {
 
     expect(result.blocked).toBe(false);
   });
+
+  it("allows child module to import from parent module's internal file (not recommended but allowed)", () => {
+    setup();
+    createFile("", "src", "parent", "module.md");
+    createFile("export type InternalType = string;", "src", "parent", "internal.ts");
+    createFile("", "src", "parent", "child", "module.md");
+    createFile("import type { InternalType } from \"../internal\";\nexport const consumer = (_x: InternalType) => {};", "src", "parent", "child", "consumer.ts");
+
+    const dirToModule = new Map<string, string>();
+    dirToModule.set(join(tmpDir, "src", "parent"), join(tmpDir, "src", "parent"));
+    dirToModule.set(join(tmpDir, "src", "parent", "child"), join(tmpDir, "src", "parent", "child"));
+    const index = makeIndex(dirToModule);
+
+    const content = 'import type { InternalType } from "../internal";\n';
+    const result = checkModuleInterfaceImports(
+      "src/parent/child/consumer.ts",
+      content,
+      index,
+      tmpDir,
+      false,
+      "src/",
+    );
+
+    expect(result.blocked).toBe(false);
+  });
+
+  it("still blocks parent module from importing child module's internal file", () => {
+    setup();
+    createFile("", "src", "parent", "module.md");
+    createFile("", "src", "parent", "child", "module.md");
+    createFile("export function hidden() {}", "src", "parent", "child", "internal.ts");
+    createDir("src", "parent");
+
+    const dirToModule = new Map<string, string>();
+    dirToModule.set(join(tmpDir, "src", "parent"), join(tmpDir, "src", "parent"));
+    dirToModule.set(join(tmpDir, "src", "parent", "child"), join(tmpDir, "src", "parent", "child"));
+    const index = makeIndex(dirToModule);
+
+    const content = 'import { hidden } from "./child/internal";\n';
+    const result = checkModuleInterfaceImports(
+      "src/parent/app.ts",
+      content,
+      index,
+      tmpDir,
+      false,
+      "src/",
+    );
+
+    expect(result.blocked).toBe(true);
+    if (result.blocked) {
+      expect(result.reason).toContain("internal.ts");
+    }
+  });
+
+  it("still blocks sibling module imports", () => {
+    setup();
+    createFile("", "src", "module1", "module.md");
+    createFile("export function foo() {}", "src", "module1", "file1.ts");
+    createFile("", "src", "module2", "module.md");
+    createDir("src", "module2");
+
+    const dirToModule = new Map<string, string>();
+    dirToModule.set(join(tmpDir, "src", "module1"), join(tmpDir, "src", "module1"));
+    dirToModule.set(join(tmpDir, "src", "module2"), join(tmpDir, "src", "module2"));
+    const index = makeIndex(dirToModule);
+
+    const content = 'import { foo } from "../module1/file1";\n';
+    const result = checkModuleInterfaceImports(
+      "src/module2/app.ts",
+      content,
+      index,
+      tmpDir,
+      false,
+      "src/",
+    );
+
+    expect(result.blocked).toBe(true);
+  });
 });
