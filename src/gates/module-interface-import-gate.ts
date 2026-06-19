@@ -63,7 +63,7 @@ function checkViolation(
   if (isInterfaceFile(resolved)) return undefined;
 
   const sourceModule = findOwningModule(path.join(fileDir, "dummy.ts"), index);
-  if (sourceModule && sourceModule === targetModule) return undefined;
+  if (sourceModule && isDescendantOrSelf(sourceModule, targetModule)) return undefined;
 
   const relTarget = path.relative(cwd, resolved);
   const relModule = path.relative(cwd, targetModule);
@@ -145,4 +145,9 @@ function isInterfaceFile(absPath: string): boolean {
   }
 
   return false;
+}
+
+function isDescendantOrSelf(child: string, ancestor: string): boolean {
+  if (child === ancestor) return true;
+  return child.startsWith(ancestor + path.sep);
 }

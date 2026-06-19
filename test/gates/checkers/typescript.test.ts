@@ -196,4 +196,43 @@ describe("TypeScript export checker", () => {
       "export function keep() {}\nexport const VALUE = 1;\nexport type NewType = string;";
     expect(checker.getNewExports(before, after)).toEqual([{ name: "NewType" }]);
   });
+
+  it("detects type-only re-export as new export", () => {
+    const before = "";
+    const after = 'export type { Foo } from "./foo";';
+    expect(checker.getNewExports(before, after)).toEqual([{ name: "Foo" }]);
+  });
+
+  it("detects multiple type-only re-exports", () => {
+    const before = "";
+    const after = 'export type { A, B as C } from "./mod";';
+    expect(checker.getNewExports(before, after)).toEqual([
+      { name: "A" },
+      { name: "C" },
+    ]);
+  });
+
+  it("detects star re-export as a new export surface", () => {
+    const before = "";
+    const after = 'export * from "./mod";';
+    expect(checker.getNewExports(before, after)).toEqual([{ name: "*" }]);
+  });
+
+  it("detects default export of identifier as new export", () => {
+    const before = "";
+    const after = "const Foo = 1;\nexport default Foo;";
+    expect(checker.getNewExports(before, after)).toEqual([{ name: "Foo" }]);
+  });
+
+  it("does not double-count default function name", () => {
+    const before = "";
+    const after = "export default function main() {}";
+    expect(checker.getNewExports(before, after)).toEqual([{ name: "main" }]);
+  });
+
+  it("does not count default expression without identifier", () => {
+    const before = "";
+    const after = "export default 42;";
+    expect(checker.getNewExports(before, after)).toEqual([]);
+  });
 });

@@ -126,4 +126,57 @@ describe("frozen gating", () => {
     );
     expect(result?.block).toBeFalsy();
   });
+
+  it("blocks write that adds type-only re-export to frozen file", async () => {
+    const cwd = path.join(FIXTURES, "frozen-test");
+    await startSession(mock, cwd);
+
+    const result = await doWrite(
+      mock,
+      "frozen.ts",
+      'export function existingFn() { return 1; }\nexport type { SomeType } from "./system-prompt.ts";',
+      cwd,
+    );
+    expect(result).toBeDefined();
+    expect((result as any).block).toBe(true);
+
+    const reason = (result as any).reason!;
+    expect(reason).toContain("Frozen rule");
+    expect(reason).toContain("SomeType");
+  });
+
+  it("blocks write that adds star re-export to frozen file", async () => {
+    const cwd = path.join(FIXTURES, "frozen-test");
+    await startSession(mock, cwd);
+
+    const result = await doWrite(
+      mock,
+      "frozen.ts",
+      'export function existingFn() { return 1; }\nexport * from "./system-prompt.ts";',
+      cwd,
+    );
+    expect(result).toBeDefined();
+    expect((result as any).block).toBe(true);
+
+    const reason = (result as any).reason!;
+    expect(reason).toContain("Frozen rule");
+  });
+
+  it("blocks write that adds default identifier export to frozen file", async () => {
+    const cwd = path.join(FIXTURES, "frozen-test");
+    await startSession(mock, cwd);
+
+    const result = await doWrite(
+      mock,
+      "frozen.ts",
+      'const SomeName = "hello";\nexport function existingFn() { return 1; }\nexport default SomeName;',
+      cwd,
+    );
+    expect(result).toBeDefined();
+    expect((result as any).block).toBe(true);
+
+    const reason = (result as any).reason!;
+    expect(reason).toContain("Frozen rule");
+    expect(reason).toContain("SomeName");
+  });
 });

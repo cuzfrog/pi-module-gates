@@ -96,4 +96,33 @@ describe("module interface import gating", () => {
 
     expect(result?.block).toBeFalsy();
   });
+
+  it("allows child module to import from parent module's internal file (not recommended but allowed)", async () => {
+    const cwd = FIXTURES;
+    await startSession(mock, cwd);
+
+    const result = await doWrite(
+      mock,
+      "src/internal/sub/foo.ts",
+      'import { greet } from "../../app";\n',
+      cwd,
+    );
+
+    expect(result?.block).toBeFalsy();
+  });
+
+  it("still blocks parent module from importing child module's internal file", async () => {
+    const cwd = FIXTURES;
+    await startSession(mock, cwd);
+
+    const result = await doWrite(
+      mock,
+      "src/app.ts",
+      'import { API_KEY } from "./internal/secrets";\n',
+      cwd,
+    );
+
+    expect((result as any).block).toBe(true);
+    expect((result as any).reason).toContain("secrets.ts");
+  });
 });

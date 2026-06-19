@@ -72,6 +72,11 @@ Also refer to @README.md
 - **Interface Segregation Principle**: A client should not be forced to depend on interfaces it does not use.
 - **Dependency Inversion Principle**: High-level modules should not depend on low-level modules. Abstractions should not depend on detailed implementations.
 
+## Things to avoid
+- do not `find` from the root dir, it's slow and unnecessary. Use `pwd` to figure out where you are.
+- do not assume a tool is available unless you are told, search before calling if you are not sure.
+
+
 ## File Edit Checklist
 Pre-action:
 - Before adding utility functions/logic, check `src/utils/` for reuse.
