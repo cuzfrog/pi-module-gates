@@ -1,6 +1,14 @@
 import { describe, it, expect } from "vitest";
 import { buildSystemPromptHint } from "../../src/context/system-prompt.ts";
 import type { ModuleIndex } from "../../src/types.ts";
+import type { ModuleGateConfig } from "../../src/config.ts";
+
+const baseConfig: ModuleGateConfig = {
+  moduleDescriptorFileName: "module.md",
+  moduleDescriptorReadonly: "file",
+  sourceRoot: "src/",
+  disableModuleInterfaceImportGate: false,
+};
 
 describe("buildSystemPromptHint", () => {
   it("returns augmented prompt when contracts exist", () => {
@@ -17,7 +25,7 @@ describe("buildSystemPromptHint", () => {
       dirToModule: new Map(),
     };
 
-    const result = buildSystemPromptHint(index, "You are a helpful assistant.", "module.md", "file");
+    const result = buildSystemPromptHint(index, "You are a helpful assistant.", "module.md", baseConfig);
 
     expect(result).toContain("You are a helpful assistant.");
     expect(result).toContain("module.md");
@@ -31,7 +39,7 @@ describe("buildSystemPromptHint", () => {
       dirToModule: new Map(),
     };
 
-    const result = buildSystemPromptHint(index, "You are a helpful assistant.", "module.md", "file");
+    const result = buildSystemPromptHint(index, "You are a helpful assistant.", "module.md", baseConfig);
 
     expect(result).toBe("You are a helpful assistant.");
   });
@@ -50,7 +58,7 @@ describe("buildSystemPromptHint", () => {
       dirToModule: new Map(),
     };
 
-    const result = buildSystemPromptHint(index, "Base prompt.", "CONTEXT.md", "file");
+    const result = buildSystemPromptHint(index, "Base prompt.", "CONTEXT.md", baseConfig);
 
     expect(result).toContain("Base prompt.");
     expect(result).toContain("CONTEXT.md");
@@ -71,7 +79,12 @@ describe("buildSystemPromptHint", () => {
       dirToModule: new Map(),
     };
 
-    const result = buildSystemPromptHint(index, "Base prompt.", "module.md", "frontmatter");
+    const result = buildSystemPromptHint(
+      index,
+      "Base prompt.",
+      "module.md",
+      { ...baseConfig, moduleDescriptorReadonly: "frontmatter" },
+    );
 
     expect(result).toContain("The frontmatter of");
     expect(result).toContain("is readonly");
@@ -91,7 +104,12 @@ describe("buildSystemPromptHint", () => {
       dirToModule: new Map(),
     };
 
-    const result = buildSystemPromptHint(index, "Base prompt.", "module.md", "off");
+    const result = buildSystemPromptHint(
+      index,
+      "Base prompt.",
+      "module.md",
+      { ...baseConfig, moduleDescriptorReadonly: "off" },
+    );
 
     expect(result).not.toContain("is readonly");
   });

@@ -5,14 +5,14 @@ export function buildSystemPromptHint(
   index: ModuleIndex,
   systemPrompt: string,
   descriptorFileName: string,
-  moduleDescriptorReadonly: ModuleGateConfig["moduleDescriptorReadonly"],
+  config: ModuleGateConfig,
 ): string {
   if (index.contracts.length === 0) return systemPrompt;
 
   const descriptorNote =
-    moduleDescriptorReadonly === "frontmatter"
+    config.moduleDescriptorReadonly === "frontmatter"
       ? ` The frontmatter of \`${descriptorFileName}\` is readonly.`
-      : moduleDescriptorReadonly === "file"
+      : config.moduleDescriptorReadonly === "file"
         ? ` The \`${descriptorFileName}\` file itself is readonly.`
         : "";
 
@@ -23,6 +23,6 @@ This project uses \`${descriptorFileName}\`(case-insensitive) files to declare v
 If you cannot comply, reconsider your design, if impossible, raise to the user with tradeoffs.
 Each \`${descriptorFileName}\` gates its branching point in the tree.
 A \`${descriptorFileName}\` with a \`visible\` list means only entries in the list are allowed to be visible outside the module.
-\`readonly\` files are readonly; \`frozen\` files cannot grow their surface size (no new exports).${descriptorNote}
+\`readonly\` files are readonly; \`frozen\` files cannot add new exports.${descriptorNote}
 Violations will be blocked.`;
 }
