@@ -1,6 +1,6 @@
 {
   "name": "@cuzfrog/pi-module-gates",
-  "version": "0.13.1",
+  "version": "0.13.2",
   "description": "pi extension that controls the entropy of the codebase by enforcing code module boundaries.",
   "keywords": [
     "pi-package"
@@ -22,7 +22,7 @@
     "@earendil-works/pi-coding-agent": "*"
   },
   "devDependencies": {
-    "@earendil-works/pi-coding-agent": "0.75.4",
+    "@earendil-works/pi-coding-agent": "0.79.8",
     "@types/node": "22.19.19",
     "typescript": "5.9.3",
     "vitest": "4.1.7"

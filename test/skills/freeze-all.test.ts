@@ -1,8 +1,16 @@
 import { describe, it, expect } from "vitest";
 import { tmpdir } from "node:os";
-import { mkdtempSync, writeFileSync, rmSync, mkdirSync, existsSync, readFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync, rmSync, mkdirSync, existsSync, readFileSync, readdirSync } from "node:fs";
 import { join, sep } from "node:path";
 import { execSync } from "node:child_process";
+import { SUPPORTED_EXTENSIONS } from "../../skills/module-freeze-all/scripts/freeze-all.mjs";
+import { getChecker } from "../../src/gates/checkers/registry.ts";
+import "../../src/gates/checkers/typescript.ts";
+import "../../src/gates/checkers/rust.ts";
+import "../../src/gates/checkers/java.ts";
+import "../../src/gates/checkers/go.ts";
+import "../../src/gates/checkers/kotlin.ts";
+import "../../src/gates/checkers/scala.ts";
 
 const scriptPath = join(
   import.meta.dirname,
@@ -13,6 +21,22 @@ const scriptPath = join(
   "scripts",
   "freeze-all.mjs",
 );
+
+const checkersDir = join(import.meta.dirname, "..", "..", "src", "gates", "checkers");
+
+function extractCheckerExtensions(): Set<string> {
+  const extensions = new Set<string>();
+  for (const name of readdirSync(checkersDir)) {
+    if (!name.endsWith(".ts") || name === "index.ts" || name === "registry.ts") continue;
+    const content = readFileSync(join(checkersDir, name), "utf-8");
+    const match = content.match(/extensions:\s*\[([^\]]+)\]/);
+    if (!match) throw new Error(`No extensions array found in ${name}`);
+    for (const ext of match[1].matchAll(/"([^"]+)"/g)) {
+      extensions.add(ext[1]);
+    }
+  }
+  return extensions;
+}
 
 function runScript(cwd: string, args: string[]): { stdout: string; stderr: string; status: number } {
   try {
@@ -250,5 +274,72 @@ describe("freeze-all.mjs", () => {
     expect(updated).toBe(original);
 
     cleanupFixture(dir);
+  });
+
+  it("filters out files with unsupported extensions by default", () => {
+    const dir = setupFixture();
+
+    writeFileSync(join(dir, "src", "module.md"), "---\n---\n\n");
+    writeFileSync(join(dir, "src", "app.ts"), "");
+    writeFileSync(join(dir, "src", "main.go"), "");
+    writeFileSync(join(dir, "src", "lib.rs"), "");
+    writeFileSync(join(dir, "src", "README.md"), "readme");
+    writeFileSync(join(dir, "src", "package.json"), "{}");
+    writeFileSync(join(dir, "src", "notes.txt"), "notes");
+    writeFileSync(join(dir, "src", "config.yaml"), "key: val");
+
+    const result = runScript(dir, ["--root", "src"]);
+    expect(result.status).toBe(0);
+
+    const updated = readFileSync(join(dir, "src", "module.md"), "utf-8");
+    expect(updated).toContain("app.ts");
+    expect(updated).toContain("main.go");
+    expect(updated).toContain("lib.rs");
+    expect(updated).not.toContain("README.md");
+    expect(updated).not.toContain("package.json");
+    expect(updated).not.toContain("notes.txt");
+    expect(updated).not.toContain("config.yaml");
+
+    cleanupFixture(dir);
+  });
+
+  it("preserves existing frozen entries with unsupported extensions", () => {
+    const dir = setupFixture();
+
+    writeFileSync(
+      join(dir, "src", "module.md"),
+      "---\nfrozen:\n  - docs.md\n---\n\n",
+    );
+    writeFileSync(join(dir, "src", "docs.md"), "doc");
+    writeFileSync(join(dir, "src", "app.ts"), "");
+
+    const result = runScript(dir, ["--root", "src"]);
+    expect(result.status).toBe(0);
+
+    const updated = readFileSync(join(dir, "src", "module.md"), "utf-8");
+    expect(updated).toContain("docs.md");
+    expect(updated).toContain("app.ts");
+    // docs.md should come first since it was an existing entry
+    const docsIdx = updated.indexOf("docs.md");
+    const appIdx = updated.indexOf("app.ts");
+    expect(docsIdx).toBeLessThan(appIdx);
+
+    cleanupFixture(dir);
+  });
+
+  it("SUPPORTED_EXTENSIONS matches registered checker extensions", () => {
+    const checkerExtensions = extractCheckerExtensions();
+
+    const scriptList = new Set(SUPPORTED_EXTENSIONS);
+
+    for (const ext of scriptList) {
+      expect(getChecker(`file${ext}`), `getChecker for ${ext}`).toBeDefined();
+    }
+
+    const missingFromScript = [...checkerExtensions].filter((e) => !scriptList.has(e));
+    const extraInScript = [...scriptList].filter((e) => !checkerExtensions.has(e));
+
+    expect(missingFromScript, `checker extensions missing from script: ${missingFromScript.join(", ")}`).toEqual([]);
+    expect(extraInScript, `script extensions missing from checkers: ${extraInScript.join(", ")}`).toEqual([]);
   });
 });
