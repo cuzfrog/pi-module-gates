@@ -5,14 +5,14 @@ export function buildSystemPromptHint(
   index: ModuleIndex,
   systemPrompt: string,
   descriptorFileName: string,
-  moduleDescriptorReadonly: ModuleGateConfig["moduleDescriptorReadonly"],
+  config: ModuleGateConfig,
 ): string {
   if (index.contracts.length === 0) return systemPrompt;
 
   const descriptorNote =
-    moduleDescriptorReadonly === "frontmatter"
+    config.moduleDescriptorReadonly === "frontmatter"
       ? ` The frontmatter of \`${descriptorFileName}\` is readonly.`
-      : moduleDescriptorReadonly === "file"
+      : config.moduleDescriptorReadonly === "file"
         ? ` The \`${descriptorFileName}\` file itself is readonly.`
         : "";
 

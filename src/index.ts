@@ -37,7 +37,7 @@ export default function (pi: ExtensionAPI): void {
   pi.on("before_agent_start", async (event): Promise<BeforeAgentStartEventResult | void> => {
     if (index.contracts.length === 0) return;
     return {
-      systemPrompt: buildSystemPromptHint(index, event.systemPrompt, config.moduleDescriptorFileName, config.moduleDescriptorReadonly),
+      systemPrompt: buildSystemPromptHint(index, event.systemPrompt, config.moduleDescriptorFileName, config),
     };
   });
 
