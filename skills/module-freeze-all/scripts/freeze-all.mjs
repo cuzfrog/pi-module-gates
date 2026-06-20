@@ -9,6 +9,7 @@
  */
 import { readFileSync, writeFileSync, readdirSync, existsSync } from "node:fs";
 import { resolve, relative, join, dirname, extname } from "node:path";
+import { pathToFileURL } from "node:url";
 import { parseArgs } from "node:util";
 
 const SUPPORTED_EXTENSIONS = new Set([
@@ -19,6 +20,8 @@ const SUPPORTED_EXTENSIONS = new Set([
   ".kt", ".kts",
   ".scala", ".sc",
 ]);
+
+export { SUPPORTED_EXTENSIONS };
 
 function main() {
   const { values } = parseArgs({
@@ -361,4 +364,6 @@ function arraysEqual(a, b) {
   return sortedA.every((v, i) => v === sortedB[i]);
 }
 
-main();
+if (import.meta.url === pathToFileURL(resolve(process.argv[1] ?? "")).href) {
+  main();
+}
