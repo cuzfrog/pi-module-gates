@@ -9,7 +9,7 @@ argument-hint: <user-instructions>
 - Find out module descriptor filename in the context.
 - Find out source root in the context or from configurations.
 - Derive scripts args from user instructions.
-- Call the script to scans the source tree for module descriptors and auto-populates their `frozen` entries with all files in each module directory.
+- Call the script to scans the source tree for module descriptors and auto-populates their `frozen` entries with code files in each module directory.
 
 ## Script Usage
 
@@ -30,6 +30,12 @@ Options:
 3. Adds those files to the `frozen` frontmatter field
 4. Preserves existing `frozen` entries, other fields in the frontmatter, and body prose
 
+### Supported code extensions
+
+Only files with extensions matching a supported export checker are frozen:
+`.ts`, `.tsx`, `.js`, `.jsx`, `.rs`, `.java`, `.go`, `.kt`, `.kts`, `.scala`, `.sc`.
+
+Non-code files (e.g. `README.md`, `package.json`) are skipped because their surface area is not tracked by the gates.
 
 ## Extra user instructions:
 "$ARGUMENTS"

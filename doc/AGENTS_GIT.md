@@ -1,9 +1,9 @@
 ## Git
 
 - Do not use `gh`. use `./scripts/gh-bot.mjs` so you will have your identity `abao-bot`.
-- When file changes in `src`, update version in `package.json`. Follow Semantic Versioning conventions.
+- When file changes in `src/` and `skills/`, update version in `package.json`. Follow Semantic Versioning conventions.
 - Keep your PR comments concise and clear. Reply in a review thread.
-- Tag version must align with package version.
+- Tag version must align with package version. By pushing a tag, npm release will be triggered automatically.
 
 ### branching
 - Main branch: `main`

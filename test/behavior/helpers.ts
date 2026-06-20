@@ -79,6 +79,7 @@ export function makeCtx(cwd: string): ExtensionContext {
   return {
     cwd,
     hasUI: true,
+    mode: "tui",
     ui: {
       notify(_message: string, _type?: string) {
         throw new Error("ui.notify called before mockCtx wiring");
@@ -93,6 +94,7 @@ export function makeCtx(cwd: string): ExtensionContext {
     modelRegistry: {} as any,
     model: undefined,
     isIdle: () => true,
+    isProjectTrusted: () => true,
     signal: undefined,
     abort() {},
     hasPendingMessages: () => false,

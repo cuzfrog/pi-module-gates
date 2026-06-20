@@ -251,4 +251,55 @@ describe("freeze-all.mjs", () => {
 
     cleanupFixture(dir);
   });
+
+  it("filters out files with unsupported extensions by default", () => {
+    const dir = setupFixture();
+
+    writeFileSync(join(dir, "src", "module.md"), "---\n---\n\n");
+    writeFileSync(join(dir, "src", "app.ts"), "");
+    writeFileSync(join(dir, "src", "main.go"), "");
+    writeFileSync(join(dir, "src", "lib.rs"), "");
+    writeFileSync(join(dir, "src", "README.md"), "readme");
+    writeFileSync(join(dir, "src", "package.json"), "{}");
+    writeFileSync(join(dir, "src", "notes.txt"), "notes");
+    writeFileSync(join(dir, "src", "config.yaml"), "key: val");
+
+    const result = runScript(dir, ["--root", "src"]);
+    expect(result.status).toBe(0);
+
+    const updated = readFileSync(join(dir, "src", "module.md"), "utf-8");
+    expect(updated).toContain("app.ts");
+    expect(updated).toContain("main.go");
+    expect(updated).toContain("lib.rs");
+    expect(updated).not.toContain("README.md");
+    expect(updated).not.toContain("package.json");
+    expect(updated).not.toContain("notes.txt");
+    expect(updated).not.toContain("config.yaml");
+
+    cleanupFixture(dir);
+  });
+
+  it("preserves existing frozen entries with unsupported extensions", () => {
+    const dir = setupFixture();
+
+    writeFileSync(
+      join(dir, "src", "module.md"),
+      "---\nfrozen:\n  - docs.md\n---\n\n",
+    );
+    writeFileSync(join(dir, "src", "docs.md"), "doc");
+    writeFileSync(join(dir, "src", "app.ts"), "");
+
+    const result = runScript(dir, ["--root", "src"]);
+    expect(result.status).toBe(0);
+
+    const updated = readFileSync(join(dir, "src", "module.md"), "utf-8");
+    expect(updated).toContain("docs.md");
+    expect(updated).toContain("app.ts");
+    // docs.md should come first since it was an existing entry
+    const docsIdx = updated.indexOf("docs.md");
+    const appIdx = updated.indexOf("app.ts");
+    expect(docsIdx).toBeLessThan(appIdx);
+
+    cleanupFixture(dir);
+  });
 });

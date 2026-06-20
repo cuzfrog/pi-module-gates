@@ -3,13 +3,22 @@
  * Auto-freeze all files in module descriptors.
  *
  * Scans module descriptor files under a source root and populates each
- * descriptor's `frozen` field with every direct file in the module directory.
- * Files in nested sub-modules (directories with their own descriptor) are
- * excluded from the parent.
+ * descriptor's `frozen` field with every direct code file in the module
+ * directory. Files in nested sub-modules (directories with their own
+ * descriptor) are excluded from the parent.
  */
 import { readFileSync, writeFileSync, readdirSync, existsSync } from "node:fs";
-import { resolve, relative, join, dirname } from "node:path";
+import { resolve, relative, join, dirname, extname } from "node:path";
 import { parseArgs } from "node:util";
+
+const SUPPORTED_EXTENSIONS = new Set([
+  ".ts", ".tsx", ".js", ".jsx",
+  ".rs",
+  ".java",
+  ".go",
+  ".kt", ".kts",
+  ".scala", ".sc",
+]);
 
 function main() {
   const { values } = parseArgs({
@@ -320,6 +329,7 @@ function listDirectFiles(modDir, descriptorName, allModuleDirs) {
       // Non-module subdirs are skipped too to avoid granularity issues
     } else {
       if (entry.name.toLowerCase() === lowerDesc) continue;
+      if (!SUPPORTED_EXTENSIONS.has(extname(entry.name).toLowerCase())) continue;
       files.push(entry.name);
     }
   }
