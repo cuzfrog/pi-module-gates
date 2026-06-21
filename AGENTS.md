@@ -31,6 +31,7 @@ Also refer to @README.md
 - When the user asks a question, answer it first before making edits or running implementation commands.
 - When writing text, think from the reader's perspective, write only what they need to know.
 - When writing to README, be concise.
+- If you want to ask user, simply print the questions, there's no such a ask_user tool.
 
 ## Code Conventions
 

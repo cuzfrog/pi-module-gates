@@ -23,6 +23,7 @@ describe("loadConfig", () => {
     expect(config.moduleDescriptorFileName).toBe("module.md");
     expect(config.moduleDescriptorReadonly).toBe("file");
     expect(config.sourceRoot).toBe("src/");
+    expect(config.disableSystemPrompt).toBe(false);
   });
 
   it("returns defaults when settings.json has no module-gates key", () => {
@@ -124,5 +125,18 @@ describe("loadConfig", () => {
       "/my/project/.pi/settings.json",
       "utf-8",
     );
+  });
+
+  it("overrides disableSystemPrompt from settings", () => {
+    mockedReadFileSync.mockReturnValue(
+      JSON.stringify({
+        "module-gates": {
+          disableSystemPrompt: true,
+        },
+      }),
+    );
+
+    const config = loadConfig("/project");
+    expect(config.disableSystemPrompt).toBe(true);
   });
 });

@@ -51,6 +51,7 @@ const defaultConfig: ModuleGateConfig = {
   moduleDescriptorReadonly: "file",
   sourceRoot: "",
   disableModuleInterfaceImportGate: false,
+      disableSystemPrompt: false,
 };
 
 function makeDirent(name: string, isDir: boolean): Dirent {
@@ -148,6 +149,7 @@ describe("buildModuleIndex", () => {
       moduleDescriptorReadonly: "off",
       sourceRoot: "",
       disableModuleInterfaceImportGate: false,
+      disableSystemPrompt: false,
     };
     const index = await buildModuleIndex(makeCtx("/project"), config);
 
@@ -174,6 +176,7 @@ describe("buildModuleIndex", () => {
       moduleDescriptorReadonly: "frontmatter",
       sourceRoot: "",
       disableModuleInterfaceImportGate: false,
+      disableSystemPrompt: false,
     };
     const index = await buildModuleIndex(makeCtx("/project"), config);
 
@@ -329,6 +332,7 @@ describe("buildModuleIndex", () => {
       moduleDescriptorReadonly: "file",
       sourceRoot: "",
       disableModuleInterfaceImportGate: false,
+      disableSystemPrompt: false,
     };
     const index = await buildModuleIndex(makeCtx("/project"), config);
     expect(index.contracts).toHaveLength(1);
@@ -373,6 +377,7 @@ describe("buildModuleIndex", () => {
       moduleDescriptorReadonly: "file",
       sourceRoot: "src/",
       disableModuleInterfaceImportGate: false,
+      disableSystemPrompt: false,
     };
     const index = await buildModuleIndex(makeCtx("/project"), config);
 
