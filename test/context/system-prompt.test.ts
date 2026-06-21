@@ -8,6 +8,7 @@ const baseConfig: ModuleGateConfig = {
   moduleDescriptorReadonly: "file",
   sourceRoot: "src/",
   disableModuleInterfaceImportGate: false,
+  disableSystemPrompt: false,
 };
 
 describe("buildSystemPromptHint", () => {
@@ -111,6 +112,74 @@ describe("buildSystemPromptHint", () => {
       { ...baseConfig, moduleDescriptorReadonly: "off" },
     );
 
-    expect(result).not.toContain("is readonly");
+    expect(result).not.toContain("The `module.md` file itself is readonly");
+    expect(result).not.toContain("The frontmatter of");
+  });
+
+  it("includes module interface import rule when gate is enabled", () => {
+    const index: ModuleIndex = {
+      contracts: [
+        {
+          modulePath: "/project/src",
+          visible: [{ name: "fnA" }],
+          readonly: ["module.md"],
+          frozen: [],
+          prose: "Module A.",
+        },
+      ],
+      dirToModule: new Map(),
+    };
+
+    const result = buildSystemPromptHint(index, "Base prompt.", "module.md", baseConfig);
+
+    expect(result).toContain("External files can only import through the module interface");
+  });
+
+  it("omits module interface import rule when gate is disabled", () => {
+    const index: ModuleIndex = {
+      contracts: [
+        {
+          modulePath: "/project/src",
+          visible: [{ name: "fnA" }],
+          readonly: ["module.md"],
+          frozen: [],
+          prose: "Module A.",
+        },
+      ],
+      dirToModule: new Map(),
+    };
+
+    const result = buildSystemPromptHint(
+      index,
+      "Base prompt.",
+      "module.md",
+      { ...baseConfig, disableModuleInterfaceImportGate: true },
+    );
+
+    expect(result).not.toContain("External files can only import through the module interface");
+  });
+
+  it("returns original prompt when disableSystemPrompt is true", () => {
+    const index: ModuleIndex = {
+      contracts: [
+        {
+          modulePath: "/project/src",
+          visible: [{ name: "fnA" }],
+          readonly: ["module.md"],
+          frozen: [],
+          prose: "Module A.",
+        },
+      ],
+      dirToModule: new Map(),
+    };
+
+    const result = buildSystemPromptHint(
+      index,
+      "Base prompt.",
+      "module.md",
+      { ...baseConfig, disableSystemPrompt: true },
+    );
+
+    expect(result).toBe("Base prompt.");
   });
 });

@@ -6,6 +6,7 @@ export type ModuleGateConfig = {
   moduleDescriptorReadonly: "file" | "frontmatter" | "off";
   sourceRoot: string;
   disableModuleInterfaceImportGate: boolean;
+  disableSystemPrompt: boolean;
 };
 
 const DEFAULTS: ModuleGateConfig = {
@@ -13,6 +14,7 @@ const DEFAULTS: ModuleGateConfig = {
   moduleDescriptorReadonly: "file",
   sourceRoot: "src/",
   disableModuleInterfaceImportGate: false,
+  disableSystemPrompt: false,
 };
 
 export function loadConfig(cwd: string): ModuleGateConfig {

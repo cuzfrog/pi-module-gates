@@ -28,7 +28,7 @@ The extension intercepts agent `write`/`edit` operations and enforces these cont
    - **Module interface import gate** — external files can only import from the module not internal files, i.e. re-exports from `index.ts` or `mod.rs`. A child module may import from a parent module's internal files (not recommended but allowed). (Only Typescript/JavaScript and Rust are supported)
    - **Import gate** (not implemented yet) — would the change introduce an import violating visibility scope?
 
-- System prompt: [system-prompt.md](src/context/system-prompt.ts)
+- System prompt: [system-prompt.md](src/context/system-prompt.template.md)
 - Currently [supported languages](src/gates/checkers/index.ts): **TypeScript/JavaScript**, **Rust**, **Java**, **Go**, **Kotlin**, **Scala**
 
 ## Installation
@@ -127,6 +127,7 @@ Add a `module-gates` entry to `.pi/settings.json`:
 | `moduleDescriptorReadonly` | `true` | When `true`, descriptor files are readonly.|
 | `sourceRoot` | `"src/"` | Directory to scan for descriptor files and enforce gates. Set to `""` to scan from project root. |
 | `disableModuleInterfaceImportGate` | `false` | When `true`, imports will not be forced to be from module interface. |
+| `disableSystemPrompt` | `false` | When `true`, skip injecting the module-gates hint into the agent's system prompt. |
 
 When no settings file exists or no `module-gates` key is present, defaults apply.
 
