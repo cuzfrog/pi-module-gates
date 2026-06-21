@@ -17,6 +17,9 @@ AI coding agents produce edits with limited context knowledge (myopia) — their
 
 The extension intercepts agent `write`/`edit` operations and enforces these contracts. Violations are blocked with a clear reason.
 
+The attempt to add 2 public helper functions is blocked, forcing the agent to re-think the design.
+![Module Gate denial example](doc/module_gates_block.png)
+
 ### How it works
 
 1. **Indexing** — On session start, scans the project tree for descriptor files and builds a module index.
