@@ -1,0 +1,79 @@
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import * as fs from "node:fs";
+import * as os from "node:os";
+import * as path from "node:path";
+import { spawnSync } from "node:child_process";
+import { FIXTURES } from "../behavior/helpers.ts";
+
+const BIN = path.resolve("bin/pi-module-gates.mjs");
+
+let tmp: string;
+beforeEach(() => {
+  tmp = fs.mkdtempSync(path.join(os.tmpdir(), "pmg-cli-"));
+});
+afterEach(() => {
+  fs.rmSync(tmp, { recursive: true, force: true });
+});
+
+function cli(...args: string[]) {
+  return spawnSync("node", [BIN, ...args], { encoding: "utf-8", timeout: 15_000 });
+}
+
+describe("pi-module-gates CLI", () => {
+  it("install-claude writes settings.json with the marker", () => {
+    const r = cli("install-claude", "--project-dir", tmp);
+    expect(r.status).toBe(0);
+    const settingsPath = path.join(tmp, ".claude", "settings.json");
+    expect(fs.existsSync(settingsPath)).toBe(true);
+    const json = JSON.parse(fs.readFileSync(settingsPath, "utf-8"));
+    const pre = json.hooks?.PreToolUse ?? [];
+    expect(pre.some((m: { hooks: { command: string }[] }) => m.hooks.some((h) => h.command.includes("@cuzfrog/pi-module-gates")))).toBe(true);
+  });
+
+  it("install-claude is idempotent", () => {
+    cli("install-claude", "--project-dir", tmp);
+    cli("install-claude", "--project-dir", tmp);
+    const json = JSON.parse(fs.readFileSync(path.join(tmp, ".claude", "settings.json"), "utf-8"));
+    const pre = json.hooks?.PreToolUse ?? [];
+    expect(pre.filter((m: { hooks: { command: string }[] }) => m.hooks.some((h) => h.command.includes("@cuzfrog/pi-module-gates")))).toHaveLength(1);
+  });
+
+  it("install-claude preserves unrelated settings keys", () => {
+    fs.mkdirSync(path.join(tmp, ".claude"), { recursive: true });
+    fs.writeFileSync(path.join(tmp, ".claude", "settings.json"), JSON.stringify({ permissions: { allow: ["Bash"] } }, null, 2));
+    cli("install-claude", "--project-dir", tmp);
+    const json = JSON.parse(fs.readFileSync(path.join(tmp, ".claude", "settings.json"), "utf-8"));
+    expect(json.permissions).toEqual({ allow: ["Bash"] });
+  });
+
+  it("uninstall-claude removes the marker entry", () => {
+    cli("install-claude", "--project-dir", tmp);
+    cli("uninstall-claude", "--project-dir", tmp);
+    const json = JSON.parse(fs.readFileSync(path.join(tmp, ".claude", "settings.json"), "utf-8"));
+    const pre = json.hooks?.PreToolUse ?? [];
+    expect(pre.filter((m: { hooks: { command: string }[] }) => m.hooks.some((h) => h.command.includes("@cuzfrog/pi-module-gates")))).toHaveLength(0);
+  });
+
+  it("end-to-end: install, invoke hook, deny on readonly, uninstall", () => {
+    cli("install-claude", "--project-dir", FIXTURES);
+    const payload = {
+      hook_event_name: "PreToolUse",
+      tool_name: "Write",
+      tool_input: { file_path: "src/config.ts", content: "// modified" },
+      cwd: FIXTURES,
+    };
+    const hook = spawnSync("node", [path.resolve("dist/claude/pre-tool-use.mjs")], {
+      input: JSON.stringify(payload),
+      encoding: "utf-8",
+      timeout: 10_000,
+      cwd: FIXTURES,
+    });
+    expect(hook.status).toBe(2);
+    expect(hook.stderr).toContain("Readonly rule");
+    cli("uninstall-claude", "--project-dir", FIXTURES);
+    const after = JSON.parse(fs.readFileSync(path.join(FIXTURES, ".claude", "settings.json"), "utf-8"));
+    const pre = after.hooks?.PreToolUse ?? [];
+    expect(pre.filter((m: { hooks: { command: string }[] }) => m.hooks.some((h) => h.command.includes("@cuzfrog/pi-module-gates")))).toHaveLength(0);
+    fs.rmSync(path.join(FIXTURES, ".claude"), { recursive: true, force: true });
+  });
+});

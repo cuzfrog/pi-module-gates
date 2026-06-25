@@ -9,7 +9,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json && node scripts/postbuild.mjs",
     "check": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "npm run build && vitest run"
   },
   "bin": {
     "pi-module-gates": "./bin/pi-module-gates.mjs"

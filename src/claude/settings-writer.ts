@@ -25,7 +25,7 @@ export function readSettings(projectDir: string): ClaudeSettings {
   try {
     const raw = fs.readFileSync(settingsPath, "utf-8");
     const parsed = JSON.parse(raw);
-    if (parsed && typeof parsed === "object" && !Array.isArray(parsed) && typeof parsed.hooks === "object") {
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
       return parsed as ClaudeSettings;
     }
     return {};
