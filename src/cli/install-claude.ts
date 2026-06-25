@@ -37,12 +37,14 @@ export function installClaude(opts: InstallClaudeOptions): InstallClaudeResult {
   process.stdout.write(`Wrote ${relPath}\n\n`);
   process.stdout.write("Hook entry inserted under hooks.PreToolUse:\n");
   const matcher = updated.hooks?.PreToolUse?.find((m) =>
-    m.hooks.some((h) => h.command.includes(HOOK_MARKER)),
+    m.hooks.some((h) => typeof h.command === "string" && h.command.includes(HOOK_MARKER)),
   );
   if (matcher) {
     process.stdout.write(`  matcher: "${matcher.matcher}"\n`);
     for (const h of matcher.hooks) {
-      process.stdout.write(`  command: ${h.command}\n`);
+      if (typeof h.command === "string") {
+        process.stdout.write(`  command: ${h.command}\n`);
+      }
       if (h.statusMessage) process.stdout.write(`  status:  ${h.statusMessage}\n`);
     }
   }

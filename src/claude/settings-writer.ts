@@ -52,7 +52,7 @@ export function upsertPreToolUse(settings: ClaudeSettings): ClaudeSettings {
   next.hooks = next.hooks ?? {};
   const existing = next.hooks.PreToolUse ?? [];
   next.hooks.PreToolUse = existing.filter(
-    (m) => !m.hooks.some((h) => h.command.includes(HOOK_MARKER)),
+    (m) => !m.hooks.some((h) => typeof h.command === "string" && h.command.includes(HOOK_MARKER)),
   );
   next.hooks.PreToolUse.push(buildPreToolUseEntry());
   return next;
@@ -62,7 +62,7 @@ export function removePreToolUse(settings: ClaudeSettings): ClaudeSettings {
   const next: ClaudeSettings = JSON.parse(JSON.stringify(settings));
   if (!next.hooks?.PreToolUse) return next;
   const filtered = next.hooks.PreToolUse.filter(
-    (m) => !m.hooks.some((h) => h.command.includes(HOOK_MARKER)),
+    (m) => !m.hooks.some((h) => typeof h.command === "string" && h.command.includes(HOOK_MARKER)),
   );
   if (filtered.length === 0) {
     delete next.hooks.PreToolUse;
