@@ -7,8 +7,12 @@
   ],
   "type": "module",
   "scripts": {
+    "build": "tsc -p tsconfig.build.json && node scripts/postbuild.mjs",
     "check": "tsc --noEmit",
     "test": "vitest run"
+  },
+  "bin": {
+    "pi-module-gates": "./bin/pi-module-gates.mjs"
   },
   "pi": {
     "extensions": [
@@ -40,6 +44,8 @@
   "files": [
     "src/",
     "skills/",
+    "bin/",
+    "dist/",
     "README.md",
     "LICENSE"
   ],
