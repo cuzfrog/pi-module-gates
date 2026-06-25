@@ -50,7 +50,7 @@ async function main(): Promise<void> {
     process.exit(0);
   }
 
-  const cwd: string = process.env.CLAUDE_CWD ?? process.cwd();
+  const cwd: string = event.cwd ?? process.env.CLAUDE_PROJECT_DIR ?? process.cwd();
   const toolInput = event.tool_input ?? {};
   const filePath: string | undefined = toolInput.file_path;
   if (!filePath) process.exit(0);
