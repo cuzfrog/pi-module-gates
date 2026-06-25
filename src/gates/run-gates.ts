@@ -21,10 +21,11 @@ export function runGates(
   cwd: string,
   index: ModuleIndex,
   config: ModuleGateConfig,
+  beforeOverride?: string,
 ): GateDenial | undefined {
   const absPath = path.resolve(cwd, filePath);
 
-  const before = readFileSafe(absPath);
+  const before = beforeOverride ?? readFileSafe(absPath);
   const after = applyEdits(before, edits);
   const srcRoot = path.resolve(cwd, config.sourceRoot);
 

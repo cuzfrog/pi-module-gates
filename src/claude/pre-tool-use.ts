@@ -82,7 +82,7 @@ async function main(): Promise<void> {
     process.exit(0);
   }
 
-  const result = runGates(filePath, [{ oldText: before, newText: after }], cwd, index, config);
+  const result = runGates(filePath, [{ oldText: before, newText: after }], cwd, index, config, before);
 
   if (result?.block) {
     process.stderr.write(`${result.reason}\n`);
