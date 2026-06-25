@@ -2,7 +2,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { applyEdits, readFileSafe } from "../utils.ts";
 import { runGates, type GateEdit } from "../gates/run-gates.ts";
-import { loadIndexForHook, notifyNoContracts, type IndexContext } from "./index-loader.ts";
+import { loadIndexForHook, notifyNoContracts } from "./index-loader.ts";
 import "../gates/checkers/index.ts";
 
 type HookEvent = {
@@ -18,7 +18,7 @@ type HookEvent = {
   cwd?: string;
 };
 
-const notifyCtx = (): IndexContext => ({
+const notifyCtx = (): { cwd: string; ui: { notify: (m: string) => void } } => ({
   cwd: process.cwd(),
   ui: {
     notify: (m) => process.stderr.write(`[Module Gate] ${m}\n`),
