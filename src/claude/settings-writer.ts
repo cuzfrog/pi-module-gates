@@ -10,9 +10,16 @@ export type ClaudeHookCommand = {
   statusMessage?: string;
 };
 
+export type ClaudeHook = ClaudeHookCommand | {
+  type: string;
+  command?: string;
+  statusMessage?: string;
+  [key: string]: unknown;
+};
+
 export type HookMatcher = {
   matcher: string;
-  hooks: ClaudeHookCommand[];
+  hooks: ClaudeHook[];
 };
 
 export type ClaudeSettings = {

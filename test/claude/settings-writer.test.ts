@@ -31,7 +31,7 @@ describe("settings writer", () => {
   it("is idempotent", () => {
     const a = upsertPreToolUse({});
     const b = upsertPreToolUse(a);
-    expect((b.hooks?.PreToolUse ?? []).filter((m) => m.hooks.some((h) => h.command.includes(HOOK_MARKER)))).toHaveLength(1);
+    expect((b.hooks?.PreToolUse ?? []).filter((m) => m.hooks.some((h) => typeof h.command === "string" && h.command.includes(HOOK_MARKER)))).toHaveLength(1);
   });
 
   it("preserves unrelated top-level keys", () => {
@@ -82,5 +82,25 @@ describe("settings writer", () => {
 
   it("readSettings returns {} on missing file", () => {
     expect(readSettings(tmp)).toEqual({});
+  });
+
+  it("preserves matcher entries with a non-command hook (e.g. type: prompt)", () => {
+    const a = upsertPreToolUse({
+      hooks: {
+        PreToolUse: [
+          { matcher: "*", hooks: [{ type: "prompt" }] },
+        ],
+      },
+    });
+    const pre = a.hooks?.PreToolUse ?? [];
+    const promptMatcher = pre.find((m) => m.matcher === "*");
+    expect(promptMatcher).toBeDefined();
+    expect(promptMatcher?.hooks[0].type).toBe("prompt");
+    const own = pre.find((m) => m.matcher === "Edit|MultiEdit|Write");
+    expect(own).toBeDefined();
+    const b = removePreToolUse(a);
+    const after = b.hooks?.PreToolUse ?? [];
+    expect(after.find((m) => m.matcher === "*")?.hooks[0].type).toBe("prompt");
+    expect(after.find((m) => m.matcher === "Edit|MultiEdit|Write")).toBeUndefined();
   });
 });
