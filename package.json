@@ -8,6 +8,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc -p tsconfig.build.json && node scripts/postbuild.mjs",
+    "prepublishOnly": "npm run build",
     "check": "tsc --noEmit",
     "test": "npm run build && vitest run"
   },
