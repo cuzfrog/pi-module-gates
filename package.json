@@ -33,12 +33,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/cuzfrog/pi-module-gate.git"
+    "url": "git+https://github.com/cuzfrog/pi-module-gates.git"
   },
   "bugs": {
-    "url": "https://github.com/cuzfrog/pi-module-gate/issues"
+    "url": "https://github.com/cuzfrog/pi-module-gates/issues"
   },
-  "homepage": "https://github.com/cuzfrog/pi-module-gate#readme",
+  "homepage": "https://github.com/cuzfrog/pi-module-gates#readme",
   "license": "MIT",
   "author": "Cause Chung (cuzfrog@gmail.com)",
   "files": [
