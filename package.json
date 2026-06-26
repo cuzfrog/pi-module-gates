@@ -1,14 +1,19 @@
 {
   "name": "@cuzfrog/pi-module-gates",
-  "version": "0.15.0",
+  "version": "0.16.0",
   "description": "pi extension that controls the entropy of the codebase by enforcing code module boundaries.",
   "keywords": [
     "pi-package"
   ],
   "type": "module",
   "scripts": {
+    "build": "tsc -p tsconfig.build.json && node scripts/postbuild.mjs",
+    "prepublishOnly": "npm run build",
     "check": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "npm run build && vitest run"
+  },
+  "bin": {
+    "pi-module-gates": "./bin/pi-module-gates.mjs"
   },
   "pi": {
     "extensions": [
@@ -40,6 +45,8 @@
   "files": [
     "src/",
     "skills/",
+    "bin/",
+    "dist/",
     "README.md",
     "LICENSE"
   ],

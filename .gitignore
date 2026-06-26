@@ -5,6 +5,7 @@ dist/
 .lissom/
 .tasks/
 .pi/
+.claude/
 
 # env
 .env

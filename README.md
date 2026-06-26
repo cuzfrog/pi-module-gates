@@ -134,6 +134,60 @@ Add a `module-gates` entry to `.pi/settings.json`:
 
 When no settings file exists or no `module-gates` key is present, defaults apply.
 
+## Claude Code Support
+
+`pi-module-gates` runs as a Claude Code `PreToolUse` hook and enforces the same `MODULE.md` contracts on Claude's `Edit`, `MultiEdit`, and `Write` tool calls.
+
+### Install
+
+```bash
+npx pi-module-gates install-claude
+```
+
+Writes `.claude/settings.json` in the current project, pointing the `PreToolUse` hook at the installed binary. Re-running is safe (idempotent). Use `--project-dir <dir>` to target another project.
+
+The generated entry:
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|MultiEdit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/node_modules/@cuzfrog/pi-module-gates/dist/claude/pre-tool-use.mjs",
+            "statusMessage": "Module gate checking edit..."
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+`${CLAUDE_PROJECT_DIR}` is a Claude Code placeholder; do not expand it in the file.
+
+### Uninstall
+
+```bash
+npx pi-module-gates uninstall-claude
+```
+
+Removes only the hooks block this tool added. Other settings (`permissions.allow`, unrelated hook events, etc.) are preserved.
+
+### Configuration
+
+Claude Code uses the same `.pi/settings.json#module-gates` block as the pi extension. See the Configuration section above.
+
+### Troubleshooting
+
+- **Hook never fires.** Confirm `.claude/settings.json` contains a `PreToolUse` entry whose `command` contains `@cuzfrog/pi-module-gates`. Re-run `install-claude` to repair.
+- **Hook fires but denies everything.** Check `.pi/settings.json#module-gates.sourceRoot`. The default is `src/`.
+- **Internal error.** The hook fails open: it logs to stderr and exits 0. Inspect Claude's hook stderr output.
+- **Bypass temporarily.** Remove the hook from `.claude/settings.json`, or run `uninstall-claude`.
+
 ## License
 
 MIT
