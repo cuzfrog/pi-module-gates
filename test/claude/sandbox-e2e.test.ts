@@ -4,16 +4,16 @@ import * as os from "node:os";
 import * as path from "node:path";
 import { spawnSync } from "node:child_process";
 
-const HOOK = path.resolve("dist/claude/pre-tool-use.mjs");
+const HOOK = path.resolve("src/claude/pre-tool-use.ts");
 const BIN = path.resolve("bin/pi-module-gates.mjs");
 const HOOK_MARKER = "@cuzfrog/pi-module-gates";
 
 beforeAll(() => {
   if (!fs.existsSync(HOOK)) {
-    throw new Error(`${HOOK} not built. Run "npm run build" first.`);
+    throw new Error(`${HOOK} not found.`);
   }
   if (!fs.existsSync(BIN)) {
-    throw new Error(`${BIN} not built. Run "npm run build" first.`);
+    throw new Error(`${BIN} not found.`);
   }
 });
 
@@ -63,7 +63,7 @@ function materializeProject(): void {
 }
 
 function runHook(stdinObj: unknown) {
-  return spawnSync("node", [HOOK], {
+  return spawnSync("bun", [HOOK], {
     input: JSON.stringify(stdinObj),
     encoding: "utf-8",
     timeout: 30_000,
@@ -75,7 +75,7 @@ describe("sandbox e2e: install + all three gates", () => {
   it("installs the hook and exercises readonly, frozen, visible deny+allow", { timeout: 60_000 }, () => {
     materializeProject();
 
-    const install = spawnSync("node", [BIN, "install-claude", "--project-dir", tmp], {
+    const install = spawnSync(BIN, ["install-claude", "--project-dir", tmp], {
       encoding: "utf-8",
       timeout: 15_000,
     });

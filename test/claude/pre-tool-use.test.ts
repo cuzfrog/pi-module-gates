@@ -4,16 +4,16 @@ import * as path from "node:path";
 import { spawnSync } from "node:child_process";
 import { FIXTURES } from "../behavior/helpers.ts";
 
-const HOOK = path.resolve("dist/claude/pre-tool-use.mjs");
+const HOOK = path.resolve("src/claude/pre-tool-use.ts");
 
 beforeAll(() => {
   if (!fs.existsSync(HOOK)) {
-    throw new Error(`${HOOK} not built. Run "npm run build" first.`);
+    throw new Error(`${HOOK} not found.`);
   }
 });
 
 function runHook(stdinObj: unknown, cwd?: string) {
-  return spawnSync("node", [HOOK], {
+  return spawnSync("bun", [HOOK], {
     input: JSON.stringify(stdinObj),
     encoding: "utf-8",
     timeout: 10_000,
@@ -87,7 +87,7 @@ describe("pre-tool-use hook", () => {
   });
 
   it("fails open on malformed JSON", () => {
-    const r = spawnSync("node", [HOOK], { input: "not json", encoding: "utf-8", timeout: 10_000 });
+    const r = spawnSync("bun", [HOOK], { input: "not json", encoding: "utf-8", timeout: 10_000 });
     expect(r.status).toBe(0);
     expect(r.stderr).toContain("[Module Gate]");
   });

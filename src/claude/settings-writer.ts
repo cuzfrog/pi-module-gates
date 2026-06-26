@@ -47,7 +47,7 @@ export function buildPreToolUseEntry(): HookMatcher {
     hooks: [
       {
         type: "command",
-        command: `node \${CLAUDE_PROJECT_DIR}/node_modules/@cuzfrog/pi-module-gates/dist/claude/pre-tool-use.mjs`,
+        command: `bun \${CLAUDE_PROJECT_DIR}/node_modules/@cuzfrog/pi-module-gates/src/claude/pre-tool-use.ts`,
         statusMessage: "Module gate checking edit...",
       },
     ],

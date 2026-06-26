@@ -7,10 +7,8 @@
   ],
   "type": "module",
   "scripts": {
-    "build": "tsc -p tsconfig.build.json && node scripts/postbuild.mjs",
-    "prepublishOnly": "npm run build",
     "check": "tsc --noEmit",
-    "test": "npm run build && vitest run"
+    "test": "vitest run"
   },
   "bin": {
     "pi-module-gates": "./bin/pi-module-gates.mjs"
@@ -29,29 +27,29 @@
   "devDependencies": {
     "@earendil-works/pi-coding-agent": "0.79.8",
     "@types/node": "22.19.19",
+    "bun-types": "1.3.14",
     "typescript": "5.9.3",
     "vitest": "4.1.7"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/cuzfrog/pi-module-gates.git"
+    "url": "git+https://github.com/cuzfrog/pi-module-gate.git"
   },
   "bugs": {
-    "url": "https://github.com/cuzfrog/pi-module-gates/issues"
+    "url": "https://github.com/cuzfrog/pi-module-gate/issues"
   },
-  "homepage": "https://github.com/cuzfrog/pi-module-gates#readme",
+  "homepage": "https://github.com/cuzfrog/pi-module-gate#readme",
   "license": "MIT",
   "author": "Cause Chung (cuzfrog@gmail.com)",
   "files": [
     "src/",
     "skills/",
     "bin/",
-    "dist/",
     "README.md",
     "LICENSE"
   ],
   "engines": {
-    "node": ">=18"
+    "bun": ">=1.3.0"
   },
   "publishConfig": {
     "access": "public",

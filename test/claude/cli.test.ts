@@ -16,7 +16,7 @@ afterEach(() => {
 });
 
 function cli(...args: string[]) {
-  return spawnSync("node", [BIN, ...args], { encoding: "utf-8", timeout: 15_000 });
+  return spawnSync(BIN, args, { encoding: "utf-8", timeout: 15_000 });
 }
 
 describe("pi-module-gates CLI", () => {
@@ -62,7 +62,7 @@ describe("pi-module-gates CLI", () => {
       tool_input: { file_path: "src/config.ts", content: "// modified" },
       cwd: FIXTURES,
     };
-    const hook = spawnSync("node", [path.resolve("dist/claude/pre-tool-use.mjs")], {
+    const hook = spawnSync("bun", [path.resolve("src/claude/pre-tool-use.ts")], {
       input: JSON.stringify(payload),
       encoding: "utf-8",
       timeout: 10_000,
