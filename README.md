@@ -1,6 +1,6 @@
 # pi-module-gates - Constraints liberate, liberties constrain.
 
-Expirimental pi cli extension that controls the entropy of the codebase by enforcing code module boundaries.
+Experimental pi cli extension that controls the entropy of the codebase by enforcing code module boundaries.
 It helps combat slop generation and code architecture degradation.
 
 ## Problem
@@ -157,7 +157,7 @@ The generated entry:
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CLAUDE_PROJECT_DIR}/node_modules/@cuzfrog/pi-module-gates/dist/claude/pre-tool-use.mjs",
+            "command": "bun ${CLAUDE_PROJECT_DIR}/node_modules/@cuzfrog/pi-module-gates/src/claude/pre-tool-use.ts",
             "statusMessage": "Module gate checking edit..."
           }
         ]
@@ -168,6 +168,11 @@ The generated entry:
 ```
 
 `${CLAUDE_PROJECT_DIR}` is a Claude Code placeholder; do not expand it in the file.
+
+If `pi-module-gates` is already installed in pi global dir, you can use below path instead:
+```
+~/.pi/agent/npm/node_modules/@cuzfrog/pi-module-gates/src/claude/pre-tool-use.ts
+```
 
 ### Uninstall
 
