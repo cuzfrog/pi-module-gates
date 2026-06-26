@@ -1,8 +1,7 @@
 ---
-frozen:
+sealed:
   - export-gate.ts
-  - frozen-gate.ts
+  - sealed-gate.ts
   - readonly-gate.ts
   - index.ts
 ---
-

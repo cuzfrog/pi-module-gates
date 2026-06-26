@@ -42,10 +42,10 @@ export function isWithinSourceRoot(absPath: string, resolvedRoot: string): boole
 export function getAncestorContracts(
   absFile: string,
   index: ModuleIndex,
-): { modulePath: string; readonly: string[]; frozen: string[] }[] {
+): { modulePath: string; readonly: string[]; sealed: string[] }[] {
   return index.contracts
     .filter((c) => absFile.startsWith(c.modulePath + path.sep) || absFile === c.modulePath)
-    .map(({ modulePath, readonly, frozen }) => ({ modulePath, readonly, frozen }));
+    .map(({ modulePath, readonly, sealed }) => ({ modulePath, readonly, sealed }));
 }
 
 export function matchesPattern(

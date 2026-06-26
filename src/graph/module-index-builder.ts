@@ -70,7 +70,7 @@ function buildContracts(
           ? frontmatter.visible.map(parseVisibleEntry)
           : null,
       readonly: readonlyEntries,
-      frozen: frontmatter.frozen ?? [],
+      sealed: frontmatter.sealed ?? [],
       prose: body.trim(),
     });
   }

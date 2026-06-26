@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { mkdtempSync, writeFileSync, rmSync, mkdirSync, existsSync, readFileSync, readdirSync } from "node:fs";
 import { join, sep } from "node:path";
 import { execSync } from "node:child_process";
-import { SUPPORTED_EXTENSIONS } from "../../skills/module-freeze-all/scripts/freeze-all.mjs";
+import { SUPPORTED_EXTENSIONS } from "../../skills/module-seal-all/scripts/seal-all.mjs";
 import { getChecker } from "../../src/gates/checkers/registry.ts";
 import "../../src/gates/checkers/typescript.ts";
 import "../../src/gates/checkers/rust.ts";
@@ -17,9 +17,9 @@ const scriptPath = join(
   "..",
   "..",
   "skills",
-  "module-freeze-all",
+  "module-seal-all",
   "scripts",
-  "freeze-all.mjs",
+  "seal-all.mjs",
 );
 
 const checkersDir = join(import.meta.dirname, "..", "..", "src", "gates", "checkers");
@@ -57,7 +57,7 @@ function runScript(cwd: string, args: string[]): { stdout: string; stderr: strin
 }
 
 function setupFixture(): string {
-  const dir = mkdtempSync(join(tmpdir(), "module-freeze-all-test-"));
+  const dir = mkdtempSync(join(tmpdir(), "module-seal-all-test-"));
   mkdirSync(join(dir, "src"), { recursive: true });
   mkdirSync(join(dir, "src", "sub"), { recursive: true });
   return dir;
@@ -67,8 +67,8 @@ function cleanupFixture(dir: string): void {
   rmSync(dir, { recursive: true, force: true });
 }
 
-describe("freeze-all.mjs", () => {
-  it("adds frozen entries to existing module.md", () => {
+describe("seal-all.mjs", () => {
+  it("adds sealed entries to existing module.md", () => {
     const dir = setupFixture();
 
     writeFileSync(
@@ -84,7 +84,7 @@ describe("freeze-all.mjs", () => {
     expect(result.status).toBe(0);
 
     const updated = readFileSync(join(dir, "src", "module.md"), "utf-8");
-    expect(updated).toContain("frozen:");
+    expect(updated).toContain("sealed:");
     expect(updated).toContain("app.ts");
     expect(updated).toContain("utils.ts");
     expect(updated).not.toContain("nested.ts");
@@ -97,12 +97,12 @@ describe("freeze-all.mjs", () => {
     cleanupFixture(dir);
   });
 
-  it("preserves existing frozen entries when adding new ones", () => {
+  it("preserves existing sealed entries when adding new ones", () => {
     const dir = setupFixture();
 
     writeFileSync(
       join(dir, "src", "module.md"),
-      "---\nfrozen:\n  - existing.ts\n---\n\n",
+      "---\nsealed:\n  - existing.ts\n---\n\n",
     );
     writeFileSync(join(dir, "src", "existing.ts"), "");
     writeFileSync(join(dir, "src", "new-file.ts"), "");
@@ -188,7 +188,7 @@ describe("freeze-all.mjs", () => {
 
     writeFileSync(
       join(dir, "src", "module.md"),
-      "---\nfrozen:\n  - app.ts\n---\n\n",
+      "---\nsealed:\n  - app.ts\n---\n\n",
     );
     writeFileSync(join(dir, "src", "app.ts"), "");
 
@@ -212,7 +212,7 @@ describe("freeze-all.mjs", () => {
     expect(result.status).toBe(0);
 
     const created = readFileSync(join(dir, "src", "MODULE.md"), "utf-8");
-    expect(created).toContain("frozen:");
+    expect(created).toContain("sealed:");
     expect(created).toContain("app.ts");
     expect(created).toContain("utils.ts");
 
@@ -229,7 +229,7 @@ describe("freeze-all.mjs", () => {
     expect(result.status).toBe(0);
 
     const updated = readFileSync(join(dir, "src", "module.md"), "utf-8");
-    expect(updated).toContain("frozen:");
+    expect(updated).toContain("sealed:");
     expect(updated).toContain("app.ts");
     expect(updated).toContain("Just prose");
 
@@ -303,12 +303,12 @@ describe("freeze-all.mjs", () => {
     cleanupFixture(dir);
   });
 
-  it("preserves existing frozen entries with unsupported extensions", () => {
+  it("preserves existing sealed entries with unsupported extensions", () => {
     const dir = setupFixture();
 
     writeFileSync(
       join(dir, "src", "module.md"),
-      "---\nfrozen:\n  - docs.md\n---\n\n",
+      "---\nsealed:\n  - docs.md\n---\n\n",
     );
     writeFileSync(join(dir, "src", "docs.md"), "doc");
     writeFileSync(join(dir, "src", "app.ts"), "");

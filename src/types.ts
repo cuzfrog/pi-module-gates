@@ -9,7 +9,7 @@ export type ModuleContract = {
   modulePath: string;
   visible: Signature[] | null;
   readonly: string[];
-  frozen: string[];
+  sealed: string[];
   prose: string;
 };
 

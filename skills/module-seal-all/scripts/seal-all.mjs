@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /**
- * Auto-freeze all files in module descriptors.
+ * Auto-seal all files in module descriptors.
  *
  * Scans module descriptor files under a source root and populates each
- * descriptor's `frozen` field with every direct code file in the module
+ * descriptor's `sealed` field with every direct code file in the module
  * directory. Files in nested sub-modules (directories with their own
  * descriptor) are excluded from the parent.
  */
@@ -47,7 +47,7 @@ function main() {
   const results = [];
 
   for (const [modDir, modFile] of allModuleDirs) {
-    const result = freezeModule(modDir, modFile, descriptorName, allModuleDirs);
+    const result = sealModule(modDir, modFile, descriptorName, allModuleDirs);
     if (result) results.push(result);
   }
 
@@ -69,7 +69,7 @@ function main() {
     console.log("Dry run — would modify:");
     for (const r of results) {
       const rel = relative(cwd, r.path);
-      console.log(`  ${rel}: freeze [${r.files.join(", ") || "(none)"}]`);
+      console.log(`  ${rel}: seal [${r.files.join(", ") || "(none)"}]`);
     }
     return;
   }
@@ -169,7 +169,7 @@ function walkDir(dir, visitor) {
 // Module processing
 // ---------------------------------------------------------------------------
 
-function freezeModule(modDir, descriptorFileName, descriptorName, allModuleDirs) {
+function sealModule(modDir, descriptorFileName, descriptorName, allModuleDirs) {
   const modPath = join(modDir, descriptorFileName);
   let raw;
   try {
@@ -179,15 +179,15 @@ function freezeModule(modDir, descriptorFileName, descriptorName, allModuleDirs)
   }
 
   const parsed = parseFrontmatter(raw);
-  const existingFrozen = normalizeFrozen(parsed.frontmatter.frozen);
+  const existingSealed = normalizeSealed(parsed.frontmatter.sealed);
   const directFiles = listDirectFiles(modDir, descriptorName, allModuleDirs);
-  const mergedFrozen = mergePreservingOrder(existingFrozen, directFiles);
+  const mergedSealed = mergePreservingOrder(existingSealed, directFiles);
 
-  if (arraysEqual(existingFrozen, mergedFrozen)) return undefined;
+  if (arraysEqual(existingSealed, mergedSealed)) return undefined;
 
-  const newContent = serializeModule(parsed, mergedFrozen);
+  const newContent = serializeModule(parsed, mergedSealed);
 
-  return { path: modPath, content: newContent, files: mergedFrozen };
+  return { path: modPath, content: newContent, files: mergedSealed };
 }
 
 function createModuleDescriptor(dir, descriptorName) {
@@ -283,8 +283,8 @@ function parseInlineList(raw) {
   return inner.split(",").map((s) => s.trim().replace(/^['"]|['"]$/g, ""));
 }
 
-function serializeModule(parsed, frozen) {
-  const fm = { ...parsed.frontmatter, frozen };
+function serializeModule(parsed, sealed) {
+  const fm = { ...parsed.frontmatter, sealed };
 
   let yaml = parsed.prelude;
   for (const [key, value] of Object.entries(fm)) {
@@ -344,7 +344,7 @@ function listDirectFiles(modDir, descriptorName, allModuleDirs) {
 // Helpers
 // ---------------------------------------------------------------------------
 
-function normalizeFrozen(value) {
+function normalizeSealed(value) {
   if (Array.isArray(value)) return value.map(String);
   return [];
 }

@@ -48,7 +48,7 @@ function materializeProject(): void {
     [
       "---",
       "readonly: [locked.ts]",
-      "frozen: [frozen.ts]",
+      "sealed: [sealed.ts]",
       "visible: [greet]",
       "---",
       "",
@@ -57,7 +57,7 @@ function materializeProject(): void {
     ].join("\n"),
   );
   write("src/locked.ts", "export const LOCKED = 1;\n");
-  write("src/frozen.ts", "export function existingFn() { return 1; }\n");
+  write("src/sealed.ts", "export function existingFn() { return 1; }\n");
   write("src/greet.ts", "export function greet(name: string) { return name; }\n");
   write("src/app.ts", "export const app = 1;\n");
 }
@@ -72,7 +72,7 @@ function runHook(stdinObj: unknown) {
 }
 
 describe("sandbox e2e: install + all three gates", () => {
-  it("installs the hook and exercises readonly, frozen, visible deny+allow", { timeout: 60_000 }, () => {
+  it("installs the hook and exercises readonly, sealed, visible deny+allow", { timeout: 60_000 }, () => {
     materializeProject();
 
     const install = spawnSync(BIN, ["install-claude", "--project-dir", tmp], {
@@ -108,29 +108,29 @@ describe("sandbox e2e: install + all three gates", () => {
     });
     expect(writeOpen.status).toBe(0);
 
-    const writeFrozenAddExport = runHook({
+    const writeSealedAddExport = runHook({
       hook_event_name: "PreToolUse",
       tool_name: "Write",
       tool_input: {
-        file_path: "src/frozen.ts",
+        file_path: "src/sealed.ts",
         content: "export function existingFn() { return 1; }\nexport function leaky() { return 2; }\n",
       },
       cwd: tmp,
     });
-    expect(writeFrozenAddExport.status).toBe(2);
-    expect(writeFrozenAddExport.stderr.toLowerCase()).toContain("frozen");
+    expect(writeSealedAddExport.status).toBe(2);
+    expect(writeSealedAddExport.stderr.toLowerCase()).toContain("sealed");
 
-    const editFrozenInPlace = runHook({
+    const editSealedInPlace = runHook({
       hook_event_name: "PreToolUse",
       tool_name: "Edit",
       tool_input: {
-        file_path: "src/frozen.ts",
+        file_path: "src/sealed.ts",
         old_string: "return 1;",
         new_string: "return 2;",
       },
       cwd: tmp,
     });
-    expect(editFrozenInPlace.status).toBe(0);
+    expect(editSealedInPlace.status).toBe(0);
 
     const writeVisibleAddExport = runHook({
       hook_event_name: "PreToolUse",

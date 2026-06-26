@@ -15,7 +15,7 @@ describe("checkReadonly", () => {
         modulePath: "/project/src",
         visible: null,
         readonly: ["config.json", "module.md"],
-        frozen: [],
+        sealed: [],
         prose: "",
       },
     ]);
@@ -30,7 +30,7 @@ describe("checkReadonly", () => {
         modulePath: "/project/src",
         visible: null,
         readonly: ["vendor", "module.md"],
-        frozen: [],
+        sealed: [],
         prose: "",
       },
     ]);
@@ -45,7 +45,7 @@ describe("checkReadonly", () => {
         modulePath: "/project/src",
         visible: null,
         readonly: ["generated*", "module.md"],
-        frozen: [],
+        sealed: [],
         prose: "",
       },
     ]);
@@ -60,7 +60,7 @@ describe("checkReadonly", () => {
         modulePath: "/project/src",
         visible: null,
         readonly: ["config.json", "module.md"],
-        frozen: [],
+        sealed: [],
         prose: "",
       },
     ]);
@@ -75,7 +75,7 @@ describe("checkReadonly", () => {
         modulePath: "/project/src",
         visible: null,
         readonly: ["module.md"],
-        frozen: [],
+        sealed: [],
         prose: "",
       },
     ]);
@@ -90,14 +90,14 @@ describe("checkReadonly", () => {
         modulePath: "/project",
         visible: null,
         readonly: ["src/secret.ts", "module.md"],
-        frozen: [],
+        sealed: [],
         prose: "",
       },
       {
         modulePath: "/project/src",
         visible: null,
         readonly: ["module.md"],
-        frozen: [],
+        sealed: [],
         prose: "",
       },
     ]);
@@ -112,7 +112,7 @@ describe("checkReadonly", () => {
         modulePath: "/project/src",
         visible: null,
         readonly: ["locked.ts", "CONTEXT.md"],
-        frozen: [],
+        sealed: [],
         prose: "",
       },
     ]);

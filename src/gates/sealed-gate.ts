@@ -3,18 +3,18 @@ import type { ModuleIndex } from "../types.ts";
 import { getAncestorContracts, matchesPattern } from "../utils.ts";
 import { getChecker } from "./checkers/registry.ts";
 
-export type FrozenCheckResult =
+export type SealedCheckResult =
   | { blocked: true; reason: string }
   | { blocked: false };
 
-export function checkFrozen(
+export function checkSealed(
   filePath: string,
   beforeContent: string,
   afterContent: string,
   index: ModuleIndex,
   cwd: string,
   descriptorFileName: string,
-): FrozenCheckResult {
+): SealedCheckResult {
   const absFile = path.resolve(cwd, filePath);
 
   const checker = getChecker(absFile);
@@ -23,7 +23,7 @@ export function checkFrozen(
   const ancestors = getAncestorContracts(absFile, index);
 
   for (const contract of ancestors) {
-    for (const pattern of contract.frozen) {
+    for (const pattern of contract.sealed) {
       if (matchesPattern(absFile, pattern, contract.modulePath)) {
         const newExports = checker.getNewExports(beforeContent, afterContent);
         if (newExports.length === 0) return { blocked: false };
@@ -32,7 +32,7 @@ export function checkFrozen(
         const names = newExports.map((s) => s.name).join(", ");
         return {
           blocked: true,
-          reason: `Frozen rule: file is frozen in ${relModuleMd}. Cannot add new exports: ${names}`,
+          reason: `Sealed rule: file is sealed in ${relModuleMd}. Cannot add new exports: ${names}`,
         };
       }
     }
