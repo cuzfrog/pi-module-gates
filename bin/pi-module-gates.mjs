@@ -1,4 +1,8 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
+// Bin entrypoint: executed by `bun` (see package.json#bin) and dispatches to
+// src/cli/*.ts modules. Lives in .mjs for npm-install shebang compatibility on
+// platforms that resolve `bin` to a file path directly; `bun` will load this as
+// JavaScript since it has no TypeScript-specific syntax.
 import { resolve, isAbsolute } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -45,7 +49,7 @@ async function main() {
   const projectDir = parseProjectDir(rest);
 
   if (cmd === "install-claude") {
-    const mod = await import(resolve(PKG_ROOT, "dist/cli/install-claude.mjs"));
+    const mod = await import(resolve(PKG_ROOT, "src/cli/install-claude.ts"));
     const result = mod.installClaude({ projectDir });
     if (!result.ok) {
       process.stderr.write(`${result.reason}\n`);
@@ -55,7 +59,7 @@ async function main() {
   }
 
   if (cmd === "uninstall-claude") {
-    const mod = await import(resolve(PKG_ROOT, "dist/cli/uninstall-claude.mjs"));
+    const mod = await import(resolve(PKG_ROOT, "src/cli/uninstall-claude.ts"));
     const result = mod.uninstallClaude({ projectDir });
     if (!result.ok) {
       process.stderr.write(`${result.reason}\n`);

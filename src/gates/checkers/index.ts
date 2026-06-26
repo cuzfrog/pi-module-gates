@@ -5,4 +5,5 @@ import "./go.ts";
 import "./kotlin.ts";
 import "./scala.ts";
 
-export { registerChecker, getChecker, ExportChecker } from "./registry.ts";
+export { registerChecker, getChecker } from "./registry.ts";
+export type { ExportChecker } from "./registry.ts";
