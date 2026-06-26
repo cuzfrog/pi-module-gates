@@ -21,6 +21,9 @@
       "./skills"
     ]
   },
+  "dependencies": {
+    "yaml": "2.8.1"
+  },
   "peerDependencies": {
     "@earendil-works/pi-coding-agent": "*"
   },

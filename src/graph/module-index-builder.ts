@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { readdir } from "node:fs/promises";
-import { parseFrontmatter } from "@earendil-works/pi-coding-agent";
+import { parseFrontmatter } from "../utils/frontmatter.ts";
 import type { ModuleContract, ModuleIndex } from "../types.ts";
 import type { ModuleGateConfig } from "../config.ts";
 
