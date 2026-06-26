@@ -43,8 +43,6 @@ Or load directly for a single session:
 pi -e npm:@cuzfrog/pi-module-gates
 ```
 
-Run `npm run build` after `npm install` and before `npm publish`. The bin dispatcher imports `dist/cli/install-claude.mjs` at runtime; without a current `dist/` the `install-claude` command will fail with `ERR_MODULE_NOT_FOUND`.
-
 ## Module Descriptor Semantics
 
 A module descriptor is a Markdown file (default name: `MODULE.md`) placed in a directory. You can piggy-back on your module context file for example `CONTEXT.md`.
