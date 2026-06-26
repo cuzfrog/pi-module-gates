@@ -9,7 +9,7 @@ vi.mock("node:fs", () => ({
   readFileSync: vi.fn(),
 }));
 
-vi.mock("@earendil-works/pi-coding-agent", () => ({
+vi.mock("../../src/utils/frontmatter.ts", () => ({
   parseFrontmatter: vi.fn(),
 }));
 
@@ -36,7 +36,7 @@ vi.mock("../../src/graph/frontmatter-parser.ts", () => ({
 
 import { readdir } from "node:fs/promises";
 import * as fs from "node:fs";
-import { parseFrontmatter } from "@earendil-works/pi-coding-agent";
+import { parseFrontmatter } from "../../src/utils/frontmatter.ts";
 import { validateVisibleEntries } from "../../src/graph/index.ts";
 import { buildModuleIndex } from "../../src/graph/module-index-builder.ts";
 import type { ModuleGateConfig } from "../../src/config.ts";

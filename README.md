@@ -136,18 +136,8 @@ When no settings file exists or no `module-gates` key is present, defaults apply
 
 ## Claude Code Support
 
-`pi-module-gates` runs as a Claude Code `PreToolUse` hook and enforces the same `MODULE.md` contracts on Claude's `Edit`, `MultiEdit`, and `Write` tool calls.
-
 ### Install
-
-```bash
-npx pi-module-gates install-claude
-```
-
-Writes `.claude/settings.json` in the current project, pointing the `PreToolUse` hook at the installed binary. Re-running is safe (idempotent). Use `--project-dir <dir>` to target another project.
-
-The generated entry:
-
+Add the following to `.claude/settings.json` in the current project, pointing the `PreToolUse` hook at the installed binary.
 ```json
 {
   "hooks": {
@@ -167,31 +157,23 @@ The generated entry:
 }
 ```
 
-`${CLAUDE_PROJECT_DIR}` is a Claude Code placeholder; do not expand it in the file.
-
 If `pi-module-gates` is already installed in pi global dir, you can use below path instead:
 ```
 ~/.pi/agent/npm/node_modules/@cuzfrog/pi-module-gates/src/claude/pre-tool-use.ts
 ```
 
-### Uninstall
-
-```bash
-npx pi-module-gates uninstall-claude
-```
-
-Removes only the hooks block this tool added. Other settings (`permissions.allow`, unrelated hook events, etc.) are preserved.
+### System prompt
+You need to add [system-prompt.md](src/context/system-prompt.template.md) manually to your context.
 
 ### Configuration
 
 Claude Code uses the same `.pi/settings.json#module-gates` block as the pi extension. See the Configuration section above.
 
 ### Troubleshooting
-
-- **Hook never fires.** Confirm `.claude/settings.json` contains a `PreToolUse` entry whose `command` contains `@cuzfrog/pi-module-gates`. Re-run `install-claude` to repair.
-- **Hook fires but denies everything.** Check `.pi/settings.json#module-gates.sourceRoot`. The default is `src/`.
-- **Internal error.** The hook fails open: it logs to stderr and exits 0. Inspect Claude's hook stderr output.
-- **Bypass temporarily.** Remove the hook from `.claude/settings.json`, or run `uninstall-claude`.
+Prompt:
+```
+Check if PreToolUse hook `pi-module-gates` is triggered and runs expectedly.
+```
 
 ## License
 
