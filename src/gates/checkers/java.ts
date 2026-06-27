@@ -14,6 +14,6 @@ registerChecker(javaChecker);
 
 function extractExports(src: string): Signature[] {
   return [...src.matchAll(
-    /^public\s+(?:class|interface|enum|@interface|record)\s+(\w+)/gm,
-  )].map((m) => ({ modifier: "public", name: m[1] }));
+    /^(?:@\w+(?:\([^)]*\))?\s+)*public\s+(?:(?:abstract|final|sealed|non-sealed|static)\s+)*(class|interface|enum|@interface|record)\s+(\w+)/gm,
+  )].map((m) => ({ modifier: "public", name: m[2] }));
 }

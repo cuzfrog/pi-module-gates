@@ -20,7 +20,10 @@ describe("Go export checker", () => {
   it("detects new exported type interface", () => {
     const before = "";
     const after = "type Handler interface { Serve() error }";
-    expect(checker.getNewExports(before, after)).toEqual([{ name: "Handler" }]);
+    expect(checker.getNewExports(before, after)).toEqual([
+      { name: "Handler" },
+      { name: "Serve" },
+    ]);
   });
 
   it("detects new exported type alias", () => {
@@ -53,16 +56,16 @@ describe("Go export checker", () => {
     expect(checker.getNewExports(before, after)).toEqual([]);
   });
 
-  it("does not detect method with receiver", () => {
+  it("detects method with receiver", () => {
     const before = "";
     const after = "func (s *Server) Start() error { return nil }";
-    expect(checker.getNewExports(before, after)).toEqual([]);
+    expect(checker.getNewExports(before, after)).toEqual([{ name: "Start" }]);
   });
 
-  it("does not detect method with pointer receiver", () => {
+  it("detects method with value receiver", () => {
     const before = "";
-    const after = "func (s *Server) Start() error { return nil }";
-    expect(checker.getNewExports(before, after)).toEqual([]);
+    const after = "func (s Server) Stop() {}";
+    expect(checker.getNewExports(before, after)).toEqual([{ name: "Stop" }]);
   });
 
   it("detects exported func with parameters and return type", () => {
@@ -95,5 +98,34 @@ describe("Go export checker", () => {
     const before = "";
     const after = "var DefaultPort int = 8080";
     expect(checker.getNewExports(before, after)).toEqual([{ name: "DefaultPort" }]);
+  });
+
+  it("detects interface methods", () => {
+    const before = "";
+    const after = "type Reader interface {\n\tRead(p []byte) (int, error)\n\tClose() error\n}";
+    expect(checker.getNewExports(before, after)).toEqual([
+      { name: "Reader" },
+      { name: "Read" },
+      { name: "Close" },
+    ]);
+  });
+
+  it("detects names inside grouped var block", () => {
+    const before = "";
+    const after = "var (\n\tFoo = 1\n\tBar = 2\n)";
+    expect(checker.getNewExports(before, after)).toEqual([
+      { name: "Foo" },
+      { name: "Bar" },
+    ]);
+  });
+
+  it("detects names inside grouped const block with iota", () => {
+    const before = "";
+    const after = "const (\n\tA = iota\n\tB\n\tC\n)";
+    expect(checker.getNewExports(before, after)).toEqual([
+      { name: "A" },
+      { name: "B" },
+      { name: "C" },
+    ]);
   });
 });
