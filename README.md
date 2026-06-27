@@ -2,6 +2,7 @@
 
 Experimental pi cli extension that controls the entropy of the codebase by enforcing code module boundaries.
 It helps combat slop generation and code architecture degradation.
+- Claude Code supported via a hook, see below.
 
 ## Problem
 
