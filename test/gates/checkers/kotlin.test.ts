@@ -89,10 +89,10 @@ describe("Kotlin export checker", () => {
     expect(checker.getNewExports(before, after)).toEqual([{ modifier: "internal", name: "internalFn" }]);
   });
 
-  it("detects protected val with modifier", () => {
+  it("does not detect top-level protected (member-only visibility)", () => {
     const before = "";
     const after = "protected val hidden = 42";
-    expect(checker.getNewExports(before, after)).toEqual([{ modifier: "protected", name: "hidden" }]);
+    expect(checker.getNewExports(before, after)).toEqual([]);
   });
 
   it("does not detect private fun", () => {
@@ -132,5 +132,47 @@ describe("Kotlin export checker", () => {
     const before = "";
     const after = "fun run() {}";
     expect(ktsChecker.getNewExports(before, after)).toEqual([{ name: "run" }]);
+  });
+
+  it("detects final class", () => {
+    const before = "";
+    const after = "final class Closed {}";
+    expect(checker.getNewExports(before, after)).toEqual([{ name: "Closed" }]);
+  });
+
+  it("detects inline (value) class", () => {
+    const before = "";
+    const after = "value class Money(val cents: Long)";
+    expect(checker.getNewExports(before, after)).toEqual([{ name: "Money" }]);
+  });
+
+  it("detects annotation class", () => {
+    const before = "";
+    const after = "annotation class Marker";
+    expect(checker.getNewExports(before, after)).toEqual([{ name: "Marker" }]);
+  });
+
+  it("detects expect class (KMP)", () => {
+    const before = "";
+    const after = "expect class Platform()";
+    expect(checker.getNewExports(before, after)).toEqual([{ name: "Platform" }]);
+  });
+
+  it("detects companion object", () => {
+    const before = "";
+    const after = "companion object Loader";
+    expect(checker.getNewExports(before, after)).toEqual([{ name: "Loader" }]);
+  });
+
+  it("detects declaration with leading annotation", () => {
+    const before = "";
+    const after = "@JvmStatic\npublic fun run() {}";
+    expect(checker.getNewExports(before, after)).toEqual([{ modifier: "public", name: "run" }]);
+  });
+
+  it("does not detect class members as top-level exports", () => {
+    const before = "";
+    const after = "class Outer {\n  fun inner() {}\n  val x = 1\n}";
+    expect(checker.getNewExports(before, after)).toEqual([{ name: "Outer" }]);
   });
 });

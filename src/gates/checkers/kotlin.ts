@@ -13,14 +13,26 @@ const kotlinChecker: ExportChecker = {
 registerChecker(kotlinChecker);
 
 function extractExports(src: string): Signature[] {
-  const re = /^(?:(public|internal|protected|private)\s+)?(?:(?:data|sealed|enum|abstract|open)\s+)?(?:class|interface|object|fun|val|var|typealias)\s+(\w+)/gm;
+  const declRe = /^(?:@\w+(?:\([^)]*\))?\s+)*(?:(public|internal|private)\s+)?(?:(?:data|sealed|enum|abstract|open|final|inline|value|annotation|expect|actual|external)\s+)*(?:companion\s+)?(?:class|interface|object|fun|val|var|typealias)\s+(\w+)/m;
   const results: Signature[] = [];
-  for (const m of src.matchAll(re)) {
-    if (m[1] === "private") continue;
-    results.push({
-      modifier: m[1] || undefined,
-      name: m[2],
-    });
+  let depth = 0;
+  for (const rawLine of src.split("\n")) {
+    const line = rawLine.replace(/\/\/.*$/, "").replace(/\/\*.*?\*\//g, "");
+    if (depth === 0) {
+      const m = declRe.exec(line);
+      if (m) {
+        const visibility = m[1];
+        const name = m[2];
+        if (visibility === "private") {
+          // skip
+        } else {
+          results.push({ modifier: visibility, name });
+        }
+      }
+    }
+    depth += (line.match(/\{/g) || []).length;
+    depth -= (line.match(/\}/g) || []).length;
+    if (depth < 0) depth = 0;
   }
   return results;
 }

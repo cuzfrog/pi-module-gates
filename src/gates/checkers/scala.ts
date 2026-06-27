@@ -13,14 +13,26 @@ const scalaChecker: ExportChecker = {
 registerChecker(scalaChecker);
 
 function extractExports(src: string): Signature[] {
-  const re = /^(?:(private(?:\[[^\]]*\])?|protected(?:\[[^\]]*\])?)\s+)?(?:class|object|trait|def|val|var|type|given|extension)\s+(\w+)/gm;
+  const declRe = /^(?:@\w+(?:\([^)]*\))?\s+)*(?:(private(?:\[[^\]]*\])?|protected(?:\[[^\]]*\])?|public)\s+)?(?:(?:sealed|final|abstract|lazy|opaque|implicit)\s+)*(?:case\s+)?(?:class|object|trait|def|val|var|type|enum|given|extension)\s+(\w+)/m;
   const results: Signature[] = [];
-  for (const m of src.matchAll(re)) {
-    if (m[1] === "private" || m[1] === "protected") continue;
-    results.push({
-      modifier: m[1] || undefined,
-      name: m[2],
-    });
+  let depth = 0;
+  for (const rawLine of src.split("\n")) {
+    const line = rawLine.replace(/\/\/.*$/, "");
+    if (depth === 0) {
+      const m = declRe.exec(line);
+      if (m) {
+        const visibility = m[1];
+        const name = m[2];
+        if (visibility === "private" || visibility === "protected") {
+          // skip bare private/protected
+        } else {
+          results.push({ modifier: visibility, name });
+        }
+      }
+    }
+    depth += (line.match(/\{/g) || []).length;
+    depth -= (line.match(/\}/g) || []).length;
+    if (depth < 0) depth = 0;
   }
   return results;
 }

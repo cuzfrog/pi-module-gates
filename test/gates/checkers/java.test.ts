@@ -67,10 +67,33 @@ describe("Java export checker", () => {
     expect(checker.getNewExports(before, after)).toEqual([{ modifier: "public", name: "MyList" }]);
   });
 
-  it("does not detect nested public static class", () => {
-    // nested modifiers like `public static class` do not appear at top level
+  it("detects public final class", () => {
+    const before = "";
+    const after = "public final class Constants {}";
+    expect(checker.getNewExports(before, after)).toEqual([{ modifier: "public", name: "Constants" }]);
+  });
+
+  it("detects public abstract class", () => {
+    const before = "";
+    const after = "public abstract class Shape {}";
+    expect(checker.getNewExports(before, after)).toEqual([{ modifier: "public", name: "Shape" }]);
+  });
+
+  it("detects public sealed class with permits", () => {
+    const before = "";
+    const after = "public sealed class Polygon permits Triangle, Square {}";
+    expect(checker.getNewExports(before, after)).toEqual([{ modifier: "public", name: "Polygon" }]);
+  });
+
+  it("detects public static nested class", () => {
     const before = "";
     const after = "public static class Nested {}";
-    expect(checker.getNewExports(before, after)).toEqual([]);
+    expect(checker.getNewExports(before, after)).toEqual([{ modifier: "public", name: "Nested" }]);
+  });
+
+  it("detects public class with leading annotation", () => {
+    const before = "";
+    const after = "@Deprecated\npublic class Legacy {}";
+    expect(checker.getNewExports(before, after)).toEqual([{ modifier: "public", name: "Legacy" }]);
   });
 });

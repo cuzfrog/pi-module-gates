@@ -79,4 +79,137 @@ describe("Rust export checker", () => {
     const after = "fn private_helper() {}";
     expect(checker.getNewExports(before, after)).toEqual([]);
   });
+
+  it("detects new pub use re-export", () => {
+    const before = "";
+    const after = "pub use crate::inner::Foo;";
+    expect(checker.getNewExports(before, after)).toEqual([{ modifier: "pub", name: "Foo" }]);
+  });
+
+  it("detects new pub use with nested path", () => {
+    const before = "";
+    const after = "pub use crate::a::b::Bar;";
+    expect(checker.getNewExports(before, after)).toEqual([{ modifier: "pub", name: "Bar" }]);
+  });
+
+  it("detects new pub use from external crate", () => {
+    const before = "";
+    const after = "pub use external_crate::Item;";
+    expect(checker.getNewExports(before, after)).toEqual([{ modifier: "pub", name: "Item" }]);
+  });
+
+  it("detects new pub use with as rename", () => {
+    const before = "";
+    const after = "pub use crate::inner::Foo as Bar;";
+    expect(checker.getNewExports(before, after)).toEqual([{ modifier: "pub", name: "Bar" }]);
+  });
+
+  it("detects new pub use with grouped re-exports", () => {
+    const before = "";
+    const after = "pub use crate::inner::{A, B, C};";
+    expect(checker.getNewExports(before, after)).toEqual([
+      { modifier: "pub", name: "A" },
+      { modifier: "pub", name: "B" },
+      { modifier: "pub", name: "C" },
+    ]);
+  });
+
+  it("detects new pub use with mixed rename and plain in a group", () => {
+    const before = "";
+    const after = "pub use crate::inner::{A, B as Renamed, C};";
+    expect(checker.getNewExports(before, after)).toEqual([
+      { modifier: "pub", name: "A" },
+      { modifier: "pub", name: "Renamed" },
+      { modifier: "pub", name: "C" },
+    ]);
+  });
+
+  it("ignores glob re-export names (no concrete new name)", () => {
+    const before = "";
+    const after = "pub use crate::inner::*;";
+    expect(checker.getNewExports(before, after)).toEqual([]);
+  });
+
+  it("ignores private (non-pub) use", () => {
+    const before = "";
+    const after = "use crate::inner::Foo;";
+    expect(checker.getNewExports(before, after)).toEqual([]);
+  });
+
+  it("handles pub(crate) use modifier", () => {
+    const before = "";
+    const after = "pub(crate) use crate::inner::Foo;";
+    expect(checker.getNewExports(before, after)).toEqual([{ modifier: "pub(crate)", name: "Foo" }]);
+  });
+
+  it("returns empty when re-export already exists", () => {
+    const code = "pub use crate::inner::Foo;";
+    expect(checker.getNewExports(code, code)).toEqual([]);
+  });
+
+  it("detects multiple new exports including pub use", () => {
+    const before = "pub fn existing() {}";
+    const after = [
+      "pub fn existing() {}",
+      "pub fn new_fn() {}",
+      "pub use crate::inner::NewType;",
+    ].join("\n");
+    expect(checker.getNewExports(before, after)).toEqual([
+      { modifier: "pub", name: "new_fn" },
+      { modifier: "pub", name: "NewType" },
+    ]);
+  });
+
+  it("detects new pub unsafe fn", () => {
+    const before = "";
+    const after = "pub unsafe fn danger() {}";
+    expect(checker.getNewExports(before, after)).toEqual([{ modifier: "pub", name: "danger" }]);
+  });
+
+  it("detects new pub async fn", () => {
+    const before = "";
+    const after = "pub async fn afn() {}";
+    expect(checker.getNewExports(before, after)).toEqual([{ modifier: "pub", name: "afn" }]);
+  });
+
+  it("detects new pub const fn (not the keyword 'fn' as name)", () => {
+    const before = "";
+    const after = "pub const fn cfn() {}";
+    expect(checker.getNewExports(before, after)).toEqual([{ modifier: "pub", name: "cfn" }]);
+  });
+
+  it("detects new pub const async fn in either order", () => {
+    const before = "";
+    const after1 = "pub const async fn acfn() {}";
+    const after2 = "pub async const fn acfn() {}";
+    expect(checker.getNewExports(before, after1)).toEqual([{ modifier: "pub", name: "acfn" }]);
+    expect(checker.getNewExports(before, after2)).toEqual([{ modifier: "pub", name: "acfn" }]);
+  });
+
+  it("detects new pub static", () => {
+    const before = "";
+    const after = "pub static FOO: u32 = 0;";
+    expect(checker.getNewExports(before, after)).toEqual([{ modifier: "pub", name: "FOO" }]);
+  });
+
+  it("detects new pub unsafe extern fn", () => {
+    const before = "";
+    const after = 'pub unsafe extern "C" fn c_abi() {}';
+    expect(checker.getNewExports(before, after)).toEqual([{ modifier: "pub", name: "c_abi" }]);
+  });
+
+  it("resolves pub use foo::{self} to the module name", () => {
+    const before = "";
+    const after = "pub use crate::foo::{self};";
+    expect(checker.getNewExports(before, after)).toEqual([{ modifier: "pub", name: "foo" }]);
+  });
+
+  it("resolves pub use foo::{bar, self} mixing self with items", () => {
+    const before = "";
+    const after = "pub use crate::foo::{bar, self};";
+    expect(checker.getNewExports(before, after)).toEqual([
+      { modifier: "pub", name: "bar" },
+      { modifier: "pub", name: "foo" },
+    ]);
+  });
 });

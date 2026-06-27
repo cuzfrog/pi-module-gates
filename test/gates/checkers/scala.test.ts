@@ -103,4 +103,58 @@ describe("Scala export checker", () => {
     const after = "class Point(x: Int, y: Int)";
     expect(scChecker.getNewExports(before, after)).toEqual([{ name: "Point" }]);
   });
+
+  it("detects case class", () => {
+    const before = "";
+    const after = "case class Money(amount: BigDecimal)";
+    expect(checker.getNewExports(before, after)).toEqual([{ name: "Money" }]);
+  });
+
+  it("detects case object", () => {
+    const before = "";
+    const after = "case object Empty";
+    expect(checker.getNewExports(before, after)).toEqual([{ name: "Empty" }]);
+  });
+
+  it("detects sealed trait", () => {
+    const before = "";
+    const after = "sealed trait JsonValue";
+    expect(checker.getNewExports(before, after)).toEqual([{ name: "JsonValue" }]);
+  });
+
+  it("detects final case class", () => {
+    const before = "";
+    const after = "final case class Token(value: String)";
+    expect(checker.getNewExports(before, after)).toEqual([{ name: "Token" }]);
+  });
+
+  it("detects abstract class", () => {
+    const before = "";
+    const after = "abstract class Base";
+    expect(checker.getNewExports(before, after)).toEqual([{ name: "Base" }]);
+  });
+
+  it("detects explicit public class", () => {
+    const before = "";
+    const after = "public class Public";
+    expect(checker.getNewExports(before, after)).toEqual([{ modifier: "public", name: "Public" }]);
+  });
+
+  it("detects Scala 3 enum", () => {
+    const before = "";
+    const after = "enum Color:\n  case Red, Green, Blue";
+    expect(checker.getNewExports(before, after)).toEqual([{ name: "Color" }]);
+  });
+
+  it("detects lazy val", () => {
+    const before = "";
+    const after = "lazy val config: Config = loadConfig()";
+    expect(checker.getNewExports(before, after)).toEqual([{ name: "config" }]);
+  });
+
+  it("does not detect class members as top-level exports", () => {
+    const before = "";
+    const after = "class Outer {\n  def inner(): Int = 1\n  val x = 2\n}";
+    expect(checker.getNewExports(before, after)).toEqual([{ name: "Outer" }]);
+  });
 });

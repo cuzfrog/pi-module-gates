@@ -235,4 +235,49 @@ describe("TypeScript export checker", () => {
     const after = "export default 42;";
     expect(checker.getNewExports(before, after)).toEqual([]);
   });
+
+  it("detects indented export declarations", () => {
+    const before = "";
+    const after = "  export function nested() {}";
+    expect(checker.getNewExports(before, after)).toEqual([{ name: "nested" }]);
+  });
+
+  it("detects local export {} (no from)", () => {
+    const before = "";
+    const after = "const Foo = 1; const Bar = 2;\nexport { Foo, Bar };";
+    expect(checker.getNewExports(before, after)).toEqual([
+      { name: "Foo" },
+      { name: "Bar" },
+    ]);
+  });
+
+  it("detects local export { Foo as Renamed } without from", () => {
+    const before = "";
+    const after = "const Foo = 1;\nexport { Foo as Renamed };";
+    expect(checker.getNewExports(before, after)).toEqual([{ name: "Renamed" }]);
+  });
+
+  it("detects local export { type Foo } as the type name", () => {
+    const before = "";
+    const after = "type Foo = string;\nexport { type Foo };";
+    expect(checker.getNewExports(before, after)).toEqual([{ name: "Foo" }]);
+  });
+
+  it("detects export type * from", () => {
+    const before = "";
+    const after = 'export type * from "./mod";';
+    expect(checker.getNewExports(before, after)).toEqual([{ name: "*" }]);
+  });
+
+  it("detects export = X (CommonJS-style)", () => {
+    const before = "";
+    const after = "class MyClass {}\nexport = MyClass;";
+    expect(checker.getNewExports(before, after)).toEqual([{ name: "MyClass" }]);
+  });
+
+  it("detects export with leading decorator line", () => {
+    const before = "";
+    const after = "@sealed\nexport class Foo {}";
+    expect(checker.getNewExports(before, after)).toEqual([{ name: "Foo" }]);
+  });
 });
