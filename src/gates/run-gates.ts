@@ -5,7 +5,7 @@ import type { ModuleGateConfig } from "../config.ts";
 import { readFileSafe, applyEdits, isWithinSourceRoot, findOwningModule } from "../utils.ts";
 import {
   checkReadonly,
-  checkFrozen,
+  checkSealed,
   checkExports,
   checkModuleInterfaceImports,
 } from "./index.ts";
@@ -57,9 +57,9 @@ export function runGates(
     return { block: true, reason: formatDenial(filePath, readonlyResult.reason, absPath, index, cwd, config.moduleDescriptorFileName) };
   }
 
-  const frozenResult = checkFrozen(filePath, before, after, index, cwd, config.moduleDescriptorFileName);
-  if (frozenResult.blocked) {
-    return { block: true, reason: formatDenial(filePath, frozenResult.reason, absPath, index, cwd, config.moduleDescriptorFileName) };
+  const sealedResult = checkSealed(filePath, before, after, index, cwd, config.moduleDescriptorFileName);
+  if (sealedResult.blocked) {
+    return { block: true, reason: formatDenial(filePath, sealedResult.reason, absPath, index, cwd, config.moduleDescriptorFileName) };
   }
 
   const exportResult = checkExports(filePath, before, after, index, cwd, config.moduleDescriptorFileName);

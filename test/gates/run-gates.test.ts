@@ -56,29 +56,29 @@ describe("runGates", () => {
   it("blocks readonly files", () => {
     writeSource("src/locked.ts", "");
     const index = makeIndex([
-      { modulePath: path.join(tmp, "src"), visible: null, readonly: ["module.md", "locked.ts"], frozen: [], prose: "" },
+      { modulePath: path.join(tmp, "src"), visible: null, readonly: ["module.md", "locked.ts"], sealed: [], prose: "" },
     ]);
     const result = runGates("src/locked.ts", [{ oldText: "", newText: "x" }], tmp, index, cfg());
     expect(result?.block).toBe(true);
     expect(result?.reason).toContain("Readonly rule");
   });
 
-  it("blocks frozen file when adding a new export", () => {
-    writeSource("src/frozen.ts", "export function a() {}");
+  it("blocks sealed file when adding a new export", () => {
+    writeSource("src/sealed.ts", "export function a() {}");
     const index = makeIndex([
-      { modulePath: path.join(tmp, "src"), visible: null, readonly: ["module.md"], frozen: ["frozen.ts"], prose: "" },
+      { modulePath: path.join(tmp, "src"), visible: null, readonly: ["module.md"], sealed: ["sealed.ts"], prose: "" },
     ]);
     const after = "export function a() {}\nexport function b() {}";
-    const result = runGates("src/frozen.ts", [{ oldText: "export function a() {}", newText: after }], tmp, index, cfg());
+    const result = runGates("src/sealed.ts", [{ oldText: "export function a() {}", newText: after }], tmp, index, cfg());
     expect(result?.block).toBe(true);
-    expect(result?.reason).toContain("Frozen rule");
+    expect(result?.reason).toContain("Sealed rule");
     expect(result?.reason).toContain("b");
   });
 
   it("blocks exports not in visible list", () => {
     writeSource("src/app.ts", "export function a() {}");
     const index = makeIndex([
-      { modulePath: path.join(tmp, "src"), visible: [{ name: "a" }], readonly: [], frozen: [], prose: "" },
+      { modulePath: path.join(tmp, "src"), visible: [{ name: "a" }], readonly: [], sealed: [], prose: "" },
     ]);
     const after = "export function a() {}\nexport function b() {}";
     const result = runGates("src/app.ts", [{ oldText: "export function a() {}", newText: after }], tmp, index, cfg());
@@ -86,13 +86,13 @@ describe("runGates", () => {
     expect(result?.reason).toContain("b");
   });
 
-  it("returns undefined when edit does not add exports on frozen file", () => {
-    writeSource("src/frozen.ts", "export function a() { return 1; }");
+  it("returns undefined when edit does not add exports on sealed file", () => {
+    writeSource("src/sealed.ts", "export function a() { return 1; }");
     const index = makeIndex([
-      { modulePath: path.join(tmp, "src"), visible: null, readonly: [], frozen: ["frozen.ts"], prose: "" },
+      { modulePath: path.join(tmp, "src"), visible: null, readonly: [], sealed: ["sealed.ts"], prose: "" },
     ]);
     const result = runGates(
-      "src/frozen.ts",
+      "src/sealed.ts",
       [{ oldText: "return 1;", newText: "return 2;" }],
       tmp,
       index,
@@ -107,7 +107,7 @@ describe("formatDenial", () => {
     const modulePath = path.join(tmp, "src");
     const index: ModuleIndex = {
       contracts: [
-        { modulePath, visible: null, readonly: ["locked.ts"], frozen: [], prose: "Greeting module." },
+        { modulePath, visible: null, readonly: ["locked.ts"], sealed: [], prose: "Greeting module." },
       ],
       dirToModule: new Map([[modulePath, modulePath]]),
     };

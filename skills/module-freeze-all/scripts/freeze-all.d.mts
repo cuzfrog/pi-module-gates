@@ -1,1 +1,0 @@
-export declare const SUPPORTED_EXTENSIONS: Set<string>;
