@@ -9,8 +9,8 @@ A `{{descriptorFileName}}` with a `visible` list means only entries in the list 
 {{#if moduleInterfaceImportGate}}- {{moduleInterfaceImportGate}}{{/if}}
 
 ### Glossary
-- `module`: a directory containing code;
-- `external files`: files not in the module directory;
+- `module`: a directory containing code, all files in its recursive subdirectories are internal files of the module;
+- `external files`: files not in the module directory and subdirectories;
 - `module interface`: the file representing the module surface, e.g. `index.ts` in Typescript, `mod.rs` in Rust;
 - `readonly`: files are readonly;
 - `sealed`: files cannot add new exports, but the body is still editable; the export surface is sealed;
