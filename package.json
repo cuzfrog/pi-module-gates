@@ -22,7 +22,7 @@
     ]
   },
   "dependencies": {
-    "yaml": "2.8.1"
+    "yaml": "2.9.0"
   },
   "peerDependencies": {
     "@earendil-works/pi-coding-agent": "*"
