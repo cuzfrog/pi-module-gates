@@ -2,9 +2,9 @@ import { describe, it, expect, afterEach } from "vitest";
 import { tmpdir } from "node:os";
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
-import { checkModuleInterfaceImports } from "../../src/gates/module-interface-import-gate.ts";
-import type { ModuleIndex } from "../../src/types.ts";
-import "../../src/gates/checkers/index.ts";
+import { checkModuleInterfaceImports } from "./module-interface-import-gate.ts";
+import type { ModuleIndex } from "../types.ts";
+import "./checkers/index.ts";
 
 function makeIndex(dirToModule: Map<string, string>): ModuleIndex {
   return { contracts: [], dirToModule };

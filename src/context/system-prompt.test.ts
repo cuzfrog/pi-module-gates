@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { buildSystemPromptHint } from "../../src/context/system-prompt.ts";
-import type { ModuleIndex } from "../../src/types.ts";
-import type { ModuleGateConfig } from "../../src/config.ts";
+import { buildSystemPromptHint } from "./system-prompt.ts";
+import type { ModuleIndex } from "../types.ts";
+import type { ModuleGateConfig } from "../config.ts";
 
 const baseConfig: ModuleGateConfig = {
   moduleDescriptorFileName: "module.md",

@@ -10,18 +10,18 @@ beforeEach(() => {
 });
 afterEach(() => {
   fs.rmSync(tmp, { recursive: true, force: true });
-  vi.doUnmock("../../src/graph/index.ts");
+  vi.doUnmock("../graph/index.ts");
   vi.restoreAllMocks();
 });
 
 describe("loadIndexForHook", () => {
   it("returns an empty index when buildModuleIndex throws", async () => {
-    vi.doMock("../../src/graph/index.ts", () => ({
+    vi.doMock("../graph/index.ts", () => ({
       buildModuleIndex: () => {
         throw new Error("boom");
       },
     }));
-    const mod = await import("../../src/claude/index-loader.ts");
+    const mod = await import("./index-loader.ts");
     const result = await mod.loadIndexForHook(tmp);
     expect(result.index.contracts).toEqual([]);
     expect(result.index.dirToModule.size).toBe(0);
@@ -36,7 +36,7 @@ describe("loadIndexForHook", () => {
       "---\nvisible: [greet]\n---\nGreeting module.\n",
       "utf-8",
     );
-    const mod = await import("../../src/claude/index-loader.ts");
+    const mod = await import("./index-loader.ts");
     const result = await mod.loadIndexForHook(tmp);
     expect(result.index.contracts.length).toBeGreaterThanOrEqual(1);
     expect(result.config.moduleDescriptorFileName).toBe("module.md");
@@ -45,7 +45,7 @@ describe("loadIndexForHook", () => {
 
 describe("notifyNoContracts", () => {
   it("writes the expected line via the ctx notify", async () => {
-    const mod = await import("../../src/claude/index-loader.ts");
+    const mod = await import("./index-loader.ts");
     const recorded: string[] = [];
     mod.notifyNoContracts({
       cwd: "/tmp",

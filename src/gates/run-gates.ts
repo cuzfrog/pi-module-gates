@@ -3,12 +3,10 @@ import { parseFrontmatter } from "../utils/frontmatter.ts";
 import type { ModuleIndex } from "../types.ts";
 import type { ModuleGateConfig } from "../config.ts";
 import { readFileSafe, applyEdits, isWithinSourceRoot, findOwningModule } from "../utils.ts";
-import {
-  checkReadonly,
-  checkSealed,
-  checkExports,
-  checkModuleInterfaceImports,
-} from "./index.ts";
+import { checkReadonly } from "./readonly-gate.ts";
+import { checkSealed } from "./sealed-gate.ts";
+import { checkExports } from "./export-gate.ts";
+import { checkModuleInterfaceImports } from "./module-interface-import-gate.ts";
 import "./checkers/index.ts";
 
 export type GateEdit = { oldText: string; newText: string };
@@ -31,29 +29,11 @@ export function runGates(
 
   if (!isWithinSourceRoot(absPath, srcRoot)) return undefined;
 
+  const descriptorResult = checkDescriptorFileReadonly(absPath, before, after, config);
+  if (descriptorResult) return descriptorResult;
+
   const readonlyResult = checkReadonly(filePath, index, cwd, config.moduleDescriptorFileName);
   if (readonlyResult.blocked) {
-    if (
-      config.moduleDescriptorReadonly === "frontmatter" &&
-      isDescriptorFile(absPath, config.moduleDescriptorFileName)
-    ) {
-      const fmBefore = extractFrontmatter(before);
-      const fmAfter = extractFrontmatter(after);
-      if (JSON.stringify(fmBefore) === JSON.stringify(fmAfter)) {
-        return undefined;
-      }
-      return {
-        block: true,
-        reason: formatDenial(
-          filePath,
-          `Readonly rule: frontmatter of ${config.moduleDescriptorFileName} is readonly`,
-          absPath,
-          index,
-          cwd,
-          config.moduleDescriptorFileName,
-        ),
-      };
-    }
     return { block: true, reason: formatDenial(filePath, readonlyResult.reason, absPath, index, cwd, config.moduleDescriptorFileName) };
   }
 
@@ -75,7 +55,33 @@ export function runGates(
   return undefined;
 }
 
-export function formatDenial(
+function checkDescriptorFileReadonly(
+  absPath: string,
+  before: string,
+  after: string,
+  config: ModuleGateConfig,
+): GateDenial | undefined {
+  if (config.moduleDescriptorReadonly === "off") return undefined;
+  if (!isDescriptorFile(absPath, config.moduleDescriptorFileName)) return undefined;
+
+  if (config.moduleDescriptorReadonly === "file") {
+    return {
+      block: true,
+      reason: `Readonly rule: ${config.moduleDescriptorFileName} is readonly (mode: file)`,
+    };
+  }
+
+  const fmBefore = extractFrontmatter(before);
+  const fmAfter = extractFrontmatter(after);
+  if (JSON.stringify(fmBefore) === JSON.stringify(fmAfter)) return undefined;
+
+  return {
+    block: true,
+    reason: `Readonly rule: frontmatter of ${config.moduleDescriptorFileName} is readonly`,
+  };
+}
+
+function formatDenial(
   relPath: string,
   reason: string,
   absPath: string,
@@ -98,15 +104,23 @@ export function formatDenial(
   return message;
 }
 
-export function isDescriptorFile(absPath: string, descriptorFileName: string): boolean {
+function isDescriptorFile(absPath: string, descriptorFileName: string): boolean {
   const basename = path.basename(absPath);
   return basename.toLowerCase() === descriptorFileName.toLowerCase();
 }
 
-export function extractFrontmatter(content: string): Record<string, unknown> {
+function extractFrontmatter(content: string): Record<string, unknown> {
   try {
     return parseFrontmatter(content).frontmatter;
   } catch {
     return {};
   }
+}
+
+// visible for testing
+export {
+  checkDescriptorFileReadonly,
+  formatDenial,
+  isDescriptorFile,
+  extractFrontmatter,
 }

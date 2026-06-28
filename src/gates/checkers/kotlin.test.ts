@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { getChecker } from "../../../src/gates/checkers/registry.ts";
-import "../../../src/gates/checkers/kotlin.ts";
+import { getChecker } from "./registry.ts";
+import "./kotlin.ts";
 
 describe("Kotlin export checker", () => {
   const checker = getChecker("/file.kt")!;

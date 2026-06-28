@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { getChecker } from "../../../src/gates/checkers/registry.ts";
-import "../../../src/gates/checkers/rust.ts";
+import { getChecker } from "./registry.ts";
+import "./rust.ts";
 
 describe("Rust export checker", () => {
   const checker = getChecker("/file.rs")!;

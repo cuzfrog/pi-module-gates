@@ -1,0 +1,3 @@
+---
+
+Uppercase descriptor fixture.

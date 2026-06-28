@@ -4,8 +4,6 @@ import { readdir } from "node:fs/promises";
 import { parseFrontmatter } from "../utils/frontmatter.ts";
 import type { ModuleContract, ModuleIndex } from "../types.ts";
 import type { ModuleGateConfig } from "../config.ts";
-
-type ModuleDescriptorReadonly = ModuleGateConfig["moduleDescriptorReadonly"];
 import type { Dirent } from "node:fs";
 import { validateVisibleEntries } from "./validation.ts";
 import { parseVisibleEntry, type ModuleFrontmatter } from "./frontmatter-parser.ts";
@@ -23,7 +21,7 @@ export async function buildModuleIndex(
   const scanRoot = path.resolve(ctx.cwd, config.sourceRoot);
 
   const moduleFiles = await findModuleFiles(scanRoot, config.moduleDescriptorFileName);
-  const contracts = buildContracts(moduleFiles, notify, config.moduleDescriptorFileName, config.moduleDescriptorReadonly);
+  const contracts = buildContracts(moduleFiles, notify);
   applyComplementPass(contracts);
   const dirToModule = await buildDirToModuleMap(contracts);
   const index: ModuleIndex = { contracts, dirToModule };
@@ -36,8 +34,6 @@ export async function buildModuleIndex(
 function buildContracts(
   moduleFiles: string[],
   onInfo: (message: string) => void,
-  descriptorFileName: string,
-  moduleDescriptorReadonly: ModuleDescriptorReadonly,
 ): ModuleContract[] {
   const contracts: ModuleContract[] = [];
 
@@ -58,18 +54,13 @@ function buildContracts(
       continue;
     }
 
-    const readonlyEntries = frontmatter.readonly ?? [];
-    if (moduleDescriptorReadonly !== "off") {
-      readonlyEntries.push(descriptorFileName);
-    }
-
     contracts.push({
       modulePath,
       visible:
         frontmatter.visible !== undefined
           ? frontmatter.visible.map(parseVisibleEntry)
           : null,
-      readonly: readonlyEntries,
+      readonly: frontmatter.readonly ?? [],
       sealed: frontmatter.sealed ?? [],
       prose: body.trim(),
     });

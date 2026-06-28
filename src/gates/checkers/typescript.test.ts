@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { getChecker } from "../../../src/gates/checkers/registry.ts";
-import "../../../src/gates/checkers/typescript.ts";
+import { getChecker } from "./registry.ts";
+import "./typescript.ts";
 
 describe("TypeScript export checker", () => {
   const checker = getChecker("/file.ts")!;

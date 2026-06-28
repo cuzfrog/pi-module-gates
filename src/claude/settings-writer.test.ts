@@ -8,7 +8,7 @@ import {
   removePreToolUse,
   writeSettings,
   HOOK_MARKER,
-} from "../../src/claude/settings-writer.ts";
+} from "./settings-writer.ts";
 
 let tmp: string;
 beforeEach(() => {

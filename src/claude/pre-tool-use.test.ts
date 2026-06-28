@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll } from "vitest";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { spawnSync } from "node:child_process";
-import { FIXTURES } from "../behavior/helpers.ts";
+import { FIXTURES } from "../../test/behavior/helpers.ts";
 
 const HOOK = path.resolve("src/claude/pre-tool-use.ts");
 
