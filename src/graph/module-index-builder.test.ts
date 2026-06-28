@@ -32,6 +32,11 @@ vi.mock("./frontmatter-parser.ts", () => ({
     const name = lastSlash >= 0 ? pathStr.slice(lastSlash + 1) : pathStr;
     return { name, modifier, path: raw.path ?? raw };
   }),
+  parseSignatureLockEntry: vi.fn((raw: string) => {
+    const idx = raw.indexOf("$");
+    if (idx < 0) return { filePath: "", name: raw };
+    return { filePath: raw.slice(0, idx), name: raw.slice(idx + 1) };
+  }),
 }));
 
 import { readdir } from "node:fs/promises";

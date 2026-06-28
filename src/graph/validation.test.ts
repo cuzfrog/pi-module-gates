@@ -9,13 +9,13 @@ vi.mock("node:fs", () => ({
   readFileSync: vi.fn(),
 }));
 
-vi.mock("../gates/checkers/index.ts", () => ({
+vi.mock("../gates/export-checkers/index.ts", () => ({
   getChecker: vi.fn(),
 }));
 
 import { readdir } from "node:fs/promises";
 import * as fs from "node:fs";
-import { getChecker } from "../gates/checkers/index.ts";
+import { getChecker } from "../gates/export-checkers/index.ts";
 import { validateVisibleEntries } from "./validation.ts";
 import type { ModuleIndex, ModuleContract } from "../types.ts";
 
@@ -66,7 +66,7 @@ describe("validateVisibleEntries", () => {
         visible: [{ name: "GhostType" }],
         readonly: ["module.md"],
         sealed: [],
-        prose: "",
+        prose: "", signatureLock: [],
       },
     ]);
 
@@ -95,7 +95,7 @@ describe("validateVisibleEntries", () => {
         visible: [{ name: "greet" }],
         readonly: ["module.md"],
         sealed: [],
-        prose: "",
+        prose: "", signatureLock: [],
       },
     ]);
 
@@ -121,7 +121,7 @@ describe("validateVisibleEntries", () => {
         visible: null,
         readonly: ["module.md"],
         sealed: [],
-        prose: "",
+        prose: "", signatureLock: [],
       },
     ]);
 
@@ -136,7 +136,7 @@ describe("validateVisibleEntries", () => {
         visible: [{ name: "anything" }],
         readonly: ["module.md"],
         sealed: [],
-        prose: "",
+        prose: "", signatureLock: [],
       },
     ]);
 
@@ -158,14 +158,14 @@ describe("validateVisibleEntries", () => {
         visible: [{ name: "GhostType" }],
         readonly: ["module.md"],
         sealed: [],
-        prose: "",
+        prose: "", signatureLock: [],
       },
       {
         modulePath: "/project/src",
         visible: [{ name: "greet" }],
         readonly: ["module.md"],
         sealed: [],
-        prose: "",
+        prose: "", signatureLock: [],
       },
     ]);
 
@@ -213,7 +213,7 @@ describe("validateVisibleEntries", () => {
         visible: [{ name: "GhostA" }, { name: "GhostB" }],
         readonly: ["module.md"],
         sealed: [],
-        prose: "",
+        prose: "", signatureLock: [],
       },
     ]);
 

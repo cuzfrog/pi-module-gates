@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { checkSealed } from "./sealed-gate.ts";
 import type { ModuleIndex, ModuleContract } from "../types.ts";
-import "./checkers/typescript.ts";
+import "./export-checkers/typescript.ts";
 
 function makeIndex(contracts: ModuleContract[]): ModuleIndex {
   return { contracts, dirToModule: new Map() };
@@ -18,6 +18,7 @@ describe("checkSealed", () => {
         readonly: ["module.md"],
         sealed: ["sealed.ts"],
         prose: "",
+        signatureLock: [],
       },
     ]);
 
@@ -40,6 +41,7 @@ describe("checkSealed", () => {
         readonly: ["module.md"],
         sealed: ["sealed.ts"],
         prose: "",
+        signatureLock: [],
       },
     ]);
 
@@ -58,6 +60,7 @@ describe("checkSealed", () => {
         readonly: ["module.md"],
         sealed: ["sealed.ts"],
         prose: "",
+        signatureLock: [],
       },
     ]);
 
@@ -76,6 +79,7 @@ describe("checkSealed", () => {
         readonly: ["module.md"],
         sealed: ["data.json"],
         prose: "",
+        signatureLock: [],
       },
     ]);
 
@@ -99,6 +103,7 @@ describe("checkSealed", () => {
         readonly: ["module.md"],
         sealed: ["src/sealed.ts"],
         prose: "",
+        signatureLock: [],
       },
       {
         modulePath: "/project/src",
@@ -106,6 +111,7 @@ describe("checkSealed", () => {
         readonly: ["module.md"],
         sealed: [],
         prose: "",
+        signatureLock: [],
       },
     ]);
 
@@ -127,6 +133,7 @@ describe("checkSealed", () => {
         readonly: ["module.md"],
         sealed: ["vendor"],
         prose: "",
+        signatureLock: [],
       },
     ]);
 
@@ -145,6 +152,7 @@ describe("checkSealed", () => {
         readonly: ["module.md"],
         sealed: ["generated*"],
         prose: "",
+        signatureLock: [],
       },
     ]);
 
@@ -173,6 +181,7 @@ describe("checkSealed", () => {
         readonly: ["module.md"],
         sealed: [],
         prose: "",
+        signatureLock: [],
       },
     ]);
 
@@ -191,6 +200,7 @@ describe("checkSealed", () => {
         readonly: ["module.md"],
         sealed: ["sealed.ts"],
         prose: "",
+        signatureLock: [],
       },
     ]);
 
@@ -214,6 +224,7 @@ describe("checkSealed", () => {
         readonly: ["module.md"],
         sealed: [],
         prose: "",
+        signatureLock: [],
       },
       {
         modulePath: "/project/src",
@@ -221,6 +232,7 @@ describe("checkSealed", () => {
         readonly: ["module.md"],
         sealed: ["sealed.ts"],
         prose: "",
+        signatureLock: [],
       },
     ]);
 

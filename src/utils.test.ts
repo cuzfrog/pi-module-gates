@@ -146,7 +146,7 @@ describe("isWithinSourceRoot", () => {
 
 describe("getAncestorContracts", () => {
   function contract(modulePath: string, readonly: string[] = [], sealed: string[] = []): ModuleContract {
-    return { modulePath, visible: null, readonly, sealed, prose: "" };
+    return { modulePath, visible: null, readonly, sealed, prose: "", signatureLock: [], };
   }
 
   it("returns matching contracts for file under module path", () => {
