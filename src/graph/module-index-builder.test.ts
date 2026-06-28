@@ -210,6 +210,48 @@ describe("buildModuleIndex", () => {
     expect(index.contracts[0].prose).toBe("Some prose.");
   });
 
+  it("populates signatureLock from frontmatter", async () => {
+    mockedReaddir.mockImplementation(async (dir: unknown) => {
+      const d = dir as string;
+      if (d === "/project")
+        return [makeDirent("module.md", false)] as Dirent[];
+      return [] as Dirent[];
+    });
+
+    mockedParseFrontmatter.mockReturnValue({
+      frontmatter: {
+        visible: [],
+        signatureLock: ["foo.ts$Foo", "sub/bar.ts$Bar"],
+      },
+      body: "",
+    });
+
+    const index = await buildModuleIndex(makeCtx("/project"), defaultConfig);
+
+    expect(index.contracts[0].signatureLock).toEqual([
+      { filePath: "foo.ts", name: "Foo" },
+      { filePath: "sub/bar.ts", name: "Bar" },
+    ]);
+  });
+
+  it("defaults signatureLock to empty when not specified", async () => {
+    mockedReaddir.mockImplementation(async (dir: unknown) => {
+      const d = dir as string;
+      if (d === "/project")
+        return [makeDirent("module.md", false)] as Dirent[];
+      return [] as Dirent[];
+    });
+
+    mockedParseFrontmatter.mockReturnValue({
+      frontmatter: { visible: ["ok"] },
+      body: "",
+    });
+
+    const index = await buildModuleIndex(makeCtx("/project"), defaultConfig);
+
+    expect(index.contracts[0].signatureLock).toEqual([]);
+  });
+
   it("parses visible entries with paths and modifiers from object form", async () => {
     mockedReaddir.mockImplementation(async (dir: unknown) => {
       const d = dir as string;
