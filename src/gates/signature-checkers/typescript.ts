@@ -33,6 +33,8 @@ function extractSignatures(src: string): SignatureEntry[] {
   results.push(...extractClasses(src));
   results.push(...extractInterfaces(src));
   results.push(...extractTypeAliases(src));
+  results.push(...extractEnums(src));
+  results.push(...extractNamespaces(src));
   return results;
 }
 
@@ -96,6 +98,36 @@ function extractTypeAliases(src: string): SignatureEntry[] {
   return results;
 }
 
+function extractEnums(src: string): SignatureEntry[] {
+  const results: SignatureEntry[] = [];
+  const re = new RegExp(
+    `^${ANNOTATION_PREFIX}((?:export\\s+)?(?:const\\s+|declare\\s+)*)enum\\s+(\\w+)\\b`,
+    "gm",
+  );
+  for (const m of src.matchAll(re)) {
+    const name = m[2];
+    const startIdx = skipDecorators(src, m.index ?? 0);
+    const text = captureBlock(src, startIdx);
+    if (text) results.push({ name, text });
+  }
+  return results;
+}
+
+function extractNamespaces(src: string): SignatureEntry[] {
+  const results: SignatureEntry[] = [];
+  const re = new RegExp(
+    `^${ANNOTATION_PREFIX}((?:export\\s+)?(?:declare\\s+)*)namespace\\s+(\\w+)\\b`,
+    "gm",
+  );
+  for (const m of src.matchAll(re)) {
+    const name = m[2];
+    const startIdx = skipDecorators(src, m.index ?? 0);
+    const text = captureBlock(src, startIdx);
+    if (text) results.push({ name, text });
+  }
+  return results;
+}
+
 function skipDecorators(src: string, from: number): number {
   let i = from;
   while (i < src.length && src[i] === "@") {
@@ -145,7 +177,7 @@ function captureClassHead(src: string, startIdx: number): string | undefined {
     else if (ch === ">") {
       if (angleDepth > 0) angleDepth--;
     }
-    if ((ch === "\n" || ch === ";") && parenDepth === 0 && angleDepth === 0) {
+    if (ch === ";" && parenDepth === 0 && angleDepth === 0) {
       return src.slice(startIdx, i).trimEnd();
     }
     i++;

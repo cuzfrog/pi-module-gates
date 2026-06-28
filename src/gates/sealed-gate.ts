@@ -1,7 +1,7 @@
 import * as path from "node:path";
 import type { ModuleIndex } from "../types.ts";
 import { getAncestorContracts, matchesPattern } from "../utils.ts";
-import { getChecker } from "./checkers/registry.ts";
+import { getChecker } from "./export-checkers/registry.ts";
 
 export type SealedCheckResult =
   | { blocked: true; reason: string }

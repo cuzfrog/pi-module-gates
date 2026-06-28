@@ -89,7 +89,7 @@ Limitations (v1):
 - Signatures are extracted via regex (not AST); multi-line parameter lists with comments inside parens may produce false positives.
 - Interfaces are locked in their entirety (the body is part of the signature).
 - Class inner methods are not individually lockable; only the class header is captured.
-- Only TypeScript/JavaScript ships a complete checker; Rust/Java/Go/Kotlin/Scala stubs return empty maps so signature-lock entries for those languages are silently ignored.
+- Per-method locking inside classes/interfaces requires an AST-based checker (out of v1 scope).
 
 ### Visibility whitelist (under redesign)
 
