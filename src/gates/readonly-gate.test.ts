@@ -17,6 +17,7 @@ describe("checkReadonly", () => {
         readonly: ["config.json", "module.md"],
         sealed: [],
         prose: "",
+        signatureLock: [],
       },
     ]);
 
@@ -32,6 +33,7 @@ describe("checkReadonly", () => {
         readonly: ["vendor", "module.md"],
         sealed: [],
         prose: "",
+        signatureLock: [],
       },
     ]);
 
@@ -47,6 +49,7 @@ describe("checkReadonly", () => {
         readonly: ["generated*", "module.md"],
         sealed: [],
         prose: "",
+        signatureLock: [],
       },
     ]);
 
@@ -62,6 +65,7 @@ describe("checkReadonly", () => {
         readonly: ["config.json", "module.md"],
         sealed: [],
         prose: "",
+        signatureLock: [],
       },
     ]);
 
@@ -77,6 +81,7 @@ describe("checkReadonly", () => {
         readonly: ["module.md"],
         sealed: [],
         prose: "",
+        signatureLock: [],
       },
     ]);
 
@@ -92,6 +97,7 @@ describe("checkReadonly", () => {
         readonly: ["src/secret.ts", "module.md"],
         sealed: [],
         prose: "",
+        signatureLock: [],
       },
       {
         modulePath: "/project/src",
@@ -99,6 +105,7 @@ describe("checkReadonly", () => {
         readonly: ["module.md"],
         sealed: [],
         prose: "",
+        signatureLock: [],
       },
     ]);
 
@@ -114,6 +121,7 @@ describe("checkReadonly", () => {
         readonly: ["locked.ts", "CONTEXT.md"],
         sealed: [],
         prose: "",
+        signatureLock: [],
       },
     ]);
 

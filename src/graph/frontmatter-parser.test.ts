@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseVisibleEntry } from "./frontmatter-parser.ts";
+import { parseVisibleEntry, parseSignatureLockEntry } from "./frontmatter-parser.ts";
 
 describe("parseVisibleEntry", () => {
   it("parses bare string as path with extracted name", () => {
@@ -42,5 +42,54 @@ describe("parseVisibleEntry", () => {
 
   it("handles empty string", () => {
     expect(parseVisibleEntry("")).toEqual({ name: "", path: "" });
+  });
+});
+
+describe("parseSignatureLockEntry", () => {
+  it("parses file and name with $ separator", () => {
+    expect(parseSignatureLockEntry("my-type.ts$MyFunction")).toEqual({
+      filePath: "my-type.ts",
+      name: "MyFunction",
+    });
+  });
+
+  it("parses sub-path file and name", () => {
+    expect(parseSignatureLockEntry("sub/foo.ts$Foo")).toEqual({
+      filePath: "sub/foo.ts",
+      name: "Foo",
+    });
+  });
+
+  it("strips leading ./ from file path", () => {
+    expect(parseSignatureLockEntry("./my-type.ts$MyFunction")).toEqual({
+      filePath: "my-type.ts",
+      name: "MyFunction",
+    });
+  });
+
+  it("trims whitespace", () => {
+    expect(parseSignatureLockEntry("  my-type.ts $ MyFunction  ")).toEqual({
+      filePath: "my-type.ts",
+      name: "MyFunction",
+    });
+  });
+
+  it("rejects entries without $", () => {
+    expect(() => parseSignatureLockEntry("my-type.ts")).toThrow('"$"');
+  });
+
+  it("rejects empty filePath", () => {
+    expect(() => parseSignatureLockEntry("$MyFunction")).toThrow("non-empty");
+  });
+
+  it("rejects empty name", () => {
+    expect(() => parseSignatureLockEntry("my-type.ts$")).toThrow("non-empty");
+  });
+
+  it("handles names containing characters that look like separators", () => {
+    expect(parseSignatureLockEntry("api.ts$Api.get")).toEqual({
+      filePath: "api.ts",
+      name: "Api.get",
+    });
   });
 });

@@ -4,13 +4,13 @@ import { mkdtempSync, writeFileSync, rmSync, mkdirSync, existsSync, readFileSync
 import { join, sep } from "node:path";
 import { execSync } from "node:child_process";
 import { SUPPORTED_EXTENSIONS } from "../../skills/module-seal-all/scripts/seal-all.mjs";
-import { getChecker } from "../../src/gates/checkers/registry.ts";
-import "../../src/gates/checkers/typescript.ts";
-import "../../src/gates/checkers/rust.ts";
-import "../../src/gates/checkers/java.ts";
-import "../../src/gates/checkers/go.ts";
-import "../../src/gates/checkers/kotlin.ts";
-import "../../src/gates/checkers/scala.ts";
+import { getChecker } from "../../src/gates/export-checkers/registry.ts";
+import "../../src/gates/export-checkers/typescript.ts";
+import "../../src/gates/export-checkers/rust.ts";
+import "../../src/gates/export-checkers/java.ts";
+import "../../src/gates/export-checkers/go.ts";
+import "../../src/gates/export-checkers/kotlin.ts";
+import "../../src/gates/export-checkers/scala.ts";
 
 const scriptPath = join(
   import.meta.dirname,
@@ -22,7 +22,7 @@ const scriptPath = join(
   "seal-all.mjs",
 );
 
-const checkersDir = join(import.meta.dirname, "..", "..", "src", "gates", "checkers");
+const checkersDir = join(import.meta.dirname, "..", "..", "src", "gates", "export-checkers");
 
 function extractCheckerExtensions(): Set<string> {
   const extensions = new Set<string>();

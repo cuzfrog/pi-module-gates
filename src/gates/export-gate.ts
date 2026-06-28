@@ -1,5 +1,5 @@
 import * as path from "node:path";
-import { getChecker } from "./checkers/registry.ts";
+import { getChecker } from "./export-checkers/registry.ts";
 import type { ModuleIndex, Signature } from "../types.ts";
 
 export type ExportViolation = { name: string; imposedBy: string };

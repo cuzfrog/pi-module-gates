@@ -11,4 +11,6 @@ sealed:
   - run-gates.test.ts
   - sealed-gate.ts
   - sealed-gate.test.ts
+  - signature-gate.ts
+  - signature-gate.test.ts
 ---

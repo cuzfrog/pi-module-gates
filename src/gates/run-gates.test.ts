@@ -9,7 +9,7 @@ import {
   isDescriptorFile,
   extractFrontmatter,
 } from "./run-gates.ts";
-import "./checkers/index.ts";
+import "./export-checkers/index.ts";
 import type { ModuleIndex, ModuleContract } from "../types.ts";
 import type { ModuleGateConfig } from "../config.ts";
 
@@ -57,7 +57,7 @@ describe("runGates", () => {
   it("blocks readonly files", () => {
     writeSource("src/locked.ts", "");
     const index = makeIndex([
-      { modulePath: path.join(tmp, "src"), visible: null, readonly: ["module.md", "locked.ts"], sealed: [], prose: "" },
+      { modulePath: path.join(tmp, "src"), visible: null, readonly: ["module.md", "locked.ts"], sealed: [], prose: "", signatureLock: [], },
     ]);
     const result = runGates("src/locked.ts", [{ oldText: "", newText: "x" }], tmp, index, cfg());
     expect(result?.block).toBe(true);
@@ -67,7 +67,7 @@ describe("runGates", () => {
   it("blocks sealed file when adding a new export", () => {
     writeSource("src/sealed.ts", "export function a() {}");
     const index = makeIndex([
-      { modulePath: path.join(tmp, "src"), visible: null, readonly: ["module.md"], sealed: ["sealed.ts"], prose: "" },
+      { modulePath: path.join(tmp, "src"), visible: null, readonly: ["module.md"], sealed: ["sealed.ts"], prose: "", signatureLock: [], },
     ]);
     const after = "export function a() {}\nexport function b() {}";
     const result = runGates("src/sealed.ts", [{ oldText: "export function a() {}", newText: after }], tmp, index, cfg());
@@ -79,7 +79,7 @@ describe("runGates", () => {
   it("blocks exports not in visible list", () => {
     writeSource("src/app.ts", "export function a() {}");
     const index = makeIndex([
-      { modulePath: path.join(tmp, "src"), visible: [{ name: "a" }], readonly: [], sealed: [], prose: "" },
+      { modulePath: path.join(tmp, "src"), visible: [{ name: "a" }], readonly: [], sealed: [], prose: "", signatureLock: [], },
     ]);
     const after = "export function a() {}\nexport function b() {}";
     const result = runGates("src/app.ts", [{ oldText: "export function a() {}", newText: after }], tmp, index, cfg());
@@ -90,10 +90,42 @@ describe("runGates", () => {
   it("returns undefined when edit does not add exports on sealed file", () => {
     writeSource("src/sealed.ts", "export function a() { return 1; }");
     const index = makeIndex([
-      { modulePath: path.join(tmp, "src"), visible: null, readonly: [], sealed: ["sealed.ts"], prose: "" },
+      { modulePath: path.join(tmp, "src"), visible: null, readonly: [], sealed: ["sealed.ts"], prose: "", signatureLock: [], },
     ]);
     const result = runGates(
       "src/sealed.ts",
+      [{ oldText: "return 1;", newText: "return 2;" }],
+      tmp,
+      index,
+      cfg(),
+    );
+    expect(result).toBeUndefined();
+  });
+
+  it("blocks locked signature when params change", () => {
+    writeSource("src/app.ts", "export function keep(a: number) { return 1; }");
+    const index = makeIndex([
+      { modulePath: path.join(tmp, "src"), visible: null, readonly: [], sealed: [], signatureLock: [{ filePath: "app.ts", name: "keep" }], prose: "", },
+    ]);
+    const result = runGates(
+      "src/app.ts",
+      [{ oldText: "export function keep(a: number) { return 1; }", newText: "export function keep(a: number, b: string) { return 1; }" }],
+      tmp,
+      index,
+      cfg(),
+    );
+    expect(result?.block).toBe(true);
+    expect(result?.reason).toContain("Signature rule");
+    expect(result?.reason).toContain("keep");
+  });
+
+  it("passes when only body of locked signature changes", () => {
+    writeSource("src/app.ts", "export function keep(a: number) { return 1; }");
+    const index = makeIndex([
+      { modulePath: path.join(tmp, "src"), visible: null, readonly: [], sealed: [], signatureLock: [{ filePath: "app.ts", name: "keep" }], prose: "", },
+    ]);
+    const result = runGates(
+      "src/app.ts",
       [{ oldText: "return 1;", newText: "return 2;" }],
       tmp,
       index,
@@ -108,7 +140,7 @@ describe("formatDenial", () => {
     const modulePath = path.join(tmp, "src");
     const index: ModuleIndex = {
       contracts: [
-        { modulePath, visible: null, readonly: ["locked.ts"], sealed: [], prose: "Greeting module." },
+        { modulePath, visible: null, readonly: ["locked.ts"], sealed: [], prose: "Greeting module.", signatureLock: [], },
       ],
       dirToModule: new Map([[modulePath, modulePath]]),
     };
@@ -247,6 +279,7 @@ describe("runGates descriptor protection (independent of readonly list)", () => 
           readonly: [],
           sealed: ["config.ts"],
           prose: "Prose.",
+          signatureLock: [],
         },
       ],
       dirToModule: new Map([[modulePath, modulePath]]),
@@ -270,7 +303,7 @@ describe("runGates descriptor protection (independent of readonly list)", () => 
     fs.writeFileSync(moduleAbs, "---\nsealed: [config.ts]\n---\nProse.", "utf-8");
     const index: ModuleIndex = {
       contracts: [
-        { modulePath, visible: null, readonly: [], sealed: ["config.ts"], prose: "Prose." },
+        { modulePath, visible: null, readonly: [], sealed: ["config.ts"], prose: "Prose.", signatureLock: [], },
       ],
       dirToModule: new Map([[modulePath, modulePath]]),
     };

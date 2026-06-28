@@ -3,7 +3,7 @@ import * as path from "node:path";
 import { applyEdits, readFileSafe } from "../utils.ts";
 import { runGates, type GateEdit } from "../gates/run-gates.ts";
 import { loadIndexForHook, notifyNoContracts } from "./index-loader.ts";
-import "../gates/checkers/index.ts";
+import "../gates/export-checkers/index.ts";
 
 type HookEvent = {
   hook_event_name?: string;

@@ -12,7 +12,8 @@ import { buildModuleIndex } from "./graph/index.ts";
 import { readFileSafe } from "./utils.ts";
 import { runGates, type GateEdit } from "./gates/run-gates.ts";
 import { buildSystemPromptHint } from "./context/index.ts";
-import "./gates/checkers/index.ts";
+import "./gates/export-checkers/index.ts";
+import "./gates/signature-checkers/index.ts";
 
 export default function (pi: ExtensionAPI): void {
   let index: ModuleIndex;

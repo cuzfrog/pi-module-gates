@@ -6,7 +6,7 @@ import type { ModuleContract, ModuleIndex } from "../types.ts";
 import type { ModuleGateConfig } from "../config.ts";
 import type { Dirent } from "node:fs";
 import { validateVisibleEntries } from "./validation.ts";
-import { parseVisibleEntry, type ModuleFrontmatter } from "./frontmatter-parser.ts";
+import { parseVisibleEntry, parseSignatureLockEntry, type ModuleFrontmatter } from "./frontmatter-parser.ts";
 
 type IndexContext = {
   cwd: string;
@@ -62,6 +62,7 @@ function buildContracts(
           : null,
       readonly: frontmatter.readonly ?? [],
       sealed: frontmatter.sealed ?? [],
+      signatureLock: (frontmatter.signatureLock ?? []).map(parseSignatureLockEntry),
       prose: body.trim(),
     });
   }

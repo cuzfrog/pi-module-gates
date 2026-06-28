@@ -1,7 +1,7 @@
 import * as path from "node:path";
 import { readdir } from "node:fs/promises";
 import type { ModuleIndex } from "../types.ts";
-import { getChecker } from "../gates/checkers/index.ts";
+import { getChecker } from "../gates/export-checkers/index.ts";
 import { readFileSafe } from "../utils.ts";
 import type { Dirent } from "node:fs";
 

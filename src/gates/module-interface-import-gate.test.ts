@@ -4,7 +4,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { checkModuleInterfaceImports } from "./module-interface-import-gate.ts";
 import type { ModuleIndex } from "../types.ts";
-import "./checkers/index.ts";
+import "./export-checkers/index.ts";
 
 function makeIndex(dirToModule: Map<string, string>): ModuleIndex {
   return { contracts: [], dirToModule };

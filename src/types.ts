@@ -5,11 +5,17 @@ export type Signature = {
   path?: string;
 };
 
+export type SignatureLockEntry = {
+  filePath: string;
+  name: string;
+};
+
 export type ModuleContract = {
   modulePath: string;
   visible: Signature[] | null;
   readonly: string[];
   sealed: string[];
+  signatureLock: SignatureLockEntry[];
   prose: string;
 };
 
