@@ -21,7 +21,7 @@ describe("loadConfig", () => {
 
     const config = loadConfig("/project");
     expect(config.moduleDescriptorFileName).toBe("module.md");
-    expect(config.moduleDescriptorReadonly).toBe("file");
+    expect(config.moduleDescriptorReadonly).toBe("frontmatter");
     expect(config.sourceRoot).toBe("src/");
     expect(config.disableSystemPrompt).toBe(false);
   });
@@ -33,7 +33,7 @@ describe("loadConfig", () => {
 
     const config = loadConfig("/project");
     expect(config.moduleDescriptorFileName).toBe("module.md");
-    expect(config.moduleDescriptorReadonly).toBe("file");
+    expect(config.moduleDescriptorReadonly).toBe("frontmatter");
     expect(config.sourceRoot).toBe("src/");
   });
 
@@ -42,7 +42,7 @@ describe("loadConfig", () => {
 
     const config = loadConfig("/project");
     expect(config.moduleDescriptorFileName).toBe("module.md");
-    expect(config.moduleDescriptorReadonly).toBe("file");
+    expect(config.moduleDescriptorReadonly).toBe("frontmatter");
     expect(config.sourceRoot).toBe("src/");
   });
 
@@ -74,7 +74,7 @@ describe("loadConfig", () => {
 
     const config = loadConfig("/project");
     expect(config.moduleDescriptorFileName).toBe("CONTEXT.md");
-    expect(config.moduleDescriptorReadonly).toBe("file");
+    expect(config.moduleDescriptorReadonly).toBe("frontmatter");
     expect(config.sourceRoot).toBe("src/");
   });
 
