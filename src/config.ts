@@ -11,7 +11,7 @@ export type ModuleGateConfig = {
 
 const DEFAULTS: ModuleGateConfig = {
   moduleDescriptorFileName: "module.md",
-  moduleDescriptorReadonly: "file",
+  moduleDescriptorReadonly: "frontmatter",
   sourceRoot: "src/",
   disableModuleInterfaceImportGate: false,
   disableSystemPrompt: false,

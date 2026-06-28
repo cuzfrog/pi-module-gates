@@ -119,7 +119,7 @@ Add a `module-gates` entry to `.pi/settings.json`:
 {
   "module-gates": {
     "moduleDescriptorFileName": "MODULE.md",
-    "moduleDescriptorReadonly": true,
+    "moduleDescriptorReadonly": "file",
     "sourceRoot": "src/"
   }
 }
@@ -128,7 +128,7 @@ Add a `module-gates` entry to `.pi/settings.json`:
 | Option | Default | Description |
 |--------|---------|-------------|
 | `moduleDescriptorFileName` | `MODULE.md` | File name used for module descriptors (case-insensitive) |
-| `moduleDescriptorReadonly` | `true` | When `true`, descriptor files are readonly.|
+| `moduleDescriptorReadonly` | `"frontmatter"` | `"file"` makes the whole descriptor readonly; `"frontmatter"` locks only the YAML frontmatter (body prose stays editable); `"off"` disables descriptor readonly. `true`/`false` are also accepted for backward compatibility. |
 | `sourceRoot` | `"src/"` | Directory to scan for descriptor files and enforce gates. Set to `""` to scan from project root. |
 | `disableModuleInterfaceImportGate` | `false` | When `true`, imports will not be forced to be from module interface. |
 | `disableSystemPrompt` | `false` | When `true`, skip injecting the module-gates hint into the agent's system prompt. |
