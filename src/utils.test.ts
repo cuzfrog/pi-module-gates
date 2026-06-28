@@ -181,7 +181,7 @@ describe("getAncestorContracts", () => {
       dirToModule: new Map(),
     };
     const result = getAncestorContracts("/project/src/app.ts", index);
-    expect(result[0]).toEqual({ modulePath: "/project/src", readonly: ["a.ts"], sealed: ["b.ts"] });
+    expect(result[0]).toEqual({ modulePath: "/project/src", readonly: ["a.ts"], sealed: ["b.ts"], signatureLock: [] });
   });
 });
 
