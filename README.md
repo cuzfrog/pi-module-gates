@@ -15,6 +15,7 @@ AI coding agents produce edits with limited context knowledge (myopia) — their
 - `readonly` — files and directories the agent must not touch
 - `sealed` — files where no new exports are allowed (body still editable)
 - `visible` — the set of exports allowed to be added or modified in that module
+- `signature-lock` — names whose captured signature must remain unchanged (body still editable)
 
 The extension intercepts agent `write`/`edit` operations and enforces these contracts. Violations are blocked with a clear reason.
 
@@ -28,12 +29,14 @@ The attempt to add 2 public helper functions is blocked, forcing the agent to re
 3. **Gating** — On every write/edit, checks:
    - **Readonly gate** — is the target file locked?
      **Sealed gate** — would the change add new exports to a file in the `sealed` list?
+   - **Signature gate** — would the change alter a locked signature declared in the module's `signature-lock` list?
    - **Export gate** — would the change introduce an export not in the `visible` list?
    - **Module interface import gate** — external files can only import from the module not internal files, i.e. re-exports from `index.ts` or `mod.rs`. A child module may import from a parent module's internal files (not recommended but allowed). (Only Typescript/JavaScript and Rust are supported)
    - **Import gate** (not implemented yet) — would the change introduce an import violating visibility scope?
 
 - System prompt: [system-prompt.md](src/context/system-prompt.template.md)
-- Currently [supported languages](src/gates/checkers/index.ts): **TypeScript/JavaScript**, **Rust**, **Java**, **Go**, **Kotlin**, **Scala**
+- Currently [supported languages](src/gates/export-checkers/index.ts): **TypeScript/JavaScript**, **Rust**, **Java**, **Go**, **Kotlin**, **Scala**
+- Signature checkers ([src/gates/signature-checkers/index.ts](src/gates/signature-checkers/index.ts)) ship a TypeScript/JavaScript checker; other languages are stubs in v1.
 
 ## Installation
 ```bash
@@ -66,6 +69,27 @@ sealed: [mod.rs]
 Sealed files cannot change their surface size: no new exports or public entries are allowed. The file body is still editable.
 
 A skill [module-seal-all](skills/module-seal-all) has been included to auto-seal modules.
+
+### Type Signature Lock (signature-gate)
+
+```yaml
+signature-lock:
+  - my-type.ts$MyFunction
+  - sub/foo.ts$Bar
+```
+
+Lock the captured signature of named types in a target file. The `$` separates the file path (resolved relative to the module directory) from the symbol name. The body of the declaration remains editable; only the captured head (parameter list, return type, generics, class `extends`/`implements`, interface body, or type alias RHS) must remain unchanged.
+
+For a file `src/my-type.ts` containing `export function MyFunction(a: number): boolean { ... }`:
+- Adding a parameter breaks the lock.
+- Changing the return type breaks the lock.
+- Changing only the body (`return true;` → `return false;`) is allowed.
+
+Limitations (v1):
+- Signatures are extracted via regex (not AST); multi-line parameter lists with comments inside parens may produce false positives.
+- Interfaces are locked in their entirety (the body is part of the signature).
+- Class inner methods are not individually lockable; only the class header is captured.
+- Only TypeScript/JavaScript ships a complete checker; Rust/Java/Go/Kotlin/Scala stubs return empty maps so signature-lock entries for those languages are silently ignored.
 
 ### Visibility whitelist (under redesign)
 

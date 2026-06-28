@@ -28,12 +28,26 @@ src/
   gates/
     readonly-gate.ts              — Blocks writes to readonly files in a module
     sealed-gate.ts                — Blocks new exports on sealed files in a module
+    signature-gate.ts             — Blocks changes to locked signatures
     export-gate.ts                — Blocks changes that break a module's public API
-    checkers/
-      index.ts                    — Auto-registers all checkers
-      registry.ts                 — Checker registry: dispatch by language
-      typescript.ts               — TS-specific public-API checker
+    export-checkers/
+      index.ts                    — Auto-registers all export checkers
+      registry.ts                 — ExportChecker registry: dispatch by language
+      typescript.ts               — TS/JS-specific public-API checker
       rust.ts                     — Rust-specific public-API checker
+      java.ts                     — Java-specific public-API checker
+      go.ts                       — Go-specific public-API checker
+      kotlin.ts                   — Kotlin-specific public-API checker
+      scala.ts                    — Scala-specific public-API checker
+    signature-checkers/
+      index.ts                    — Auto-registers all signature checkers
+      registry.ts                 — SignatureChecker registry: dispatch by language
+      typescript.ts               — TS/JS-specific signature extractor
+      rust.ts                     — Rust-specific signature stub
+      java.ts                     — Java-specific signature stub
+      go.ts                       — Go-specific signature stub
+      kotlin.ts                   — Kotlin-specific signature stub
+      scala.ts                    — Scala-specific signature stub
   graph/
     module-index-builder.ts       — Scans for module.md files, builds the index
     validation.ts                 — Validates that visible entries actually exist
@@ -42,8 +56,10 @@ test/
   context/system-prompt.test.ts
   gates/export-gate.test.ts
   gates/readonly-gate.test.ts
-  gates/checkers/typescript.test.ts
-  gates/checkers/rust.test.ts
+  gates/export-checkers/typescript.test.ts
+  gates/export-checkers/rust.test.ts
+  gates/signature-gate.test.ts
+  gates/signature-checkers/typescript.test.ts
   graph/module-index-builder.test.ts
   graph/validation.test.ts
   fixture/
@@ -56,6 +72,16 @@ doc/
 
 ## Adding a checker (new language)
 
-1. Create `src/gates/checkers/<language>.ts` exporting a function matching the `Checker` signature
-2. Add it to `src/gates/checkers/index.ts` with an import + auto-register call
-3. Create `test/gates/checkers/<language>.test.ts` with unit tests
+### Export checker
+
+1. Create `src/gates/export-checkers/<language>.ts` exporting an `ExportChecker` with `extensions` and `getNewExports`.
+2. Add it to `src/gates/export-checkers/index.ts` with an import for its side-effect (auto-registers).
+3. Create `src/gates/export-checkers/<language>.test.ts` with unit tests.
+4. Add the file to the `sealed` list in `src/gates/export-checkers/MODULE.md`.
+
+### Signature checker
+
+1. Create `src/gates/signature-checkers/<language>.ts` exporting a `SignatureChecker` with `extensions` and `getSignatures(src)` returning a `Map<name, signatureText>`.
+2. Add it to `src/gates/signature-checkers/index.ts` with an import for its side-effect.
+3. Create `src/gates/signature-checkers/<language>.test.ts` with unit tests.
+4. Add the file to the `sealed` list in `src/gates/signature-checkers/MODULE.md`.
