@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { getChecker } from "../../../src/gates/checkers/registry.ts";
-import "../../../src/gates/checkers/go.ts";
+import { getChecker } from "./registry.ts";
+import "./go.ts";
 
 describe("Go export checker", () => {
   const checker = getChecker("/file.go")!;

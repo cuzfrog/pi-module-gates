@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { checkSealed } from "../../src/gates/sealed-gate.ts";
-import type { ModuleIndex, ModuleContract } from "../../src/types.ts";
-import "../../src/gates/checkers/typescript.ts";
+import { checkSealed } from "./sealed-gate.ts";
+import type { ModuleIndex, ModuleContract } from "../types.ts";
+import "./checkers/typescript.ts";
 
 function makeIndex(contracts: ModuleContract[]): ModuleIndex {
   return { contracts, dirToModule: new Map() };

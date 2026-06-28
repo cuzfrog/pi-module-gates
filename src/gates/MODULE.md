@@ -1,7 +1,14 @@
 ---
 sealed:
   - export-gate.ts
-  - sealed-gate.ts
-  - readonly-gate.ts
+  - export-gate.test.ts
   - index.ts
+  - module-interface-import-gate.ts
+  - module-interface-import-gate.test.ts
+  - readonly-gate.ts
+  - readonly-gate.test.ts
+  - run-gates.ts
+  - run-gates.test.ts
+  - sealed-gate.ts
+  - sealed-gate.test.ts
 ---

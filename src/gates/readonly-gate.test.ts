@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { checkReadonly } from "../../src/gates/readonly-gate.ts";
-import type { ModuleIndex, ModuleContract } from "../../src/types.ts";
+import { checkReadonly } from "./readonly-gate.ts";
+import type { ModuleIndex, ModuleContract } from "../types.ts";
 
 function makeIndex(contracts: ModuleContract[]): ModuleIndex {
   return { contracts, dirToModule: new Map() };
@@ -69,7 +69,7 @@ describe("checkReadonly", () => {
     expect(result.blocked).toBe(false);
   });
 
-  it("always blocks module.md itself", () => {
+  it("blocks descriptor file when explicitly listed in readonly", () => {
     const index = makeIndex([
       {
         modulePath: "/project/src",

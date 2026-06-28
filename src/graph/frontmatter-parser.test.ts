@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseVisibleEntry } from "../../src/graph/frontmatter-parser.ts";
+import { parseVisibleEntry } from "./frontmatter-parser.ts";
 
 describe("parseVisibleEntry", () => {
   it("parses bare string as path with extracted name", () => {

@@ -1,7 +1,17 @@
 ---
 sealed:
+  - go.test.ts
+  - go.ts
   - index.ts
+  - java.test.ts
+  - java.ts
+  - kotlin.test.ts
+  - kotlin.ts
   - registry.ts
+  - rust.test.ts
   - rust.ts
+  - scala.test.ts
+  - scala.ts
+  - typescript.test.ts
   - typescript.ts
 ---

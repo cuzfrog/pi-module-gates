@@ -27,7 +27,7 @@ const checkersDir = join(import.meta.dirname, "..", "..", "src", "gates", "check
 function extractCheckerExtensions(): Set<string> {
   const extensions = new Set<string>();
   for (const name of readdirSync(checkersDir)) {
-    if (!name.endsWith(".ts") || name === "index.ts" || name === "registry.ts") continue;
+    if (!name.endsWith(".ts") || name === "index.ts" || name === "registry.ts" || name.endsWith(".test.ts")) continue;
     const content = readFileSync(join(checkersDir, name), "utf-8");
     const match = content.match(/extensions:\s*\[([^\]]+)\]/);
     if (!match) throw new Error(`No extensions array found in ${name}`);

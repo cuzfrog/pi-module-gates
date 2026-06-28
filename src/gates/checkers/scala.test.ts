@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { getChecker } from "../../../src/gates/checkers/registry.ts";
-import "../../../src/gates/checkers/scala.ts";
+import { getChecker } from "./registry.ts";
+import "./scala.ts";
 
 describe("Scala export checker", () => {
   const checker = getChecker("/file.scala")!;

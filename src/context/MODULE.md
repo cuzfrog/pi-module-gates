@@ -1,5 +1,6 @@
 ---
 sealed:
-  - system-prompt.ts
   - index.ts
+  - system-prompt.test.ts
+  - system-prompt.ts
 ---

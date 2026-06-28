@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { getChecker } from "../../../src/gates/checkers/registry.ts";
-import "../../../src/gates/checkers/java.ts";
+import { getChecker } from "./registry.ts";
+import "./java.ts";
 
 describe("Java export checker", () => {
   const checker = getChecker("/file.java")!;

@@ -5,7 +5,7 @@ vi.mock("node:fs", () => ({
   readFileSync: vi.fn(),
 }));
 
-import { loadConfig } from "../src/config.ts";
+import { loadConfig } from "./config.ts";
 
 const mockedReadFileSync = vi.mocked(fs.readFileSync);
 
@@ -125,6 +125,23 @@ describe("loadConfig", () => {
       "/my/project/.pi/settings.json",
       "utf-8",
     );
+  });
+
+  it("ignores legacy singular module-gate key", () => {
+    mockedReadFileSync.mockReturnValue(
+      JSON.stringify({
+        "module-gate": {
+          moduleDescriptorFileName: "MODULE.md",
+          moduleDescriptorReadonly: "file",
+          sourceRoot: "src/",
+        },
+      }),
+    );
+
+    const config = loadConfig("/project");
+    expect(config.moduleDescriptorFileName).toBe("module.md");
+    expect(config.moduleDescriptorReadonly).toBe("frontmatter");
+    expect(config.sourceRoot).toBe("src/");
   });
 
   it("overrides disableSystemPrompt from settings", () => {

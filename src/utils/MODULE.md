@@ -1,0 +1,4 @@
+---
+sealed:
+  - frontmatter.ts
+---

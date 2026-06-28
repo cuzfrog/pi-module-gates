@@ -9,15 +9,15 @@ vi.mock("node:fs", () => ({
   readFileSync: vi.fn(),
 }));
 
-vi.mock("../../src/gates/checkers/index.ts", () => ({
+vi.mock("../gates/checkers/index.ts", () => ({
   getChecker: vi.fn(),
 }));
 
 import { readdir } from "node:fs/promises";
 import * as fs from "node:fs";
-import { getChecker } from "../../src/gates/checkers/index.ts";
-import { validateVisibleEntries } from "../../src/graph/validation.ts";
-import type { ModuleIndex, ModuleContract } from "../../src/types.ts";
+import { getChecker } from "../gates/checkers/index.ts";
+import { validateVisibleEntries } from "./validation.ts";
+import type { ModuleIndex, ModuleContract } from "../types.ts";
 
 const mockedReaddir = readdir as unknown as ReturnType<typeof vi.fn>;
 const mockedReadFileSync = vi.mocked(fs.readFileSync);

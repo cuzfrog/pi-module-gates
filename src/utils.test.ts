@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import * as fs from "node:fs";
-import { findOwningModule, readFileSafe, applyEdits, isWithinSourceRoot, getAncestorContracts, matchesPattern } from "../src/utils.ts";
-import type { ModuleContract } from "../src/types.ts";
+import { findOwningModule, readFileSafe, applyEdits, isWithinSourceRoot, getAncestorContracts, matchesPattern } from "./utils.ts";
+import type { ModuleContract } from "./types.ts";
 
 vi.mock("node:fs", () => ({
   readFileSync: vi.fn(),

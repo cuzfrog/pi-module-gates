@@ -3,7 +3,7 @@ import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
 import { spawnSync } from "node:child_process";
-import { FIXTURES } from "../behavior/helpers.ts";
+import { FIXTURES } from "../../test/behavior/helpers.ts";
 
 const BIN = path.resolve("bin/pi-module-gates.mjs");
 

@@ -9,15 +9,15 @@ vi.mock("node:fs", () => ({
   readFileSync: vi.fn(),
 }));
 
-vi.mock("../../src/utils/frontmatter.ts", () => ({
+vi.mock("../utils/frontmatter.ts", () => ({
   parseFrontmatter: vi.fn(),
 }));
 
-vi.mock("../../src/graph/validation.ts", () => ({
+vi.mock("./validation.ts", () => ({
   validateVisibleEntries: vi.fn(),
 }));
 
-vi.mock("../../src/graph/frontmatter-parser.ts", () => ({
+vi.mock("./frontmatter-parser.ts", () => ({
   parseVisibleEntry: vi.fn((raw: any) => {
     let pathStr: string;
     let modifier: string | undefined;
@@ -36,10 +36,10 @@ vi.mock("../../src/graph/frontmatter-parser.ts", () => ({
 
 import { readdir } from "node:fs/promises";
 import * as fs from "node:fs";
-import { parseFrontmatter } from "../../src/utils/frontmatter.ts";
-import { validateVisibleEntries } from "../../src/graph/index.ts";
-import { buildModuleIndex } from "../../src/graph/module-index-builder.ts";
-import type { ModuleGateConfig } from "../../src/config.ts";
+import { parseFrontmatter } from "../utils/frontmatter.ts";
+import { validateVisibleEntries } from "./index.ts";
+import { buildModuleIndex } from "./module-index-builder.ts";
+import type { ModuleGateConfig } from "../config.ts";
 
 const mockedReaddir = readdir as unknown as ReturnType<typeof vi.fn>;
 const mockedReadFileSync = vi.mocked(fs.readFileSync);
@@ -110,7 +110,7 @@ describe("buildModuleIndex", () => {
     expect(index.contracts[0].prose).toBe("Greeting module.");
   });
 
-  it("adds module.md to readonly implicitly when moduleDescriptorReadonly is file", async () => {
+  it("does not add module.md to readonly implicitly regardless of moduleDescriptorReadonly mode", async () => {
     mockedReaddir.mockImplementation(async (dir: unknown) => {
       const d = dir as string;
       if (d === "/project") return [makeDirent("module.md", false)] as Dirent[];
@@ -126,7 +126,7 @@ describe("buildModuleIndex", () => {
 
     const index = await buildModuleIndex(makeCtx("/project"), defaultConfig);
 
-    expect(index.contracts[0].readonly).toContain("module.md");
+    expect(index.contracts[0].readonly).not.toContain("module.md");
     expect(index.contracts[0].readonly).toContain("config.json");
   });
 
@@ -157,7 +157,7 @@ describe("buildModuleIndex", () => {
     expect(index.contracts[0].readonly).toContain("config.json");
   });
 
-  it("adds module.md to readonly when moduleDescriptorReadonly is frontmatter", async () => {
+  it("does not add module.md to readonly when moduleDescriptorReadonly is frontmatter", async () => {
     mockedReaddir.mockImplementation(async (dir: unknown) => {
       const d = dir as string;
       if (d === "/project") return [makeDirent("module.md", false)] as Dirent[];
@@ -180,7 +180,7 @@ describe("buildModuleIndex", () => {
     };
     const index = await buildModuleIndex(makeCtx("/project"), config);
 
-    expect(index.contracts[0].readonly).toContain("module.md");
+    expect(index.contracts[0].readonly).not.toContain("module.md");
     expect(index.contracts[0].readonly).toContain("config.json");
   });
 
@@ -337,7 +337,7 @@ describe("buildModuleIndex", () => {
     const index = await buildModuleIndex(makeCtx("/project"), config);
     expect(index.contracts).toHaveLength(1);
     expect(index.contracts[0].modulePath).toBe("/project");
-    expect(index.contracts[0].readonly).toContain("CONTEXT.md");
+    expect(index.contracts[0].readonly).not.toContain("CONTEXT.md");
   });
 
   it("matches module.md case-insensitively", async () => {
