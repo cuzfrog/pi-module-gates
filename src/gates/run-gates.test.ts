@@ -101,6 +101,38 @@ describe("runGates", () => {
     );
     expect(result).toBeUndefined();
   });
+
+  it("blocks locked signature when params change", () => {
+    writeSource("src/app.ts", "export function keep(a: number) { return 1; }");
+    const index = makeIndex([
+      { modulePath: path.join(tmp, "src"), visible: null, readonly: [], sealed: [], signatureLock: [{ filePath: "app.ts", name: "keep" }], prose: "", },
+    ]);
+    const result = runGates(
+      "src/app.ts",
+      [{ oldText: "export function keep(a: number) { return 1; }", newText: "export function keep(a: number, b: string) { return 1; }" }],
+      tmp,
+      index,
+      cfg(),
+    );
+    expect(result?.block).toBe(true);
+    expect(result?.reason).toContain("Signature rule");
+    expect(result?.reason).toContain("keep");
+  });
+
+  it("passes when only body of locked signature changes", () => {
+    writeSource("src/app.ts", "export function keep(a: number) { return 1; }");
+    const index = makeIndex([
+      { modulePath: path.join(tmp, "src"), visible: null, readonly: [], sealed: [], signatureLock: [{ filePath: "app.ts", name: "keep" }], prose: "", },
+    ]);
+    const result = runGates(
+      "src/app.ts",
+      [{ oldText: "return 1;", newText: "return 2;" }],
+      tmp,
+      index,
+      cfg(),
+    );
+    expect(result).toBeUndefined();
+  });
 });
 
 describe("formatDenial", () => {

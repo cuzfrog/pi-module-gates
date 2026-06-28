@@ -5,9 +5,11 @@ import type { ModuleGateConfig } from "../config.ts";
 import { readFileSafe, applyEdits, isWithinSourceRoot, findOwningModule } from "../utils.ts";
 import { checkReadonly } from "./readonly-gate.ts";
 import { checkSealed } from "./sealed-gate.ts";
+import { checkSignature } from "./signature-gate.ts";
 import { checkExports } from "./export-gate.ts";
 import { checkModuleInterfaceImports } from "./module-interface-import-gate.ts";
-import "./checkers/index.ts";
+import "./export-checkers/index.ts";
+import "./signature-checkers/index.ts";
 
 export type GateEdit = { oldText: string; newText: string };
 
@@ -40,6 +42,11 @@ export function runGates(
   const sealedResult = checkSealed(filePath, before, after, index, cwd, config.moduleDescriptorFileName);
   if (sealedResult.blocked) {
     return { block: true, reason: formatDenial(filePath, sealedResult.reason, absPath, index, cwd, config.moduleDescriptorFileName) };
+  }
+
+  const signatureResult = checkSignature(filePath, before, after, index, cwd, config.moduleDescriptorFileName);
+  if (signatureResult.blocked) {
+    return { block: true, reason: formatDenial(filePath, signatureResult.reason, absPath, index, cwd, config.moduleDescriptorFileName) };
   }
 
   const exportResult = checkExports(filePath, before, after, index, cwd, config.moduleDescriptorFileName);
