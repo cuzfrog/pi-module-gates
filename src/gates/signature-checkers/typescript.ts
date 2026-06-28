@@ -6,11 +6,12 @@ const tsChecker: SignatureChecker = {
   getSignatures(src: string): Map<string, string> {
     const map = new Map<string, string>();
     for (const entry of extractSignatures(src)) {
+      const text = entry.text.trim();
       const existing = map.get(entry.name);
       if (existing === undefined) {
-        map.set(entry.name, entry.text);
+        map.set(entry.name, text);
       } else {
-        map.set(entry.name, existing + "\n" + entry.text);
+        map.set(entry.name, existing + "\n" + text);
       }
     }
     return map;
@@ -20,7 +21,6 @@ const tsChecker: SignatureChecker = {
 registerChecker(tsChecker);
 
 const ANNOTATION_PREFIX = String.raw`(?:@[^\n]*\n)*[ \t]*`;
-const MODIFIERS = String.raw`(?:export\s+(?:default\s+)?)?(?:abstract\s+|declare\s+|async\s+)*`;
 
 interface SignatureEntry {
   name: string;
@@ -39,12 +39,12 @@ function extractSignatures(src: string): SignatureEntry[] {
 function extractFunctions(src: string): SignatureEntry[] {
   const results: SignatureEntry[] = [];
   const re = new RegExp(
-    `^${ANNOTATION_PREFIX}${MODIFIERS}(?:function\\s*\\*?)\\s+(\\w+)\\b`,
+    `^${ANNOTATION_PREFIX}((?:export\\s+(?:default\\s+)?)?(?:abstract\\s+|declare\\s+|async\\s+)*(?:function\\s*\\*?))\\s+(\\w+)\\b`,
     "gm",
   );
   for (const m of src.matchAll(re)) {
-    const name = m[1];
-    const startIdx = m.index ?? 0;
+    const name = m[2];
+    const startIdx = skipDecorators(src, m.index ?? 0);
     const text = captureCallSignature(src, startIdx);
     if (text) results.push({ name, text });
   }
@@ -54,12 +54,12 @@ function extractFunctions(src: string): SignatureEntry[] {
 function extractClasses(src: string): SignatureEntry[] {
   const results: SignatureEntry[] = [];
   const re = new RegExp(
-    `^${ANNOTATION_PREFIX}${MODIFIERS}class\\s+(\\w+)\\b`,
+    `^${ANNOTATION_PREFIX}((?:export\\s+(?:default\\s+)?)?(?:abstract\\s+|declare\\s+|async\\s+)*)class\\s+(\\w+)\\b`,
     "gm",
   );
   for (const m of src.matchAll(re)) {
-    const name = m[1];
-    const startIdx = m.index ?? 0;
+    const name = m[2];
+    const startIdx = skipDecorators(src, m.index ?? 0);
     const text = captureClassHead(src, startIdx);
     if (text) results.push({ name, text });
   }
@@ -69,12 +69,12 @@ function extractClasses(src: string): SignatureEntry[] {
 function extractInterfaces(src: string): SignatureEntry[] {
   const results: SignatureEntry[] = [];
   const re = new RegExp(
-    `^${ANNOTATION_PREFIX}${MODIFIERS}interface\\s+(\\w+)\\b`,
+    `^${ANNOTATION_PREFIX}((?:export\\s+(?:default\\s+)?)?(?:abstract\\s+|declare\\s+|async\\s+)*)interface\\s+(\\w+)\\b`,
     "gm",
   );
   for (const m of src.matchAll(re)) {
-    const name = m[1];
-    const startIdx = m.index ?? 0;
+    const name = m[2];
+    const startIdx = skipDecorators(src, m.index ?? 0);
     const text = captureBlock(src, startIdx);
     if (text) results.push({ name, text });
   }
@@ -84,16 +84,26 @@ function extractInterfaces(src: string): SignatureEntry[] {
 function extractTypeAliases(src: string): SignatureEntry[] {
   const results: SignatureEntry[] = [];
   const re = new RegExp(
-    `^${ANNOTATION_PREFIX}${MODIFIERS}type\\s+(\\w+)\\b`,
+    `^${ANNOTATION_PREFIX}((?:export\\s+(?:default\\s+)?)?(?:abstract\\s+|declare\\s+|async\\s+)*)type\\s+(\\w+)\\b`,
     "gm",
   );
   for (const m of src.matchAll(re)) {
-    const name = m[1];
-    const startIdx = m.index ?? 0;
+    const name = m[2];
+    const startIdx = skipDecorators(src, m.index ?? 0);
     const text = captureStatement(src, startIdx);
     if (text) results.push({ name, text });
   }
   return results;
+}
+
+function skipDecorators(src: string, from: number): number {
+  let i = from;
+  while (i < src.length && src[i] === "@") {
+    while (i < src.length && src[i] !== "\n") i++;
+    i++;
+    while (i < src.length && /[ \t]/.test(src[i])) i++;
+  }
+  return i;
 }
 
 function captureCallSignature(src: string, startIdx: number): string | undefined {
@@ -189,10 +199,16 @@ function captureStatement(src: string, startIdx: number): string | undefined {
 function findUnnested(src: string, from: number, target: string, opens: string[]): number {
   const openset = new Set(opens.filter((o) => o !== target));
   let depth = 0;
+  let angleDepth = 0;
   for (let i = from; i < src.length; i++) {
     const ch = src[i];
-    if (openset.has(ch)) depth++;
-    else if (depth === 0 && ch === target) return i;
+    if (ch === "<") angleDepth++;
+    else if (ch === ">") {
+      if (angleDepth > 0) angleDepth--;
+    } else if (openset.has(ch) && angleDepth === 0) {
+      depth++;
+    }
+    if (depth === 0 && angleDepth === 0 && ch === target) return i;
   }
   return -1;
 }
@@ -251,7 +267,6 @@ function matchBracket(src: string, openIdx: number): number {
 }
 
 function findTypeEnd(src: string, from: number): number {
-  let depth = 0;
   let angleDepth = 0;
   for (let i = from; i < src.length; i++) {
     const ch = src[i];
@@ -259,13 +274,13 @@ function findTypeEnd(src: string, from: number): number {
       while (i < src.length && src[i] !== "\n") i++;
       continue;
     }
-    if (ch === "{") depth++;
-    else if (ch === "}") depth--;
-    else if (ch === "<") angleDepth++;
+    if (ch === "{") return i;
+    if (ch === "}") return i;
+    if (ch === "<") angleDepth++;
     else if (ch === ">") {
       if (angleDepth > 0) angleDepth--;
     }
-    if ((ch === "{" || ch === ";" || ch === "\n" || ch === "," || ch === ")") && depth === 0 && angleDepth === 0) {
+    if ((ch === ";" || ch === "\n" || ch === "," || ch === ")") && angleDepth === 0) {
       return i;
     }
   }
