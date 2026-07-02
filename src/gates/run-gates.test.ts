@@ -57,7 +57,7 @@ describe("runGates", () => {
   it("blocks readonly files", () => {
     writeSource("src/locked.ts", "");
     const index = makeIndex([
-      { modulePath: path.join(tmp, "src"), visible: null, readonly: ["module.md", "locked.ts"], sealed: [], prose: "" },
+      { modulePath: path.join(tmp, "src"), descriptorFileName: "module.md", visible: null, readonly: ["module.md", "locked.ts"], sealed: [], prose: "" },
     ]);
     const result = runGates("src/locked.ts", [{ oldText: "", newText: "x" }], tmp, index, cfg());
     expect(result?.block).toBe(true);
@@ -67,7 +67,7 @@ describe("runGates", () => {
   it("blocks sealed file when adding a new export", () => {
     writeSource("src/sealed.ts", "export function a() {}");
     const index = makeIndex([
-      { modulePath: path.join(tmp, "src"), visible: null, readonly: ["module.md"], sealed: ["sealed.ts"], prose: "" },
+      { modulePath: path.join(tmp, "src"), descriptorFileName: "module.md", visible: null, readonly: ["module.md"], sealed: ["sealed.ts"], prose: "" },
     ]);
     const after = "export function a() {}\nexport function b() {}";
     const result = runGates("src/sealed.ts", [{ oldText: "export function a() {}", newText: after }], tmp, index, cfg());
@@ -79,7 +79,7 @@ describe("runGates", () => {
   it("blocks exports not in visible list", () => {
     writeSource("src/app.ts", "export function a() {}");
     const index = makeIndex([
-      { modulePath: path.join(tmp, "src"), visible: [{ name: "a" }], readonly: [], sealed: [], prose: "" },
+      { modulePath: path.join(tmp, "src"), descriptorFileName: "module.md", visible: [{ name: "a" }], readonly: [], sealed: [], prose: "" },
     ]);
     const after = "export function a() {}\nexport function b() {}";
     const result = runGates("src/app.ts", [{ oldText: "export function a() {}", newText: after }], tmp, index, cfg());
@@ -90,7 +90,7 @@ describe("runGates", () => {
   it("returns undefined when edit does not add exports on sealed file", () => {
     writeSource("src/sealed.ts", "export function a() { return 1; }");
     const index = makeIndex([
-      { modulePath: path.join(tmp, "src"), visible: null, readonly: [], sealed: ["sealed.ts"], prose: "" },
+      { modulePath: path.join(tmp, "src"), descriptorFileName: "module.md", visible: null, readonly: [], sealed: ["sealed.ts"], prose: "" },
     ]);
     const result = runGates(
       "src/sealed.ts",
@@ -108,13 +108,25 @@ describe("formatDenial", () => {
     const modulePath = path.join(tmp, "src");
     const index: ModuleIndex = {
       contracts: [
-        { modulePath, visible: null, readonly: ["locked.ts"], sealed: [], prose: "Greeting module." },
+        { modulePath, descriptorFileName: "module.md", visible: null, readonly: ["locked.ts"], sealed: [], prose: "Greeting module." },
       ],
       dirToModule: new Map([[modulePath, modulePath]]),
     };
-    const formatted = formatDenial("src/locked.ts", "Readonly rule", path.join(modulePath, "locked.ts"), index, tmp, "module.md");
+    const formatted = formatDenial("src/locked.ts", "Readonly rule", path.join(modulePath, "locked.ts"), index, tmp);
     expect(formatted).toContain("[Module Gate]");
     expect(formatted).toContain("Greeting module.");
+  });
+
+  it("uses contract's descriptorFileName (preserving case) in the contract reference", () => {
+    const modulePath = path.join(tmp, "src");
+    const index: ModuleIndex = {
+      contracts: [
+        { modulePath, descriptorFileName: "MODULE.md", visible: null, readonly: ["locked.ts"], sealed: [], prose: "Greeting module." },
+      ],
+      dirToModule: new Map([[modulePath, modulePath]]),
+    };
+    const formatted = formatDenial("src/locked.ts", "Readonly rule", path.join(modulePath, "locked.ts"), index, tmp);
+    expect(formatted).toContain("MODULE.md");
   });
 });
 
@@ -171,6 +183,10 @@ describe("checkDescriptorFileReadonly", () => {
         cfg({ moduleDescriptorFileName: "module.md", moduleDescriptorReadonly: "file" }),
       );
       expect(result?.block).toBe(true);
+      if (result?.block) {
+        expect(result.reason).toContain("MODULE.md");
+        expect(result.reason).not.toContain("module.md");
+      }
     });
 
     it("does not affect non-descriptor files", () => {
@@ -243,6 +259,7 @@ describe("runGates descriptor protection (independent of readonly list)", () => 
       contracts: [
         {
           modulePath,
+          descriptorFileName: "MODULE.md",
           visible: null,
           readonly: [],
           sealed: ["config.ts"],
@@ -270,7 +287,7 @@ describe("runGates descriptor protection (independent of readonly list)", () => 
     fs.writeFileSync(moduleAbs, "---\nsealed: [config.ts]\n---\nProse.", "utf-8");
     const index: ModuleIndex = {
       contracts: [
-        { modulePath, visible: null, readonly: [], sealed: ["config.ts"], prose: "Prose." },
+        { modulePath, descriptorFileName: "module.md", visible: null, readonly: [], sealed: ["config.ts"], prose: "Prose." },
       ],
       dirToModule: new Map([[modulePath, modulePath]]),
     };

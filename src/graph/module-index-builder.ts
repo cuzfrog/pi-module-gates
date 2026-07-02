@@ -56,6 +56,7 @@ function buildContracts(
 
     contracts.push({
       modulePath,
+      descriptorFileName: path.basename(absModuleFile),
       visible:
         frontmatter.visible !== undefined
           ? frontmatter.visible.map(parseVisibleEntry)

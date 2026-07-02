@@ -146,7 +146,7 @@ describe("isWithinSourceRoot", () => {
 
 describe("getAncestorContracts", () => {
   function contract(modulePath: string, readonly: string[] = [], sealed: string[] = []): ModuleContract {
-    return { modulePath, visible: null, readonly, sealed, prose: "" };
+    return { modulePath, descriptorFileName: "module.md", visible: null, readonly, sealed, prose: "" };
   }
 
   it("returns matching contracts for file under module path", () => {
@@ -175,13 +175,20 @@ describe("getAncestorContracts", () => {
     expect(getAncestorContracts("/project/src", index)).toHaveLength(1);
   });
 
-  it("returns only readonly and sealed from each contract", () => {
+  it("returns the full contract (preserving descriptorFileName)", () => {
     const index = {
       contracts: [contract("/project/src", ["a.ts"], ["b.ts"])],
       dirToModule: new Map(),
     };
     const result = getAncestorContracts("/project/src/app.ts", index);
-    expect(result[0]).toEqual({ modulePath: "/project/src", readonly: ["a.ts"], sealed: ["b.ts"] });
+    expect(result[0]).toEqual({
+      modulePath: "/project/src",
+      descriptorFileName: "module.md",
+      visible: null,
+      readonly: ["a.ts"],
+      sealed: ["b.ts"],
+      prose: "",
+    });
   });
 });
 

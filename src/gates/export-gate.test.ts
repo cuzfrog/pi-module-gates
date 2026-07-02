@@ -14,6 +14,7 @@ describe("checkExports", () => {
     const index = makeIndex([
       {
         modulePath: "/project/src",
+        descriptorFileName: "module.md",
         visible: [{ name: "allowedFn" }],
         readonly: ["module.md"],
         sealed: [],
@@ -23,7 +24,7 @@ describe("checkExports", () => {
 
     const before = "";
     const after = "export function notAllowed() {}";
-    const result = checkExports("src/app.ts", before, after, index, cwd, "module.md");
+    const result = checkExports("src/app.ts", before, after, index, cwd);
 
     expect(result.blocked).toBe(true);
     if (result.blocked) {
@@ -39,6 +40,7 @@ describe("checkExports", () => {
     const index = makeIndex([
       {
         modulePath: "/project/src",
+        descriptorFileName: "module.md",
         visible: [{ name: "allowedFn" }],
         readonly: ["module.md"],
         sealed: [],
@@ -48,7 +50,7 @@ describe("checkExports", () => {
 
     const before = "";
     const after = "export function allowedFn() {}";
-    const result = checkExports("src/app.ts", before, after, index, cwd, "module.md");
+    const result = checkExports("src/app.ts", before, after, index, cwd);
 
     expect(result.blocked).toBe(false);
   });
@@ -57,6 +59,7 @@ describe("checkExports", () => {
     const index = makeIndex([
       {
         modulePath: "/project/src",
+        descriptorFileName: "module.md",
         visible: [],
         readonly: ["module.md"],
         sealed: [],
@@ -70,7 +73,7 @@ describe("checkExports", () => {
       '{"new": true}',
       index,
       cwd,
-      "module.md",
+      
     );
 
     expect(result.blocked).toBe(false);
@@ -80,6 +83,7 @@ describe("checkExports", () => {
     const index = makeIndex([
       {
         modulePath: "/project",
+        descriptorFileName: "module.md",
         visible: [{ name: "sharedFn" }, { name: "rootOnly" }],
         readonly: ["module.md"],
         sealed: [],
@@ -87,6 +91,7 @@ describe("checkExports", () => {
       },
       {
         modulePath: "/project/src",
+        descriptorFileName: "module.md",
         visible: [{ name: "sharedFn" }, { name: "srcOnly" }],
         readonly: ["module.md"],
         sealed: [],
@@ -96,7 +101,7 @@ describe("checkExports", () => {
 
     const before = "";
     const after = "export function rootOnly() {}";
-    const result = checkExports("src/app.ts", before, after, index, cwd, "module.md");
+    const result = checkExports("src/app.ts", before, after, index, cwd);
 
     expect(result.blocked).toBe(true);
     if (result.blocked) {
@@ -108,6 +113,7 @@ describe("checkExports", () => {
     const index = makeIndex([
       {
         modulePath: "/project/src",
+        descriptorFileName: "module.md",
         visible: null,
         readonly: ["module.md"],
         sealed: [],
@@ -117,7 +123,7 @@ describe("checkExports", () => {
 
     const before = "";
     const after = "export function anything() {}";
-    const result = checkExports("src/app.ts", before, after, index, cwd, "module.md");
+    const result = checkExports("src/app.ts", before, after, index, cwd);
 
     expect(result.blocked).toBe(false);
   });
@@ -126,6 +132,7 @@ describe("checkExports", () => {
     const index = makeIndex([
       {
         modulePath: "/project/src",
+        descriptorFileName: "module.md",
         visible: [],
         readonly: ["module.md"],
         sealed: [],
@@ -135,7 +142,7 @@ describe("checkExports", () => {
 
     const before = "";
     const after = "export function blocked() {}";
-    const result = checkExports("src/app.ts", before, after, index, cwd, "module.md");
+    const result = checkExports("src/app.ts", before, after, index, cwd);
 
     expect(result.blocked).toBe(true);
     if (result.blocked) {
@@ -147,6 +154,7 @@ describe("checkExports", () => {
     const index = makeIndex([
       {
         modulePath: "/project/src",
+        descriptorFileName: "module.md",
         visible: [],
         readonly: ["module.md"],
         sealed: [],
@@ -155,7 +163,7 @@ describe("checkExports", () => {
     ]);
 
     const code = "export function existing() {}";
-    const result = checkExports("src/app.ts", code, code, index, cwd, "module.md");
+    const result = checkExports("src/app.ts", code, code, index, cwd);
 
     expect(result.blocked).toBe(false);
   });
@@ -164,6 +172,7 @@ describe("checkExports", () => {
     const index = makeIndex([
       {
         modulePath: "/project/src",
+        descriptorFileName: "module.md",
         visible: [{ name: "allowedFn" }],
         readonly: ["module.md"],
         sealed: [],
@@ -174,7 +183,7 @@ describe("checkExports", () => {
     const before = "export function allowedFn() {}";
     const after =
       "export function allowedFn() {}\nexport function unlistedA() {}\nexport type unlistedB = string;";
-    const result = checkExports("src/app.ts", before, after, index, cwd, "module.md");
+    const result = checkExports("src/app.ts", before, after, index, cwd);
 
     expect(result.blocked).toBe(true);
     if (result.blocked) {
@@ -190,7 +199,7 @@ describe("checkExports", () => {
 
     const before = "";
     const after = "export function anything() {}";
-    const result = checkExports("src/app.ts", before, after, index, cwd, "module.md");
+    const result = checkExports("src/app.ts", before, after, index, cwd);
 
     expect(result.blocked).toBe(false);
   });
@@ -199,6 +208,7 @@ describe("checkExports", () => {
     const index = makeIndex([
       {
         modulePath: "/project",
+        descriptorFileName: "module.md",
         visible: [{ name: "sharedFn" }, { name: "rootOnly" }],
         readonly: ["module.md"],
         sealed: [],
@@ -206,6 +216,7 @@ describe("checkExports", () => {
       },
       {
         modulePath: "/project/src",
+        descriptorFileName: "module.md",
         visible: [{ name: "sharedFn" }, { name: "srcOnly" }],
         readonly: ["module.md"],
         sealed: [],
@@ -215,7 +226,7 @@ describe("checkExports", () => {
 
     const before = "";
     const after = "export function sharedFn() {}";
-    const result = checkExports("src/app.ts", before, after, index, cwd, "module.md");
+    const result = checkExports("src/app.ts", before, after, index, cwd);
 
     expect(result.blocked).toBe(false);
   });
@@ -224,6 +235,7 @@ describe("checkExports", () => {
     const index = makeIndex([
       {
         modulePath: "/project",
+        descriptorFileName: "module.md",
         visible: null,
         readonly: ["module.md"],
         sealed: [],
@@ -231,6 +243,7 @@ describe("checkExports", () => {
       },
       {
         modulePath: "/project/src",
+        descriptorFileName: "module.md",
         visible: [{ name: "childFn" }],
         readonly: ["module.md"],
         sealed: [],
@@ -240,7 +253,7 @@ describe("checkExports", () => {
 
     const before = "";
     const after = "export function childFn() {}";
-    const result = checkExports("src/app.ts", before, after, index, cwd, "module.md");
+    const result = checkExports("src/app.ts", before, after, index, cwd);
 
     expect(result.blocked).toBe(false);
   });
@@ -249,6 +262,7 @@ describe("checkExports", () => {
     const index = makeIndex([
       {
         modulePath: "/project",
+        descriptorFileName: "module.md",
         visible: [{ name: "rootOnly" }],
         readonly: ["module.md"],
         sealed: [],
@@ -256,6 +270,7 @@ describe("checkExports", () => {
       },
       {
         modulePath: "/project/src",
+        descriptorFileName: "module.md",
         visible: [{ name: "sharedFn" }],
         readonly: ["module.md"],
         sealed: [],
@@ -263,6 +278,7 @@ describe("checkExports", () => {
       },
       {
         modulePath: "/project/src/payments",
+        descriptorFileName: "module.md",
         visible: [{ name: "leafOnly" }],
         readonly: ["module.md"],
         sealed: [],
@@ -278,7 +294,7 @@ describe("checkExports", () => {
       after,
       index,
       cwd,
-      "module.md",
+      
     );
 
     expect(result.blocked).toBe(false);
@@ -288,6 +304,7 @@ describe("checkExports", () => {
     const index = makeIndex([
       {
         modulePath: "/project",
+        descriptorFileName: "module.md",
         visible: [{ name: "rootOnly" }],
         readonly: ["module.md"],
         sealed: [],
@@ -295,6 +312,7 @@ describe("checkExports", () => {
       },
       {
         modulePath: "/project/src",
+        descriptorFileName: "module.md",
         visible: [{ name: "sharedFn" }, { name: "rootOnly" }],
         readonly: ["module.md"],
         sealed: [],
@@ -310,7 +328,7 @@ describe("checkExports", () => {
       after,
       index,
       cwd,
-      "module.md",
+      
     );
 
     expect(result.blocked).toBe(false);

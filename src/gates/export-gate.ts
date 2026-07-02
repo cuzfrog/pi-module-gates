@@ -1,6 +1,6 @@
 import * as path from "node:path";
 import { getChecker } from "./checkers/registry.ts";
-import type { ModuleIndex, Signature } from "../types.ts";
+import type { ModuleIndex, ModuleContract } from "../types.ts";
 
 export type ExportViolation = { name: string; imposedBy: string };
 
@@ -14,7 +14,6 @@ export function checkExports(
   afterContent: string,
   index: ModuleIndex,
   cwd: string,
-  descriptorFileName: string,
 ): ExportCheckResult {
   const absFile = path.resolve(cwd, filePath);
   const checker = getChecker(absFile);
@@ -31,7 +30,7 @@ export function checkExports(
     if (!visibleEntry) {
       violations.push({
         name: sig.name,
-        imposedBy: path.relative(cwd, path.join(contract.modulePath, descriptorFileName)),
+        imposedBy: path.relative(cwd, path.join(contract.modulePath, contract.descriptorFileName)),
       });
       continue;
     }
@@ -40,7 +39,7 @@ export function checkExports(
     if (requiredMod !== undefined && sig.modifier !== requiredMod) {
       violations.push({
         name: `${sig.modifier ?? ""} ${sig.name}`.trim(),
-        imposedBy: path.relative(cwd, path.join(contract.modulePath, descriptorFileName)),
+        imposedBy: path.relative(cwd, path.join(contract.modulePath, contract.descriptorFileName)),
       });
       continue;
     }
@@ -60,9 +59,9 @@ export function checkExports(
 
 function findImmediateContract(
   absFile: string,
-  contracts: { modulePath: string; visible: Signature[] | null }[],
-): { modulePath: string; visible: Signature[] | null } | undefined {
-  let best: { modulePath: string; visible: Signature[] | null } | undefined;
+  contracts: ModuleContract[],
+): ModuleContract | undefined {
+  let best: ModuleContract | undefined;
   for (const c of contracts) {
     if (absFile.startsWith(c.modulePath + path.sep) || absFile === c.modulePath) {
       if (!best || c.modulePath.length > best.modulePath.length) {

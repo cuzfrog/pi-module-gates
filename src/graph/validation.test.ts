@@ -63,6 +63,7 @@ describe("validateVisibleEntries", () => {
     const index = makeIndex([
       {
         modulePath: "/project",
+        descriptorFileName: "module.md",
         visible: [{ name: "GhostType" }],
         readonly: ["module.md"],
         sealed: [],
@@ -92,6 +93,7 @@ describe("validateVisibleEntries", () => {
     const index = makeIndex([
       {
         modulePath: "/project",
+        descriptorFileName: "module.md",
         visible: [{ name: "greet" }],
         readonly: ["module.md"],
         sealed: [],
@@ -118,6 +120,7 @@ describe("validateVisibleEntries", () => {
     const index = makeIndex([
       {
         modulePath: "/project",
+        descriptorFileName: "module.md",
         visible: null,
         readonly: ["module.md"],
         sealed: [],
@@ -133,6 +136,7 @@ describe("validateVisibleEntries", () => {
     const index = makeIndex([
       {
         modulePath: "/project",
+        descriptorFileName: "module.md",
         visible: [{ name: "anything" }],
         readonly: ["module.md"],
         sealed: [],
@@ -155,6 +159,7 @@ describe("validateVisibleEntries", () => {
     const index = makeIndex([
       {
         modulePath: "/project",
+        descriptorFileName: "module.md",
         visible: [{ name: "GhostType" }],
         readonly: ["module.md"],
         sealed: [],
@@ -162,6 +167,7 @@ describe("validateVisibleEntries", () => {
       },
       {
         modulePath: "/project/src",
+        descriptorFileName: "module.md",
         visible: [{ name: "greet" }],
         readonly: ["module.md"],
         sealed: [],
@@ -210,6 +216,7 @@ describe("validateVisibleEntries", () => {
     const index = makeIndex([
       {
         modulePath: "/project",
+        descriptorFileName: "module.md",
         visible: [{ name: "GhostA" }, { name: "GhostB" }],
         readonly: ["module.md"],
         sealed: [],

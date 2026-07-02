@@ -13,7 +13,6 @@ export function checkSealed(
   afterContent: string,
   index: ModuleIndex,
   cwd: string,
-  descriptorFileName: string,
 ): SealedCheckResult {
   const absFile = path.resolve(cwd, filePath);
 
@@ -28,7 +27,7 @@ export function checkSealed(
         const newExports = checker.getNewExports(beforeContent, afterContent);
         if (newExports.length === 0) return { blocked: false };
 
-        const relModuleMd = path.relative(cwd, path.join(contract.modulePath, descriptorFileName));
+        const relModuleMd = path.relative(cwd, path.join(contract.modulePath, contract.descriptorFileName));
         const names = newExports.map((s) => s.name).join(", ");
         return {
           blocked: true,
