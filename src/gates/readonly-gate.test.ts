@@ -13,6 +13,7 @@ describe("checkReadonly", () => {
     const index = makeIndex([
       {
         modulePath: "/project/src",
+        descriptorFileName: "module.md",
         visible: null,
         readonly: ["config.json", "module.md"],
         sealed: [],
@@ -20,7 +21,7 @@ describe("checkReadonly", () => {
       },
     ]);
 
-    const result = checkReadonly("src/config.json", index, cwd, "module.md");
+    const result = checkReadonly("src/config.json", index, cwd);
     expect(result.blocked).toBe(true);
   });
 
@@ -28,6 +29,7 @@ describe("checkReadonly", () => {
     const index = makeIndex([
       {
         modulePath: "/project/src",
+        descriptorFileName: "module.md",
         visible: null,
         readonly: ["vendor", "module.md"],
         sealed: [],
@@ -35,7 +37,7 @@ describe("checkReadonly", () => {
       },
     ]);
 
-    const result = checkReadonly("src/vendor/lib.ts", index, cwd, "module.md");
+    const result = checkReadonly("src/vendor/lib.ts", index, cwd);
     expect(result.blocked).toBe(true);
   });
 
@@ -43,6 +45,7 @@ describe("checkReadonly", () => {
     const index = makeIndex([
       {
         modulePath: "/project/src",
+        descriptorFileName: "module.md",
         visible: null,
         readonly: ["generated*", "module.md"],
         sealed: [],
@@ -50,7 +53,7 @@ describe("checkReadonly", () => {
       },
     ]);
 
-    const result = checkReadonly("src/generated-types.ts", index, cwd, "module.md");
+    const result = checkReadonly("src/generated-types.ts", index, cwd);
     expect(result.blocked).toBe(true);
   });
 
@@ -58,6 +61,7 @@ describe("checkReadonly", () => {
     const index = makeIndex([
       {
         modulePath: "/project/src",
+        descriptorFileName: "module.md",
         visible: null,
         readonly: ["config.json", "module.md"],
         sealed: [],
@@ -65,7 +69,7 @@ describe("checkReadonly", () => {
       },
     ]);
 
-    const result = checkReadonly("src/app.ts", index, cwd, "module.md");
+    const result = checkReadonly("src/app.ts", index, cwd);
     expect(result.blocked).toBe(false);
   });
 
@@ -73,6 +77,7 @@ describe("checkReadonly", () => {
     const index = makeIndex([
       {
         modulePath: "/project/src",
+        descriptorFileName: "module.md",
         visible: null,
         readonly: ["module.md"],
         sealed: [],
@@ -80,7 +85,7 @@ describe("checkReadonly", () => {
       },
     ]);
 
-    const result = checkReadonly("src/module.md", index, cwd, "module.md");
+    const result = checkReadonly("src/module.md", index, cwd);
     expect(result.blocked).toBe(true);
   });
 
@@ -88,6 +93,7 @@ describe("checkReadonly", () => {
     const index = makeIndex([
       {
         modulePath: "/project",
+        descriptorFileName: "module.md",
         visible: null,
         readonly: ["src/secret.ts", "module.md"],
         sealed: [],
@@ -95,6 +101,7 @@ describe("checkReadonly", () => {
       },
       {
         modulePath: "/project/src",
+        descriptorFileName: "module.md",
         visible: null,
         readonly: ["module.md"],
         sealed: [],
@@ -102,25 +109,46 @@ describe("checkReadonly", () => {
       },
     ]);
 
-    const result = checkReadonly("src/secret.ts", index, cwd, "module.md");
+    const result = checkReadonly("src/secret.ts", index, cwd);
     expect(result.blocked).toBe(true);
   });
 
-  it("provides reason mentioning descriptor file name when blocked", () => {
+  it("provides reason mentioning the contract's actual descriptor file name", () => {
     const index = makeIndex([
       {
         modulePath: "/project/src",
+        descriptorFileName: "CONTEXT.md",
         visible: null,
-        readonly: ["locked.ts", "CONTEXT.md"],
+        readonly: ["locked.ts"],
         sealed: [],
         prose: "",
       },
     ]);
 
-    const result = checkReadonly("src/locked.ts", index, cwd, "CONTEXT.md");
+    const result = checkReadonly("src/locked.ts", index, cwd);
     expect(result.blocked).toBe(true);
     if (result.blocked) {
       expect(result.reason).toContain("CONTEXT.md");
+    }
+  });
+
+  it("preserves the case of the on-disk descriptor file name in the reason", () => {
+    const index = makeIndex([
+      {
+        modulePath: "/project/src",
+        descriptorFileName: "MODULE.md",
+        visible: null,
+        readonly: ["locked.ts"],
+        sealed: [],
+        prose: "",
+      },
+    ]);
+
+    const result = checkReadonly("src/locked.ts", index, cwd);
+    expect(result.blocked).toBe(true);
+    if (result.blocked) {
+      expect(result.reason).toContain("MODULE.md");
+      expect(result.reason).not.toContain("module.md");
     }
   });
 });

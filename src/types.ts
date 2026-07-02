@@ -7,6 +7,7 @@ export type Signature = {
 
 export type ModuleContract = {
   modulePath: string;
+  descriptorFileName: string;
   visible: Signature[] | null;
   readonly: string[];
   sealed: string[];

@@ -10,7 +10,6 @@ export function checkReadonly(
   filePath: string,
   index: ModuleIndex,
   cwd: string,
-  descriptorFileName: string,
 ): ReadonlyCheckResult {
   const absFile = path.resolve(cwd, filePath);
   const ancestors = getAncestorContracts(absFile, index);
@@ -18,7 +17,7 @@ export function checkReadonly(
   for (const contract of ancestors) {
     for (const pattern of contract.readonly) {
       if (matchesPattern(absFile, pattern, contract.modulePath)) {
-        const relModuleMd = path.relative(cwd, path.join(contract.modulePath, descriptorFileName));
+        const relModuleMd = path.relative(cwd, path.join(contract.modulePath, contract.descriptorFileName));
         return {
           blocked: true,
           reason: `Readonly rule: file is listed as readonly in ${relModuleMd}`,

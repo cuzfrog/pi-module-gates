@@ -1,6 +1,6 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import type { ModuleIndex } from "./types.ts";
+import type { ModuleContract, ModuleIndex } from "./types.ts";
 
 export function findOwningModule(
   absPath: string,
@@ -42,10 +42,10 @@ export function isWithinSourceRoot(absPath: string, resolvedRoot: string): boole
 export function getAncestorContracts(
   absFile: string,
   index: ModuleIndex,
-): { modulePath: string; readonly: string[]; sealed: string[] }[] {
-  return index.contracts
-    .filter((c) => absFile.startsWith(c.modulePath + path.sep) || absFile === c.modulePath)
-    .map(({ modulePath, readonly, sealed }) => ({ modulePath, readonly, sealed }));
+): ModuleContract[] {
+  return index.contracts.filter(
+    (c) => absFile.startsWith(c.modulePath + path.sep) || absFile === c.modulePath,
+  );
 }
 
 export function matchesPattern(

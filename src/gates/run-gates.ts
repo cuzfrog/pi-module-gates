@@ -32,24 +32,24 @@ export function runGates(
   const descriptorResult = checkDescriptorFileReadonly(absPath, before, after, config);
   if (descriptorResult) return descriptorResult;
 
-  const readonlyResult = checkReadonly(filePath, index, cwd, config.moduleDescriptorFileName);
+  const readonlyResult = checkReadonly(filePath, index, cwd);
   if (readonlyResult.blocked) {
-    return { block: true, reason: formatDenial(filePath, readonlyResult.reason, absPath, index, cwd, config.moduleDescriptorFileName) };
+    return { block: true, reason: formatDenial(filePath, readonlyResult.reason, absPath, index, cwd) };
   }
 
-  const sealedResult = checkSealed(filePath, before, after, index, cwd, config.moduleDescriptorFileName);
+  const sealedResult = checkSealed(filePath, before, after, index, cwd);
   if (sealedResult.blocked) {
-    return { block: true, reason: formatDenial(filePath, sealedResult.reason, absPath, index, cwd, config.moduleDescriptorFileName) };
+    return { block: true, reason: formatDenial(filePath, sealedResult.reason, absPath, index, cwd) };
   }
 
-  const exportResult = checkExports(filePath, before, after, index, cwd, config.moduleDescriptorFileName);
+  const exportResult = checkExports(filePath, before, after, index, cwd);
   if (exportResult.blocked) {
-    return { block: true, reason: formatDenial(filePath, exportResult.reason, absPath, index, cwd, config.moduleDescriptorFileName) };
+    return { block: true, reason: formatDenial(filePath, exportResult.reason, absPath, index, cwd) };
   }
 
   const importResult = checkModuleInterfaceImports(filePath, after, index, cwd, config.disableModuleInterfaceImportGate, config.sourceRoot);
   if (importResult.blocked) {
-    return { block: true, reason: formatDenial(filePath, importResult.reason, absPath, index, cwd, config.moduleDescriptorFileName) };
+    return { block: true, reason: formatDenial(filePath, importResult.reason, absPath, index, cwd) };
   }
 
   return undefined;
@@ -64,10 +64,12 @@ function checkDescriptorFileReadonly(
   if (config.moduleDescriptorReadonly === "off") return undefined;
   if (!isDescriptorFile(absPath, config.moduleDescriptorFileName)) return undefined;
 
+  const actualName = path.basename(absPath);
+
   if (config.moduleDescriptorReadonly === "file") {
     return {
       block: true,
-      reason: `Readonly rule: ${config.moduleDescriptorFileName} is readonly (mode: file)`,
+      reason: `Readonly rule: ${actualName} is readonly (mode: file)`,
     };
   }
 
@@ -77,7 +79,7 @@ function checkDescriptorFileReadonly(
 
   return {
     block: true,
-    reason: `Readonly rule: frontmatter of ${config.moduleDescriptorFileName} is readonly`,
+    reason: `Readonly rule: frontmatter of ${actualName} is readonly`,
   };
 }
 
@@ -87,7 +89,6 @@ function formatDenial(
   absPath: string,
   index: ModuleIndex,
   cwd: string,
-  descriptorFileName: string,
 ): string {
   const modulePath = findOwningModule(absPath, index);
   const contract = modulePath
@@ -97,7 +98,7 @@ function formatDenial(
   let message = `[Module Gate] Write blocked — ${relPath}\n\n${reason}`;
 
   if (contract && contract.prose) {
-    const relModuleMd = path.relative(cwd, path.join(contract.modulePath, descriptorFileName));
+    const relModuleMd = path.relative(cwd, path.join(contract.modulePath, contract.descriptorFileName));
     message += `\n\nModule contract (${relModuleMd}):\n${contract.prose}`;
   }
 

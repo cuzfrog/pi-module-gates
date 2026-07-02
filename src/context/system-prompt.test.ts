@@ -17,6 +17,7 @@ describe("buildSystemPromptHint", () => {
       contracts: [
         {
           modulePath: "/project/src",
+          descriptorFileName: "module.md",
           visible: [{ name: "greet" }, { name: "Config" }],
           readonly: ["secret.ts", "module.md"],
         sealed: [],
@@ -50,6 +51,7 @@ describe("buildSystemPromptHint", () => {
       contracts: [
         {
           modulePath: "/project/src",
+          descriptorFileName: "module.md",
           visible: [{ name: "fnA" }],
           readonly: ["module.md"],
         sealed: [],
@@ -71,6 +73,7 @@ describe("buildSystemPromptHint", () => {
       contracts: [
         {
           modulePath: "/project/src",
+          descriptorFileName: "module.md",
           visible: [{ name: "fnA" }],
           readonly: ["module.md"],
           sealed: [],
@@ -96,6 +99,7 @@ describe("buildSystemPromptHint", () => {
       contracts: [
         {
           modulePath: "/project/src",
+          descriptorFileName: "module.md",
           visible: [{ name: "fnA" }],
           readonly: ["config.ts"],
           sealed: [],
@@ -121,6 +125,7 @@ describe("buildSystemPromptHint", () => {
       contracts: [
         {
           modulePath: "/project/src",
+          descriptorFileName: "module.md",
           visible: [{ name: "fnA" }],
           readonly: ["module.md"],
           sealed: [],
@@ -140,6 +145,7 @@ describe("buildSystemPromptHint", () => {
       contracts: [
         {
           modulePath: "/project/src",
+          descriptorFileName: "module.md",
           visible: [{ name: "fnA" }],
           readonly: ["module.md"],
           sealed: [],
@@ -164,6 +170,7 @@ describe("buildSystemPromptHint", () => {
       contracts: [
         {
           modulePath: "/project/src",
+          descriptorFileName: "module.md",
           visible: [{ name: "fnA" }],
           readonly: ["module.md"],
           sealed: [],

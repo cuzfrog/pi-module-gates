@@ -14,6 +14,7 @@ describe("checkSealed", () => {
     const index = makeIndex([
       {
         modulePath: "/project/src",
+        descriptorFileName: "module.md",
         visible: null,
         readonly: ["module.md"],
         sealed: ["sealed.ts"],
@@ -23,7 +24,7 @@ describe("checkSealed", () => {
 
     const before = "export function existingFn() {}";
     const after = "export function existingFn() {}\nexport function newFn() {}";
-    const result = checkSealed("src/sealed.ts", before, after, index, cwd, "module.md");
+    const result = checkSealed("src/sealed.ts", before, after, index, cwd);
 
     expect(result.blocked).toBe(true);
     if (result.blocked) {
@@ -36,6 +37,7 @@ describe("checkSealed", () => {
     const index = makeIndex([
       {
         modulePath: "/project/src",
+        descriptorFileName: "module.md",
         visible: null,
         readonly: ["module.md"],
         sealed: ["sealed.ts"],
@@ -45,7 +47,7 @@ describe("checkSealed", () => {
 
     const before = "export function existingFn() { return 1; }";
     const after = "export function existingFn() { return 2; }";
-    const result = checkSealed("src/sealed.ts", before, after, index, cwd, "module.md");
+    const result = checkSealed("src/sealed.ts", before, after, index, cwd);
 
     expect(result.blocked).toBe(false);
   });
@@ -54,6 +56,7 @@ describe("checkSealed", () => {
     const index = makeIndex([
       {
         modulePath: "/project/src",
+        descriptorFileName: "module.md",
         visible: null,
         readonly: ["module.md"],
         sealed: ["sealed.ts"],
@@ -63,7 +66,7 @@ describe("checkSealed", () => {
 
     const before = "";
     const after = "export function anything() {}";
-    const result = checkSealed("src/app.ts", before, after, index, cwd, "module.md");
+    const result = checkSealed("src/app.ts", before, after, index, cwd);
 
     expect(result.blocked).toBe(false);
   });
@@ -72,6 +75,7 @@ describe("checkSealed", () => {
     const index = makeIndex([
       {
         modulePath: "/project/src",
+        descriptorFileName: "module.md",
         visible: null,
         readonly: ["module.md"],
         sealed: ["data.json"],
@@ -85,7 +89,7 @@ describe("checkSealed", () => {
       '{"new": true}',
       index,
       cwd,
-      "module.md",
+      
     );
 
     expect(result.blocked).toBe(false);
@@ -95,6 +99,7 @@ describe("checkSealed", () => {
     const index = makeIndex([
       {
         modulePath: "/project",
+        descriptorFileName: "module.md",
         visible: null,
         readonly: ["module.md"],
         sealed: ["src/sealed.ts"],
@@ -102,6 +107,7 @@ describe("checkSealed", () => {
       },
       {
         modulePath: "/project/src",
+        descriptorFileName: "module.md",
         visible: null,
         readonly: ["module.md"],
         sealed: [],
@@ -111,7 +117,7 @@ describe("checkSealed", () => {
 
     const before = "export function existingFn() {}";
     const after = "export function existingFn() {}\nexport function newFn() {}";
-    const result = checkSealed("src/sealed.ts", before, after, index, cwd, "module.md");
+    const result = checkSealed("src/sealed.ts", before, after, index, cwd);
 
     expect(result.blocked).toBe(true);
     if (result.blocked) {
@@ -123,6 +129,7 @@ describe("checkSealed", () => {
     const index = makeIndex([
       {
         modulePath: "/project/src",
+        descriptorFileName: "module.md",
         visible: null,
         readonly: ["module.md"],
         sealed: ["vendor"],
@@ -132,7 +139,7 @@ describe("checkSealed", () => {
 
     const before = "";
     const after = "export function newFn() {}";
-    const result = checkSealed("src/vendor/lib.ts", before, after, index, cwd, "module.md");
+    const result = checkSealed("src/vendor/lib.ts", before, after, index, cwd);
 
     expect(result.blocked).toBe(true);
   });
@@ -141,6 +148,7 @@ describe("checkSealed", () => {
     const index = makeIndex([
       {
         modulePath: "/project/src",
+        descriptorFileName: "module.md",
         visible: null,
         readonly: ["module.md"],
         sealed: ["generated*"],
@@ -150,7 +158,7 @@ describe("checkSealed", () => {
 
     const before = "";
     const after = "export function newFn() {}";
-    const result = checkSealed("src/generated-types.ts", before, after, index, cwd, "module.md");
+    const result = checkSealed("src/generated-types.ts", before, after, index, cwd);
 
     expect(result.blocked).toBe(true);
   });
@@ -160,7 +168,7 @@ describe("checkSealed", () => {
 
     const before = "";
     const after = "export function anything() {}";
-    const result = checkSealed("src/app.ts", before, after, index, cwd, "module.md");
+    const result = checkSealed("src/app.ts", before, after, index, cwd);
 
     expect(result.blocked).toBe(false);
   });
@@ -169,6 +177,7 @@ describe("checkSealed", () => {
     const index = makeIndex([
       {
         modulePath: "/project/src",
+        descriptorFileName: "module.md",
         visible: null,
         readonly: ["module.md"],
         sealed: [],
@@ -178,7 +187,7 @@ describe("checkSealed", () => {
 
     const before = "";
     const after = "export function anything() {}";
-    const result = checkSealed("src/app.ts", before, after, index, cwd, "module.md");
+    const result = checkSealed("src/app.ts", before, after, index, cwd);
 
     expect(result.blocked).toBe(false);
   });
@@ -187,6 +196,7 @@ describe("checkSealed", () => {
     const index = makeIndex([
       {
         modulePath: "/project/src",
+        descriptorFileName: "module.md",
         visible: null,
         readonly: ["module.md"],
         sealed: ["sealed.ts"],
@@ -197,7 +207,7 @@ describe("checkSealed", () => {
     const before = "export function existingFn() {}";
     const after =
       "export function existingFn() {}\nexport function newA() {}\nexport type newB = string;";
-    const result = checkSealed("src/sealed.ts", before, after, index, cwd, "module.md");
+    const result = checkSealed("src/sealed.ts", before, after, index, cwd);
 
     expect(result.blocked).toBe(true);
     if (result.blocked) {
@@ -210,6 +220,7 @@ describe("checkSealed", () => {
     const index = makeIndex([
       {
         modulePath: "/project",
+        descriptorFileName: "module.md",
         visible: null,
         readonly: ["module.md"],
         sealed: [],
@@ -217,6 +228,7 @@ describe("checkSealed", () => {
       },
       {
         modulePath: "/project/src",
+        descriptorFileName: "module.md",
         visible: null,
         readonly: ["module.md"],
         sealed: ["sealed.ts"],
@@ -226,7 +238,7 @@ describe("checkSealed", () => {
 
     const before = "";
     const after = "export function newFn() {}";
-    const result = checkSealed("src/sealed.ts", before, after, index, cwd, "module.md");
+    const result = checkSealed("src/sealed.ts", before, after, index, cwd);
 
     expect(result.blocked).toBe(true);
     if (result.blocked) {
